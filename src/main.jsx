@@ -1,6 +1,6 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import CommentList from './components/comments/CommentList'
+import App from './App'
 import './main.css'
 
 const sampleComments = [
@@ -48,8 +48,347 @@ const sampleComments = [
   } 
 ];
 
+const sampleOrders = [
+  {
+    orderNumber: "ORD-2025-0324",
+    placedDate: "September 15, 2025",
+    status: "Active",
+    items: [
+      {
+        productId: "PRD-001",
+        name: "Checkered Shirt",
+        size: "Medium",
+        color: "Red",
+        rentalPeriod: "7 days",
+        price: 180,
+        imageUrl: "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=400&h=400&fit=crop"
+      },
+      {
+        productId: "PRD-002",
+        name: "Skinny Fit Jeans",
+        size: "Large",
+        color: "Blue",
+        rentalPeriod: "7 days",
+        price: 240,
+        imageUrl: "https://images.unsplash.com/photo-1542272604-787c3835535d?w=400&h=400&fit=crop"
+      }
+    ],
+    totalAmount: 467,
+    subtotal: 420,
+    tax: 47,
+    shippingAddress: {
+      name: "John Doe",
+      address: "123 Fashion Street",
+      city: "New York",
+      state: "NY",
+      zipCode: "10001",
+      phone: "+1 (555) 123-4567"
+    },
+    timeline: [
+      {
+        title: "Order Placed",
+        date: "September 15, 2025 - 10:30 AM",
+        completed: true,
+        description: "Your order has been confirmed"
+      },
+      {
+        title: "Processing",
+        date: "September 15, 2025 - 2:45 PM",
+        completed: true,
+        description: "Items are being prepared for shipment"
+      },
+      {
+        title: "Shipped",
+        date: "September 16, 2025 - 9:00 AM",
+        completed: true,
+        description: "Package is on the way. Tracking: TRK123456789"
+      },
+      {
+        title: "Delivered",
+        date: "Expected: September 17, 2025",
+        completed: false,
+        description: "Estimated delivery time"
+      }
+    ]
+  },
+  {
+    orderNumber: "ORD-2025-0298",
+    placedDate: "September 8, 2025",
+    status: "Completed",
+    items: [
+      {
+        productId: "PRD-003",
+        name: "Gradient Graphic T-shirt",
+        size: "Large",
+        color: "Multi",
+        rentalPeriod: "3 days",
+        price: 145,
+        imageUrl: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop"
+      }
+    ],
+    totalAmount: 145,
+    subtotal: 145,
+    shippingAddress: {
+      name: "John Doe",
+      address: "123 Fashion Street",
+      city: "New York",
+      state: "NY",
+      zipCode: "10001",
+      phone: "+1 (555) 123-4567"
+    },
+    timeline: [
+      {
+        title: "Order Placed",
+        date: "September 8, 2025",
+        completed: true
+      },
+      {
+        title: "Shipped",
+        date: "September 9, 2025",
+        completed: true
+      },
+      {
+        title: "Delivered",
+        date: "September 10, 2025",
+        completed: true
+      },
+      {
+        title: "Returned",
+        date: "September 13, 2025",
+        completed: true,
+        description: "Item successfully returned"
+      }
+    ]
+  },
+  {
+    orderNumber: "ORD-2025-0267",
+    placedDate: "August 28, 2025",
+    status: "Completed",
+    items: [
+      {
+        productId: "PRD-004",
+        name: "Sleeve Striped T-shirt",
+        size: "Medium",
+        color: "White/Black",
+        rentalPeriod: "5 days",
+        price: 130,
+        imageUrl: "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=400&h=400&fit=crop"
+      },
+      {
+        productId: "PRD-005",
+        name: "Loose Fit Bermuda Shorts",
+        size: "Large",
+        color: "Khaki",
+        rentalPeriod: "5 days",
+        price: 80,
+        imageUrl: "https://images.unsplash.com/photo-1591195853828-11db59a44f6b?w=400&h=400&fit=crop"
+      }
+    ],
+    totalAmount: 225,
+    subtotal: 210,
+    tax: 15,
+    discount: 20,
+    shippingAddress: {
+      name: "John Doe",
+      address: "123 Fashion Street",
+      city: "New York",
+      state: "NY",
+      zipCode: "10001",
+      phone: "+1 (555) 123-4567"
+    },
+    timeline: [
+      {
+        title: "Order Placed",
+        date: "August 28, 2025",
+        completed: true
+      },
+      {
+        title: "Shipped",
+        date: "August 29, 2025",
+        completed: true
+      },
+      {
+        title: "Delivered",
+        date: "August 30, 2025",
+        completed: true
+      },
+      {
+        title: "Returned",
+        date: "September 5, 2025",
+        completed: true
+      }
+    ]
+  },
+  {
+    orderNumber: "ORD-2025-0201",
+    placedDate: "August 15, 2025",
+    status: "Returned",
+    items: [
+      {
+        productId: "PRD-006",
+        name: "Polo with Contrast Trims",
+        size: "Medium",
+        color: "Navy",
+        rentalPeriod: "7 days",
+        price: 195,
+        imageUrl: "https://images.unsplash.com/photo-1586790170083-2f9ceadc732d?w=400&h=400&fit=crop"
+      },
+      {
+        productId: "PRD-007",
+        name: "Black Striped T-shirt",
+        size: "Large",
+        color: "Black",
+        rentalPeriod: "7 days",
+        price: 120,
+        imageUrl: "https://images.unsplash.com/photo-1554568218-0f1715e72254?w=400&h=400&fit=crop"
+      }
+    ],
+    totalAmount: 315,
+    subtotal: 315,
+    shippingAddress: {
+      name: "John Doe",
+      address: "123 Fashion Street",
+      city: "New York",
+      state: "NY",
+      zipCode: "10001",
+      phone: "+1 (555) 123-4567"
+    },
+    timeline: [
+      {
+        title: "Order Placed",
+        date: "August 15, 2025",
+        completed: true
+      },
+      {
+        title: "Shipped",
+        date: "August 16, 2025",
+        completed: true
+      },
+      {
+        title: "Delivered",
+        date: "August 17, 2025",
+        completed: true
+      },
+      {
+        title: "Returned",
+        date: "August 24, 2025",
+        completed: true,
+        description: "All items returned in good condition"
+      }
+    ]
+  },
+  {
+    orderNumber: "ORD-2025-0156",
+    placedDate: "July 30, 2025",
+    status: "Completed",
+    items: [
+      {
+        productId: "PRD-008",
+        name: "Vertical Striped Shirt",
+        size: "Large",
+        color: "Blue/White",
+        rentalPeriod: "5 days",
+        price: 155,
+        imageUrl: "https://images.unsplash.com/photo-1620012253295-c15cc3e65df4?w=400&h=400&fit=crop"
+      },
+      {
+        productId: "PRD-009",
+        name: "Casual Chinos",
+        size: "34",
+        color: "Beige",
+        rentalPeriod: "5 days",
+        price: 185,
+        imageUrl: "https://images.unsplash.com/photo-1473966968600-fa801b869a1a?w=400&h=400&fit=crop"
+      }
+    ],
+    totalAmount: 367,
+    subtotal: 340,
+    tax: 27,
+    discount: 30,
+    shippingAddress: {
+      name: "John Doe",
+      address: "123 Fashion Street",
+      city: "New York",
+      state: "NY",
+      zipCode: "10001",
+      phone: "+1 (555) 123-4567"
+    },
+    timeline: [
+      {
+        title: "Order Placed",
+        date: "July 30, 2025",
+        completed: true
+      },
+      {
+        title: "Shipped",
+        date: "July 31, 2025",
+        completed: true
+      },
+      {
+        title: "Delivered",
+        date: "August 1, 2025",
+        completed: true
+      },
+      {
+        title: "Returned",
+        date: "August 6, 2025",
+        completed: true
+      }
+    ]
+  },
+  {
+    orderNumber: "ORD-2025-0089",
+    placedDate: "July 10, 2025",
+    status: "Completed",
+    items: [
+      {
+        productId: "PRD-010",
+        name: "Courage Graphic T-shirt",
+        size: "Medium",
+        color: "Orange",
+        rentalPeriod: "3 days",
+        price: 125,
+        imageUrl: "https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?w=400&h=400&fit=crop"
+      }
+    ],
+    totalAmount: 125,
+    subtotal: 125,
+    shippingAddress: {
+      name: "John Doe",
+      address: "123 Fashion Street",
+      city: "New York",
+      state: "NY",
+      zipCode: "10001",
+      phone: "+1 (555) 123-4567"
+    },
+    timeline: [
+      {
+        title: "Order Placed",
+        date: "July 10, 2025",
+        completed: true
+      },
+      {
+        title: "Shipped",
+        date: "July 11, 2025",
+        completed: true
+      },
+      {
+        title: "Delivered",
+        date: "July 12, 2025",
+        completed: true
+      },
+      {
+        title: "Returned",
+        date: "July 15, 2025",
+        completed: true
+      }
+    ]
+  }
+];
+
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <CommentList comments={sampleComments} totalReviews={sampleComments.length} />
+    <App sampleComments={sampleComments} sampleOrders={sampleOrders} />
   </StrictMode>,
 )
