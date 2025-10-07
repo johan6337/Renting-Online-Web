@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import HomePage from './pages/HomePage';
 import OrdersPage from './pages/OrdersPage';
-
+import Footer from './components/footer/Footer'
 const App = ({ sampleComments, sampleOrders }) => {
   const [currentPage, setCurrentPage] = useState('orders'); // Start with orders page
 
@@ -45,6 +45,7 @@ const App = ({ sampleComments, sampleOrders }) => {
         {currentPage === 'home' && <HomePage comments={sampleComments} />}
         {currentPage === 'orders' && <OrdersPage orders={sampleOrders} />}
       </div>
+      <Footer />
     </div>
   );
 };
