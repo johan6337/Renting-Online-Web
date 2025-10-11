@@ -1,7 +1,7 @@
 import ProductCard from "./ProductCard"
 import { useState } from "react"
 
-function ProductList({ View="horizontal", Products=[] }) {
+function ProductList({ View = "horizontal", Products = [], modeRate = false }) {
     const getView = (view) =>{
         switch (view.toLowerCase()) {
             case "horizontal":
@@ -21,7 +21,7 @@ function ProductList({ View="horizontal", Products=[] }) {
         <>
             <div className={getView(View)}> 
                 {visibleProducts.map((product, i) => (
-                    <ProductCard key={startIdx + i} {...product} />
+                    <ProductCard key={startIdx + i} product={product} modeRate={modeRate} />
                 ))}
             </div>
         </>

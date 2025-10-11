@@ -1,8 +1,9 @@
 import React from 'react';
 import CommentList from '../components/comments/CommentList';
 import Filter from '../components/products/Filter';
+import ProductList from '../components/product_list/ProductList';
 
-const HomePage = ({ comments = [] }) => {
+const HomePage = ({ comments = [], products = [] }) => {
   return (
     <div className="p-8">
       <div className="max-w-7xl mx-auto">
@@ -21,6 +22,9 @@ const HomePage = ({ comments = [] }) => {
           {/* Main Content */}
           <div className="lg:col-span-3">
             <div className="bg-white rounded-lg shadow-sm p-6">
+              <h2 className="text-2xl font-semibold mb-6">Products</h2>
+              <ProductList View="vertical" Products={products} />
+
               <h2 className="text-2xl font-semibold mb-6">Reviews</h2>
               <CommentList comments={comments} totalReviews={comments.length} />
             </div>

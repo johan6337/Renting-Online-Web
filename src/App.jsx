@@ -3,7 +3,7 @@ import HomePage from './pages/HomePage';
 import OrdersPage from './pages/OrdersPage';
 import Footer from './components/footer/Footer'
 
-const App = ({ sampleComments, sampleOrders }) => {
+const App = ({ sampleComments, sampleOrders, sampleProducts }) => {
   const [currentPage, setCurrentPage] = useState('orders'); // Start with orders page
 
   return (
@@ -43,7 +43,7 @@ const App = ({ sampleComments, sampleOrders }) => {
 
       {/* Page Content */}
       <div>
-        {currentPage === 'home' && <HomePage comments={sampleComments} />}
+        {currentPage === 'home' && <HomePage comments={sampleComments} products={sampleProducts} />}
         {currentPage === 'orders' && <OrdersPage orders={sampleOrders} />}
       </div>
       <Footer />

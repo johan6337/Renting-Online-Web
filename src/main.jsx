@@ -386,9 +386,64 @@ const sampleOrders = [
   }
 ];
 
+const sampleProducts = [
+  {
+    name: "Checkered Shirt",
+    price: "$45",
+    image: "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=400&h=400&fit=crop",
+  },
+  {
+    name: "Denim Jacket",
+    price: "$80",
+    image: "https://images.unsplash.com/photo-1503341455253-b2e723bb3dbb?auto=format&fit=crop&w=400&q=80",
+  },
+  {
+    name: "Wireless Headphones",
+    price: "$120",
+    image: "https://images.unsplash.com/photo-1580894908361-967195033215?auto=format&fit=crop&w=400&q=80",
+  },
+  {
+    name: "Running Shoes",
+    price: "$95",
+    image: "https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?auto=format&fit=crop&w=400&q=80",
+  },
+  {
+    name: "Leather Wallet",
+    price: "$40",
+    image: "https://images.unsplash.com/photo-1618354691373-d851c5f5c3f0?auto=format&fit=crop&w=400&q=80",
+  },
+  {
+    name: "Smart Watch",
+    price: "$199",
+    image: "https://images.unsplash.com/photo-1511732351661-9fa3a6e42a33?auto=format&fit=crop&w=400&q=80",
+  },
+  {
+    name: "Backpack",
+    price: "$60",
+    image: "https://images.unsplash.com/photo-1582738411203-cc884b7c6c39?auto=format&fit=crop&w=400&q=80",
+  },
+  {
+    name: "Sunglasses",
+    price: "$75",
+    image: "https://images.unsplash.com/photo-1517495306984-937f1f4ebd1b?auto=format&fit=crop&w=400&q=80",
+  },
+  {
+    name: "Gaming Mouse",
+    price: "$49",
+    image: "https://images.unsplash.com/photo-1587202372775-98927d43d15c?auto=format&fit=crop&w=400&q=80",
+  },
+  {
+    name: "Bluetooth Speaker",
+    price: "$89",
+    image: "https://images.unsplash.com/photo-1616628188505-5b6f1b6d2f63?auto=format&fit=crop&w=400&q=80",
+  },
+];
+
+
+
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <App sampleComments={sampleComments} sampleOrders={sampleOrders} />
+    <App sampleComments={sampleComments} sampleOrders={sampleOrders} sampleProducts={sampleProducts} />
   </StrictMode>,
 )
