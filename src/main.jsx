@@ -410,33 +410,33 @@ const sampleProducts = [
   {
     name: "Leather Wallet",
     price: "$40",
-    image: "https://images.unsplash.com/photo-1618354691373-d851c5f5c3f0?auto=format&fit=crop&w=400&q=80",
+    image: "https://images.unsplash.com/photo-1657603644005-67891fcc1577?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1470"
   },
   {
     name: "Smart Watch",
     price: "$199",
-    image: "https://images.unsplash.com/photo-1511732351661-9fa3a6e42a33?auto=format&fit=crop&w=400&q=80",
+    image: "https://images.unsplash.com/photo-1664730021931-9abb25cb0852?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1470"
   },
   {
     name: "Backpack",
     price: "$60",
-    image: "https://images.unsplash.com/photo-1582738411203-cc884b7c6c39?auto=format&fit=crop&w=400&q=80",
+    image: "https://images.unsplash.com/photo-1622560480654-d96214fdc887?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTB8fGJhY2twYWNrfGVufDB8fDB8fHww&auto=format&fit=crop&q=60&w=700" 
   },
   {
     name: "Sunglasses",
     price: "$75",
-    image: "https://images.unsplash.com/photo-1517495306984-937f1f4ebd1b?auto=format&fit=crop&w=400&q=80",
+    image: "https://images.unsplash.com/photo-1572635196237-14b3f281503f?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8c3VuZ2xhc3Nlc3xlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&q=60&w=700"
   },
   {
     name: "Gaming Mouse",
     price: "$49",
-    image: "https://images.unsplash.com/photo-1587202372775-98927d43d15c?auto=format&fit=crop&w=400&q=80",
+    image: "https://images.unsplash.com/photo-1628832306751-ec751454119c?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1545"
   },
   {
     name: "Bluetooth Speaker",
     price: "$89",
-    image: "https://images.unsplash.com/photo-1616628188505-5b6f1b6d2f63?auto=format&fit=crop&w=400&q=80",
-  },
+    image: "https://images.unsplash.com/photo-1754142927775-8f1e97ebd030?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1374"
+  }
 ];
 
 
