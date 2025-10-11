@@ -33,7 +33,7 @@ const IntroPage = ({ onStart, content }) => {
                             The platform that let you rent everything!
                         </h1>
                         <div className="flex justify-center items-center w-full mb-10">
-                            <button className="text-base md:text-xl text-white font-bold w-3/4 md:w-1/2 pt-2 pb-2 rounded-lg border border-4 border-transparent bg-black
+                            <button className="text-base md:text-xl text-white font-bold w-3/4 md:w-1/2 pt-2 pb-2 rounded-lg border-4 border-transparent bg-black
                                 hover:bg-white hover:border-4 hover:border-black hover:text-black transition-all duration-150"
                                 onClick={onStart}>
                                 Find Product Now
@@ -58,7 +58,7 @@ const IntroPage = ({ onStart, content }) => {
                 <div className='flex justify-center content-center mt-10'>
                     <button className='w-36 p-2 flex justify-center content-center
                             font-medium text-sm md:text-base text-black bg-white 
-                            rounded-full border border-2 border-gray-200
+                            rounded-full border-2 border-gray-200
                             hover:scale-105 transition-transform duration-300 ease-in-out'
                             onClick={() => changeMode('recommend')}>
                         View All
@@ -76,7 +76,7 @@ const IntroPage = ({ onStart, content }) => {
                 <div className='flex justify-center content-center mt-10'>
                     <button className='w-36 p-2 flex justify-center content-center
                             font-medium text-sm md:text-base text-black bg-white 
-                            rounded-full border border-2 border-gray-200
+                            rounded-full border-2 border-gray-200
                             hover:scale-105 transition-transform duration-300 ease-in-out'
                             onClick={() => changeMode('recent')}>
                         View All
