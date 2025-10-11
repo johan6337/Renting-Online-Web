@@ -1,19 +1,26 @@
 import React, { useState } from 'react';
 import HomePage from './pages/HomePage';
+import IntroPage from './pages/IntroPage';
 import OrdersPage from './pages/OrdersPage';
 import Footer from './components/footer/Footer'
 
 const App = ({ sampleComments, sampleOrders, sampleProducts }) => {
-  const [currentPage, setCurrentPage] = useState('orders'); // Start with orders page
+  const [currentPage, setCurrentPage] = useState('intro'); // Start with intro page
+  const introContent = {
+    products: sampleProducts,
+    comments: sampleComments
+  }
 
   return (
+    currentPage == "intro" ? <IntroPage content = {introContent} onStart = {() => setCurrentPage('home')}/> :
+
     <div className="bg-gray-50">
       {/* Navigation Bar */}
       <nav className="bg-white shadow-sm border-b border-gray-200">
         <div className="px-4">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-8">
-              <h1 className="text-2xl font-bold text-gray-900">BorrowIt</h1>
+              <h1 className="text-2xl font-bold text-gray-900 hover:cursor-pointer" onClick={() => setCurrentPage('intro')}>BorrowIt</h1>
               <div className="flex gap-1">
                 <button
                   onClick={() => setCurrentPage('home')}
