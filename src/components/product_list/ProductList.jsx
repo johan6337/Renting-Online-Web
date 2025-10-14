@@ -5,9 +5,9 @@ function ProductList({ View = "horizontal", Products = [], modeRate = false }) {
     const getView = (view) =>{
         switch (view.toLowerCase()) {
             case "horizontal":
-                return 'h-full grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4';
+                return 'h-full grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 justify-evenly';
             case "vertical":
-                return 'h-full grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-4';
+                return 'h-full grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-4 justify-evenly';
         }
     }
     const [page, setPage] = useState(1);

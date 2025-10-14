@@ -52,7 +52,7 @@ const IntroPage = ({ onStart, content }) => {
             </div>
             <div className='w-full flex flex-col content-center my-10'>
                 <h1 className='font-black text-2xl md:text-4xl mb-10 text-center'>Recommended Product</h1>
-                <div className='ml-10 mr-10 flex justify-start'>
+                <div className='ml-10 mr-10'>
                     <ProductList View={viewMode.recommend} Products={content.products} modeRate={false}/>
                 </div>
                 <div className='flex justify-center content-center mt-10'>
@@ -70,7 +70,7 @@ const IntroPage = ({ onStart, content }) => {
             
             <div className='w-full flex flex-col content-center my-10'>
                 <h1 className='font-black text-2xl md:text-4xl mb-10 text-center'>Recent View</h1>
-                <div className='ml-10 mr-10 flex justify-start'>
+                <div className='ml-10 mr-10'>
                     <ProductList View={viewMode.recent} Products={content.products} modeRate={false}/>
                 </div>
                 <div className='flex justify-center content-center mt-10'>
