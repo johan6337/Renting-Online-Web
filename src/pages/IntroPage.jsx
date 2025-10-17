@@ -4,7 +4,7 @@ import ProductList from '../components/product_list/ProductList';
 import CommentList from '../components/comments/CommentList';
 import { useState } from 'react';
 
-const IntroPage = ({ onStart, content }) => {
+const IntroPage = ({ onStart, content, onLoginClick }) => {
     const [viewMode, setViewMode] = useState({
         recommend: 'horizontal',
         recent: 'horizontal'
@@ -88,7 +88,7 @@ const IntroPage = ({ onStart, content }) => {
             <h2 className="pl-9 md:pl-14 text-2xl md:text-4xl font-black mb-6">OUR HAPPY CUSTOMERS</h2>
             <CommentList comments={content.comments} totalReviews={content.comments.length} />
 
-            <Footer />
+            <Footer onLoginClick={onLoginClick} />
         </div>
     )
 }

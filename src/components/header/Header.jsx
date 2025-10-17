@@ -30,7 +30,7 @@ export default function BorrowitHeader() {
       <div className="mx-auto max-w-7xl px-3 sm:px-4 md:px-6">
         <div className="flex h-16 items-center gap-3">
           {/* Left: Logo */}
-          <a href="#" className="shrink-0 select-none" aria-label="Borrowit home">
+          <a href="/home" className="shrink-0 select-none" aria-label="Borrowit home">
             <span className="text-2xl font-black tracking-tight leading-none">BORROWIT</span>
           </a>
 

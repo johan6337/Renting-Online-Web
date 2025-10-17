@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import { FaFacebookF, FaTwitter, FaInstagram, FaLinkedinIn, FaPaperPlane } from 'react-icons/fa';
 import { FaGooglePlay, FaApple } from 'react-icons/fa';
 
-export default function Footer() {
+export default function Footer({ onLoginClick }) {
   const [email, setEmail] = useState('');
-
+  
   const handleSubscribe = (e) => {
     e.preventDefault();
     // Handle subscription logic here
@@ -12,6 +12,18 @@ export default function Footer() {
     setEmail('');
   };
 
+  const handleLoginClick = (e) => {
+    e.preventDefault(); // Prevent default link behavior
+    console.log('Login clicked!', onLoginClick); // Debug log
+    if (onLoginClick) {
+      onLoginClick();
+    }
+  };
+  
+
+
+
+   
   return (
     <footer className="bg-black text-white">
       <div className="max-w-7xl mx-auto px-6 py-16">
@@ -69,7 +81,7 @@ export default function Footer() {
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="hover:underline">
+                  <a href="/login" onClick={handleLoginClick} className="hover:underline cursor-pointer">
                     Login / Register
                   </a>
                 </li>
