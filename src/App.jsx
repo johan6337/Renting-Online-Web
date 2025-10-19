@@ -5,9 +5,11 @@ import OrdersPage from './pages/OrdersPage';
 import LoginPage from './pages/LoginPage';
 import SignUpPage from './pages/SignUpPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import ProfilePage from './pages/ProfilePage';
+import AdminPage from './pages/AdminPage';
 import Footer from './components/footer/Footer'
 
-const App = ({ sampleComments, sampleOrders, sampleProducts }) => {
+const App = ({ sampleComments, sampleOrders, sampleProducts, sampleProfile, sampleAdminData }) => {
   // Start with intro page
   const [currentPage, setCurrentPage] = useState('intro'); 
   const introContent = {
@@ -50,10 +52,12 @@ const App = ({ sampleComments, sampleOrders, sampleProducts }) => {
   };
 
   return (
-    currentPage === "intro" ? <IntroPage content={introContent} onStart={() => changePage('home')} onLoginClick={() => changePage('login')} /> :
-    currentPage === "login" ? <LoginPage onBack={() => changePage('home')} onLoginClick={() => changePage('login')} onSignUpClick={() => changePage('signup')} onForgotPasswordClick={() => changePage('forgot-password')} /> :
-    currentPage === "signup" ? <SignUpPage onBack={() => changePage('home')} onLoginClick={() => changePage('login')} onSignUpClick={() => changePage('signup')} /> :
-    currentPage === "forgot-password" ? <ForgotPasswordPage onBack={() => changePage('home')} onLoginClick={() => changePage('login')} /> :
+    currentPage === "intro" ? <IntroPage content={introContent} onStart={() => changePage('home')} onLoginClick={() => changePage('login')} onSignUpClick={() => changePage('signup')} onProfileClick={() => changePage('profile')} onAdminClick={() => changePage('admin')} /> :
+    currentPage === "login" ? <LoginPage onBack={() => changePage('home')} onLoginClick={() => changePage('login')} onSignUpClick={() => changePage('signup')} onForgotPasswordClick={() => changePage('forgot-password')} onProfileClick={() => changePage('profile')} onAdminClick={() => changePage('admin')} /> :
+    currentPage === "signup" ? <SignUpPage onBack={() => changePage('home')} onLoginClick={() => changePage('login')} onSignUpClick={() => changePage('signup')} onProfileClick={() => changePage('profile')} onAdminClick={() => changePage('admin')} /> :
+    currentPage === "forgot-password" ? <ForgotPasswordPage onBack={() => changePage('home')} onLoginClick={() => changePage('login')} onSignUpClick={() => changePage('signup')} onProfileClick={() => changePage('profile')} onAdminClick={() => changePage('admin')} /> :
+    currentPage === "profile" ? <ProfilePage profileData={sampleProfile} onLoginClick={() => changePage('login')} onSignUpClick={() => changePage('signup')} onProfileClick={() => changePage('profile')} onAdminClick={() => changePage('admin')} /> :
+    currentPage === "admin" ? <AdminPage adminData={sampleAdminData} /> :
 
     <div className="bg-gray-50">
       {/* Navigation Bar */}
@@ -91,8 +95,8 @@ const App = ({ sampleComments, sampleOrders, sampleProducts }) => {
 
       {/* Page Content */}
       <div>
-        {currentPage === 'home' && <HomePage comments={sampleComments} products={sampleProducts} />}
-        {currentPage === 'orders' && <OrdersPage orders={sampleOrders} />}
+        {currentPage === 'home' && <HomePage comments={sampleComments} products={sampleProducts} onLoginClick={() => changePage('login')} onSignUpClick={() => changePage('signup')} onProfileClick={() => changePage('profile')} onAdminClick={() => changePage('admin')} />}
+        {currentPage === 'orders' && <OrdersPage orders={sampleOrders} onLoginClick={() => changePage('login')} onSignUpClick={() => changePage('signup')} onProfileClick={() => changePage('profile')} onAdminClick={() => changePage('admin')} />}
       </div>
       <Footer onLoginClick={() => changePage('login')} />
     </div>

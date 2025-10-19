@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import Header from '../components/header/Header';
 import Footer from '../components/footer/Footer';
 
-const LoginPage = ({ onBack, onLoginClick, onSignUpClick, onForgotPasswordClick }) => {
+const LoginPage = ({ onBack, onLoginClick, onSignUpClick, onForgotPasswordClick, onProfileClick, onAdminClick }) => {
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -24,7 +24,7 @@ const LoginPage = ({ onBack, onLoginClick, onSignUpClick, onForgotPasswordClick 
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
-      <Header />
+      <Header onLoginClick={onLoginClick} onSignUpClick={onSignUpClick} onProfileClick={onProfileClick} onAdminClick={onAdminClick} />
 
       {/* Main Content */}
       <div className="flex min-h-[calc(100vh-160px)]">

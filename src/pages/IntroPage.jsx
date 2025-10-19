@@ -4,7 +4,7 @@ import ProductList from '../components/product_list/ProductList';
 import CommentList from '../components/comments/CommentList';
 import { useState } from 'react';
 
-const IntroPage = ({ onStart, content, onLoginClick }) => {
+const IntroPage = ({ onStart, content, onLoginClick, onSignUpClick, onProfileClick, onAdminClick }) => {
     const [viewMode, setViewMode] = useState({
         recommend: 'horizontal',
         recent: 'horizontal'
@@ -19,7 +19,7 @@ const IntroPage = ({ onStart, content, onLoginClick }) => {
 
     return (
         <div>
-            <Header />
+            <Header onLoginClick={onLoginClick} onSignUpClick={onSignUpClick} onProfileClick={onProfileClick} onAdminClick={onAdminClick} />
             <div className="flex justify-center items-center">
                 <div className="flex flex-col md:flex-row w-full max-w-6xl mx-2 sm:mx-4 md:mx-10 my-5 rounded-3xl bg-gray shadow-[4px_4px_3px_rgba(0,0,0,0.5)] ring-1 ring-gray-300">
                     <div className="flex flex-col flex-1 pt-8 md:pt-20 justify-start items-center">

@@ -440,10 +440,123 @@ const sampleProducts = [
 ];
 
 
+const sampleProfile = {
+  userInfo: {
+    firstName: 'John',
+    lastName: 'Doe',
+    email: 'john.doe@gmail.com',
+    phone: '+1 (555) 123-4567',
+    dateOfBirth: 'January 15, 1990',
+    address: '123 Main Street, Apt 4B',
+    city: 'New York',
+    state: 'NY',
+    zipCode: '10001',
+    country: 'United States'
+  },
+  stats: [
+    { label: 'Total Rentals', value: '24', color: 'text-orange-500' },
+    { label: 'Hours Used', value: '12', color: 'text-yellow-500' },
+    { label: 'Rating', value: '4.8', color: 'text-green-500' },
+    { label: 'Member Since', value: '6 Months', color: 'text-blue-500' }
+  ],
+  activities: [
+    {
+      type: 'Rental Completed',
+      description: 'MacBook Air Completed - Returned on Oct 1, 2025',
+      time: '1 day ago',
+      status: 'completed',
+      color: 'bg-green-100 text-green-800'
+    },
+    {
+      type: 'New Rental',
+      description: 'Samsung Tab - Rented for 7 days',
+      time: '3 days ago',
+      status: 'active',
+      color: 'bg-blue-100 text-blue-800'
+    },
+    {
+      type: 'Review Received',
+      description: 'You received a review for Apple',
+      time: '1 week ago',
+      status: 'review',
+      color: 'bg-yellow-100 text-yellow-800'
+    }
+  ]
+};
 
+const sampleAdminData = {
+  stats: [
+    { label: 'Total Users', value: '1,234', color: 'bg-blue-500' },
+    { label: 'Active Users', value: '1,189', color: 'bg-green-500' },
+    { label: 'Suspended', value: '32', color: 'bg-orange-500' },
+    { label: 'Pending Verification', value: '13', color: 'bg-purple-500' }
+  ],
+  users: [
+    {
+      id: '#10234',
+      name: 'John Anderson',
+      email: 'john.anderson@gmail.com',
+      phone: '+1 234-567-8901',
+      joinDate: 'Jan 15, 2025',
+      rentals: 12,
+      status: 'Active'
+    },
+    {
+      id: '#10233',
+      name: 'Sarah Mitchell',
+      email: 'sarah.mitchell@gmail.com',
+      phone: '+1 234-567-8902',
+      joinDate: 'Jan 14, 2025',
+      rentals: 8,
+      status: 'Active'
+    },
+    {
+      id: '#10232',
+      name: 'Michael Chen',
+      email: 'michael.chen@gmail.com',
+      phone: '+1 234-567-8903',
+      joinDate: 'Jan 13, 2025',
+      rentals: 5,
+      status: 'Suspended'
+    },
+    {
+      id: '#10231',
+      name: 'Emily Rodriguez',
+      email: 'emily.rodriguez@gmail.com',
+      phone: '+1 234-567-8904',
+      joinDate: 'Jan 12, 2025',
+      rentals: 15,
+      status: 'Active'
+    },
+    {
+      id: '#10230',
+      name: 'David Thompson',
+      email: 'david.thompson@gmail.com',
+      phone: '+1 234-567-8905',
+      joinDate: 'Jan 11, 2025',
+      rentals: 3,
+      status: 'Pending'
+    },
+    {
+      id: '#10229',
+      name: 'Lisa Parker',
+      email: 'lisa.parker@gmail.com',
+      phone: '+1 234-567-8906',
+      joinDate: 'Jan 10, 2025',
+      rentals: 20,
+      status: 'Active'
+    }
+  ]
+};
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <App sampleComments={sampleComments} sampleOrders={sampleOrders} sampleProducts={sampleProducts} />
+    <App 
+      sampleComments={sampleComments} 
+      sampleOrders={sampleOrders} 
+      sampleProducts={sampleProducts} 
+      sampleProfile={sampleProfile}
+      sampleAdminData={sampleAdminData}
+    />
   </StrictMode>,
 )

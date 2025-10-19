@@ -8,9 +8,12 @@ import {
   HelpCircle,
   IdCard,
   User,
+  LogIn,
+  UserPlus,
+  Settings,
 } from "lucide-react";
 
-export default function BorrowitHeader() {
+export default function BorrowitHeader({ onLoginClick, onSignUpClick, onProfileClick, onAdminClick }) {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const userMenuRef = useRef(null);
 
@@ -85,37 +88,48 @@ export default function BorrowitHeader() {
                 <div className="absolute right-0 mt-2 w-52 bg-white border border-gray-200 shadow-lg rounded-lg overflow-hidden z-50">
                   <ul className="py-1 text-sm text-gray-700">
                     <li>
-                      <a
-                        href="#"
-                        className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100"
+                      <button
+                        onClick={() => {
+                          onLoginClick && onLoginClick();
+                          setShowUserMenu(false);
+                        }}
+                        className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 w-full text-left"
                       >
-                        <User className="h-5 w-5" /> Account Settings
-                      </a>
+                        <LogIn className="h-5 w-5" /> Login
+                      </button>
                     </li>
                     <li>
-                      <a
-                        href="#"
-                        className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100"
+                      <button
+                        onClick={() => {
+                          onSignUpClick && onSignUpClick();
+                          setShowUserMenu(false);
+                        }}
+                        className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 w-full text-left"
                       >
-                        <IdCard className="h-5 w-5" /> Profile
-                      </a>
+                        <UserPlus className="h-5 w-5" /> Sign Up
+                      </button>
                     </li>
                     <li>
-                      <a
-                        href="#"
-                        className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100"
+                      <button
+                        onClick={() => {
+                          onProfileClick && onProfileClick();
+                          setShowUserMenu(false);
+                        }}
+                        className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 w-full text-left"
                       >
-                        <HelpCircle className="h-5 w-5" /> Get Help
-                      </a>
+                        <User className="h-5 w-5" /> Profile
+                      </button>
                     </li>
-                    <hr className="my-1 border-gray-200" />
                     <li>
-                      <a
-                        href="#"
-                        className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 text-red-600"
+                      <button
+                        onClick={() => {
+                          onAdminClick && onAdminClick();
+                          setShowUserMenu(false);
+                        }}
+                        className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 w-full text-left"
                       >
-                        <LogOut className="h-5 w-5" /> Log Out
-                      </a>
+                        <Settings className="h-5 w-5" /> Admin Page
+                      </button>
                     </li>
                   </ul>
                 </div>

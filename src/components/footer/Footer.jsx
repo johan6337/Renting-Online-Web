@@ -76,7 +76,7 @@ export default function Footer({ onLoginClick }) {
             <nav>
               <ul className="space-y-3 text-sm">
                 <li>
-                  <a href="#" className="hover:underline">
+                  <a href="/profile" className="hover:underline">
                     My Account
                   </a>
                 </li>

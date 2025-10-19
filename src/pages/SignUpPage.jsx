@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import Header from '../components/header/Header';
 import Footer from '../components/footer/Footer';
 
-const SignUpPage = ({ onBack, onLoginClick, onSignUpClick }) => {
+const SignUpPage = ({ onBack, onLoginClick, onSignUpClick, onProfileClick, onAdminClick }) => {
   const [formData, setFormData] = useState({
     firstName: '',
     email: '',
@@ -30,7 +30,7 @@ const SignUpPage = ({ onBack, onLoginClick, onSignUpClick }) => {
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
-      <Header />
+      <Header onLoginClick={onLoginClick} onSignUpClick={onSignUpClick} onProfileClick={onProfileClick} onAdminClick={onAdminClick} />
 
       {/* Main Content */}
       <div className="flex min-h-[calc(100vh-160px)]">
