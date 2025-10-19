@@ -549,6 +549,43 @@ const sampleAdminData = {
   ]
 };
 
+const samplePostInspection = {
+  orderNumber: 'ORD-2025-0267',
+  rentalItem: 'Sleeve Striped T-shirt',
+  inspectionDate: 'September 6, 2025 — 2:30 PM',
+  inspectedBy: 'Marcus Nguyen',
+  conditionScore: 88,
+  overallStatus: 'Requires minor refresh',
+  summary:
+    'Returned item shows light creasing and a subtle scent near the collar. After light treatment the garment is nearly ready for the next reservation.',
+  checklist: [
+    { label: 'Fabric integrity', status: 'pass', note: 'No structural damage found.' },
+    { label: 'Color & print quality', status: 'pass', note: 'Striped pattern remains vivid.' },
+    { label: 'Odor assessment', status: 'attention', note: 'Slight perfume scent treated with ozone cycle.' },
+    { label: 'Stain inspection', status: 'pass', note: 'No staining identified post-cleaning.' },
+    { label: 'Accessories & packaging', status: 'pass', note: 'All branded packaging returned.' }
+  ],
+  requiredActions: [
+    'Apply gentle steam press to remove residual creases before packaging.',
+    'Log ozone treatment in the maintenance history for audit tracking.'
+  ],
+  preventativeCare: [
+    'Store on breathable hanger for 24 hours prior to sealing garment bag.',
+    'Schedule detailed inspection after the next high-demand rental.'
+  ],
+  photos: [
+    {
+      src: 'https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=480&h=480&fit=crop',
+      alt: 'Garment front after inspection'
+    },
+    {
+      src: 'https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=480&h=480&fit=crop',
+      alt: 'Collar detail showing minor crease'
+    }
+  ]
+};
+
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <App 
@@ -557,6 +594,7 @@ createRoot(document.getElementById('root')).render(
       sampleProducts={sampleProducts} 
       sampleProfile={sampleProfile}
       sampleAdminData={sampleAdminData}
+      samplePostInspection={samplePostInspection}
     />
   </StrictMode>,
 )
