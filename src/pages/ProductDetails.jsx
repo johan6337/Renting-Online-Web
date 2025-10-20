@@ -1,6 +1,8 @@
 import Header from '../components/header/Header';
 import Footer from '../components/footer/Footer';
 import StarRating from '../components/comments/StarRating';
+import CommentList from '../components/comments/CommentList';
+import ProductList from '../components/product_list/ProductList';
 import { useMemo, useState } from 'react';
 
 const ProductDetails = ({ product, details, onBack }) => {
@@ -12,35 +14,40 @@ const ProductDetails = ({ product, details, onBack }) => {
         return (originalPrice * (1 - product.sale / 100)).toFixed(2);
     }, [product.sale, originalPrice]);
 
-    const mockProductData = {
-        availableColors: [
-            { name: 'Olive', hex: '#5d5d3c' },
-            { name: 'Teal', hex: '#3c5d53' },
-            { name: 'Navy', hex: '#3c415d' }
-        ],
-        availableSizes: ['Small', 'Medium', 'Large', 'X-Large']
-    };
-
     // State để quản lý các lựa chọn của người dùng
-    const [selectedColor, setSelectedColor] = useState(mockProductData.availableColors[0]);
-    const [selectedSize, setSelectedSize] = useState('Large'); // Mặc định là 'Large' như trong hình
+    const [selectedColor, setSelectedColor] = useState(details.colors[0]);
+    const [selectedSize, setSelectedSize] = useState('Large'); 
     const [quantity, setQuantity] = useState(1);
-
+    
     // Hàm xử lý tăng/giảm số lượng
     const handleQuantityChange = (amount) => {
-        setQuantity(prev => Math.max(1, prev + amount)); // Không cho phép số lượng < 1
+        setQuantity(prev => Math.max(1, prev + amount)); 
     };
+    
+    const sections = ["Product Details", "Rating & Reviews", "FAQs"];
+    const [selectedSection, setSection] = useState(sections[0]);
 
+    const renderSectionContent = () => {
+        switch (selectedSection) {
+            case "Product Details":
+                return <div className='p-5 text-gray-600'>{details.description}</div>;
+            case "Rating & Reviews":
+                return <CommentList comments={details.comments}/>;
+            case "FAQs":
+                return <div className='p-5 text-gray-600'>No FAQs available.</div>;
+        }
+    }
+    
     return (
         <div className='h-screen'>
             <Header />
             <div className='flex flex-col md:flex-row md:mb-10'>
                 {/* Hình ảnh sản phẩm */}
-                <div className='flex-[2] grid grid-cols-3 grid-rows-3 gap-3 md:ml-10 md:mr-5 md:mt-20 md:flex-1 bg-gray-500'>
+                <div className='flex-[2] grid grid-cols-3 grid-rows-3 gap-3 ml-5 md:ml-10 mr-5 md:mt-20 md:flex-1'>
                     {/* Các item còn lại sẽ tự động lấp vào các ô trống */}
                     <div className='bg-green-400 rounded-lg flex items-center justify-center'>B</div>
                     <div className='col-span-2 row-span-3 bg-blue-400 rounded-lg flex items-center justify-center'>
-                        Item chính (2 cột, 3 hàng)
+                        <img src={product.image} alt={product.name} className='object-cover h-full w-full rounded-lg'/>
                     </div>
                     <div className='bg-green-400 rounded-lg flex items-center justify-center'>C</div>
                     <div className='bg-green-400 rounded-lg flex items-center justify-center'>D</div>
@@ -71,7 +78,7 @@ const ProductDetails = ({ product, details, onBack }) => {
                     <div className="p-2 flex flex-col gap-3">
                         <h3 className="font-semibold text-gray-800">Select Colors</h3>
                         <div className="flex items-center gap-3">
-                            {mockProductData.availableColors.map((color) => (
+                            {details.colors.map((color) => (
                                 <button
                                     key={color.hex}
                                     onClick={() => setSelectedColor(color)}
@@ -94,7 +101,7 @@ const ProductDetails = ({ product, details, onBack }) => {
                     <div className="p-2 flex flex-col gap-3">
                         <h3 className="font-semibold text-gray-800">Choose Size</h3>
                         <div className="flex items-center gap-2 flex-wrap">
-                            {mockProductData.availableSizes.map((size) => (
+                            {details.sizes.map((size) => (
                                 <button
                                     key={size}
                                     onClick={() => setSelectedSize(size)}
@@ -114,7 +121,7 @@ const ProductDetails = ({ product, details, onBack }) => {
                     {/* --- Phần chọn số lượng và nút Add to Cart --- */}
                     <div className="p-2 flex items-center gap-4 mt-4">
                         {/* Bộ đếm số lượng */}
-                        <div className="flex items-center justify-between bg-gray-100 rounded-full px-4 py-3">
+                        <div className="flex items-center justify-between gap-4 bg-gray-100 rounded-full px-4 py-3">
                             <button onClick={() => handleQuantityChange(-1)} className="text-xl font-bold text-gray-600 disabled:opacity-50" disabled={quantity === 1}>-</button>
                             <span className="w-8 text-center font-bold text-lg">{quantity}</span>
                             <button onClick={() => handleQuantityChange(1)} className="text-xl font-bold text-gray-600">+</button>
@@ -127,6 +134,32 @@ const ProductDetails = ({ product, details, onBack }) => {
                     </div>
                 </div>
             </div>
+
+            <div className='flex flex-row mb-5 md:ml-10 md:mr-10'>
+                {sections.map((title) => (
+                    <button key={title} onClick={() => setSection(title)} className={`flex-1 border-b-2
+                ${selectedSection === title ? 'text-black border-b-black' : 'text-gray-500 border-b-gray-100 '} hover:border-b-black p-3  hover:text-black`}>
+                    {title}</button>
+                ))}
+            </div>
+            
+            {/* Section Selection */}
+            <div className='flex items-center'>
+                {renderSectionContent()}
+            </div>
+            
+            {/* More Products */}
+            <div className='mt-10 ml-5 md:ml-10 mr-5 md:mr-10'>
+                <div className='flex justify-center items-center mb-10'>
+                    <h1 className='text-3xl md:text-4xl font-black'>You might also like</h1>
+                </div>
+
+                <div className='mb-20'>
+                    <ProductList View='horizontal' Products={details.other_products} modeRate={false}/>
+                </div>
+
+            </div>
+
             <Footer />
         </div>
     )

@@ -441,6 +441,21 @@ const sampleProducts = [
   }
 ];
 
+const sampleProductsDetails = [
+  {
+    description: "This graphic t-shirt which is perfect for any occasion. Crafted from a soft and breathable fabric, it offers superior comfort and style.",
+    colors: [
+      { name: 'Olive', hex: '#5d5d3c' },
+      { name: 'Teal', hex: '#3c5d53' },
+      { name: 'Navy', hex: '#3c415d' }
+    ],
+    sizes: ['Small', 'Medium', 'Large', 'X-Large'],
+    comments: sampleComments,
+    other_products: sampleProducts
+  }
+
+]
+
 
 const sampleProfile = {
   userInfo: {
@@ -560,6 +575,6 @@ createRoot(document.getElementById('root')).render(
       sampleProfile={sampleProfile}
       sampleAdminData={sampleAdminData}
     /> */}
-    <ProductDetails product={sampleProducts[0]} details={{description: "This graphic t-shirt which is perfect for any occasion. Crafted from a soft and breathable fabric, it offers superior comfort and style."}}/>
+    <ProductDetails product={sampleProducts[0]} details={sampleProductsDetails[0]}/>
   </StrictMode>,
 )
