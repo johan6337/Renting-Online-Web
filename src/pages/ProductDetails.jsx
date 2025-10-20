@@ -40,7 +40,7 @@ const ProductDetails = ({ product, details, onBack }) => {
     
     return (
         <div className='h-screen'>
-            <Header />
+            <Header onLoginClick={onLoginClick} onSignUpClick={onSignUpClick} onProfileClick={onProfileClick} onAdminClick={onAdminClick}/>
             <div className='flex flex-col md:flex-row md:mb-10'>
                 {/* Hình ảnh sản phẩm */}
                 <div className='flex-[2] grid grid-cols-3 grid-rows-3 gap-3 ml-5 md:ml-10 mr-5 md:mt-20 md:flex-1'>

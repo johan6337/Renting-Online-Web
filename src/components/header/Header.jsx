@@ -13,7 +13,7 @@ import {
   Settings,
 } from "lucide-react";
 
-export default function BorrowitHeader({ onLoginClick, onSignUpClick, onProfileClick, onAdminClick }) {
+export default function BorrowitHeader({ onLoginClick, onSignUpClick, onProfileClick, onAdminClick, onCartClick }) {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const userMenuRef = useRef(null);
 
@@ -69,6 +69,7 @@ export default function BorrowitHeader({ onLoginClick, onSignUpClick, onProfileC
               type="button"
               aria-label="Cart"
               className="p-1.5 rounded-full hover:bg-gray-100 transition-colors"
+              onClick={onCartClick}
             >
               <ShoppingCart className="h-6 w-6" />
             </button>

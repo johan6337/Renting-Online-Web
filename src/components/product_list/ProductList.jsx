@@ -21,7 +21,7 @@ function ProductList({ View = "horizontal", Products = [], modeRate = false }) {
         <>
             <div className={getView(View)}> 
                 {visibleProducts.map((product, i) => (
-                    <ProductCard key={startIdx + i} product={product} modeRate={modeRate} />
+                    <ProductCard key={startIdx + i} product={product} modeRate={modeRate} view={View}/>
                 ))}
             </div>
         </>

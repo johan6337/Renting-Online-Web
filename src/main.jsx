@@ -568,13 +568,13 @@ const sampleAdminData = {
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    {/* <App 
+    <App 
       sampleComments={sampleComments} 
       sampleOrders={sampleOrders} 
       sampleProducts={sampleProducts} 
       sampleProfile={sampleProfile}
       sampleAdminData={sampleAdminData}
-    /> */}
-    <ProductDetails product={sampleProducts[0]} details={sampleProductsDetails[0]}/>
+    />
+    {/* <ProductDetails product={sampleProducts[0]} details={sampleProductsDetails[0]}/> */}
   </StrictMode>,
 )
