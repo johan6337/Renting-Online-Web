@@ -2,13 +2,28 @@ import Header from '../components/header/Header';
 import Footer from '../components/footer/Footer';
 import ProductList from '../components/product_list/ProductList';
 import CommentList from '../components/comments/CommentList';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
 const IntroPage = ({ onStart, content, onLoginClick, onSignUpClick, onProfileClick, onAdminClick }) => {
     const [viewMode, setViewMode] = useState({
         recommend: 'horizontal',
         recent: 'horizontal'
     })
+
+    // const recommendRef = useRef(null);
+    // const recentRef = useRef(null);
+
+    // useEffect(() => {
+    //     if (recommendRef.current) {
+    //         recommendRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    //     }
+    // }, [viewMode.recommend])
+
+    // useEffect(() => {
+    //     if (recentRef.current) {
+    //         recentRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    //     }
+    // }, [viewMode.recent])
 
     const changeMode = (viewName) => {
         setViewMode(prev => ({
@@ -50,6 +65,7 @@ const IntroPage = ({ onStart, content, onLoginClick, onSignUpClick, onProfileCli
                     </div>
                 </div>
             </div>
+
             <div className='w-full flex flex-col content-center my-10'>
                 <h1 className='font-black text-2xl md:text-4xl mb-10 text-center'>Recommended Product</h1>
                 <div className='ml-10 mr-10'>
@@ -61,7 +77,7 @@ const IntroPage = ({ onStart, content, onLoginClick, onSignUpClick, onProfileCli
                             rounded-full border-2 border-gray-200
                             hover:scale-105 transition-transform duration-300 ease-in-out'
                             onClick={() => changeMode('recommend')}>
-                        View All
+                        {viewMode.recommend === 'horizontal' ? 'View All' : 'View Less'}
                     </button>
                 </div>
             </div>
@@ -79,7 +95,7 @@ const IntroPage = ({ onStart, content, onLoginClick, onSignUpClick, onProfileCli
                             rounded-full border-2 border-gray-200
                             hover:scale-105 transition-transform duration-300 ease-in-out'
                             onClick={() => changeMode('recent')}>
-                        View All
+                        {viewMode.recent === 'horizontal' ? 'View All' : 'View Less'}
                     </button>
                 </div>
             </div>

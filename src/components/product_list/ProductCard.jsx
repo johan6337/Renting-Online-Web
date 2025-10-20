@@ -3,7 +3,8 @@ import StarRating from "../comments/StarRating"
 function ProductCard({ product, modeRate=true }) {
     return (
         <>
-            <div className="rounded-lg h-full w-full sm:w-[4/5] md:w-[3/4] lg:w-[5/6]">
+            <div className="rounded-lg h-full w-full sm:w-[4/5] md:w-[3/4] lg:w-[5/6]
+                transition-transform duration-300 ease-in-out hover:scale-105 hover:z-10 hover:cursor-pointer hover:ring-2 ring-gray-700">
                 <div className="w-full h-48 flex items-center justify-center bg-gradient-to-b from-gray-300 to-gray-200 rounded-lg overflow-hidden">
                     <img
                         src={product.image}

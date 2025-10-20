@@ -1,6 +1,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import App from './App'
+import ProductDetails from './pages/ProductDetails'
 import './main.css'
 
 const sampleComments = [
@@ -389,8 +390,9 @@ const sampleOrders = [
 const sampleProducts = [
   {
     name: "Checkered Shirt",
-    price: "$45",
+    price: "$100",
     image: "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=400&h=400&fit=crop",
+    sale: 20,
   },
   {
     name: "Denim Jacket",
@@ -551,12 +553,13 @@ const sampleAdminData = {
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <App 
+    {/* <App 
       sampleComments={sampleComments} 
       sampleOrders={sampleOrders} 
       sampleProducts={sampleProducts} 
       sampleProfile={sampleProfile}
       sampleAdminData={sampleAdminData}
-    />
+    /> */}
+    <ProductDetails product={sampleProducts[0]} details={{description: "This graphic t-shirt which is perfect for any occasion. Crafted from a soft and breathable fabric, it offers superior comfort and style."}}/>
   </StrictMode>,
 )
