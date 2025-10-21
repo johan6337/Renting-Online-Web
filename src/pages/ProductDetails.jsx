@@ -4,8 +4,60 @@ import StarRating from '../components/comments/StarRating';
 import CommentList from '../components/comments/CommentList';
 import ProductList from '../components/product_list/ProductList';
 import { useMemo, useState } from 'react';
+import { useParams } from 'react-router-dom';
 
-const ProductDetails = ({ product, details, onBack }) => {
+const ProductDetails = () => {
+    const { productId } = useParams();
+    
+    // Sample product data - In real app, fetch from API using productId
+    const product = {
+        id: productId,
+        name: "Gradient Graphic T-shirt",
+        price: "$145",
+        sale: 0,
+        image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop"
+    };
+    
+    const details = {
+        description: "This graphic t-shirt is perfect for any occasion. Crafted from a soft and breathable fabric, it offers superior comfort and style.",
+        colors: [
+            { name: "Olive", hex: "#4F7942" },
+            { name: "Navy", hex: "#2D3E50" },
+            { name: "Black", hex: "#000000" }
+        ],
+        sizes: ["Small", "Medium", "Large", "X-Large"],
+        comments: [
+            {
+                rating: 4.5,
+                name: "Samantha D.",
+                verified: true,
+                comment: "I absolutely love this t-shirt! The design is unique and the fabric feels so comfortable.",
+                date: "August 14, 2023"
+            },
+            {
+                rating: 4,
+                name: "Alex M.",
+                verified: true,
+                comment: "The t-shirt exceeded my expectations! The colors are vibrant and the print quality is top-notch.",
+                date: "August 15, 2023"
+            }
+        ],
+        other_products: [
+            {
+                name: "Polo with Tipping Details",
+                price: "$180",
+                image: "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=400&h=400&fit=crop",
+                sale: 0
+            },
+            {
+                name: "Black Striped T-shirt",
+                price: "$150",
+                image: "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=400&h=400&fit=crop",
+                sale: 30
+            }
+        ]
+    };
+    
     let originalPrice = parseFloat(product.price.replace('$', '')).toFixed(2);
 
     const finalPrice = useMemo(() => {
@@ -44,7 +96,7 @@ const ProductDetails = ({ product, details, onBack }) => {
     
     return (
         <div className='h-screen'>
-            <Header onLoginClick={onLoginClick} onSignUpClick={onSignUpClick} onProfileClick={onProfileClick} onAdminClick={onAdminClick}/>
+            <Header />
             <div className='flex flex-col md:flex-row md:mb-10'>
                 {/* Hình ảnh sản phẩm */}
                 <div className='flex-[2] grid grid-cols-3 grid-rows-3 gap-3 ml-5 md:ml-10 mr-5 md:mt-20 md:flex-1'>

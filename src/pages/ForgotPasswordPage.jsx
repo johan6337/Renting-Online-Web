@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import Header from '../components/header/Header';
 import Footer from '../components/footer/Footer';
 
-const ForgotPasswordPage = ({ onBack, onLoginClick, onSignUpClick, onProfileClick, onAdminClick }) => {
+const ForgotPasswordPage = () => {
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
 
@@ -16,7 +18,7 @@ const ForgotPasswordPage = ({ onBack, onLoginClick, onSignUpClick, onProfileClic
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
-      <Header onLoginClick={onLoginClick} onSignUpClick={onSignUpClick} onProfileClick={onProfileClick} onAdminClick={onAdminClick} />
+      <Header />
 
       {/* Main Content */}
       <div className="flex min-h-[calc(100vh-160px)]">
@@ -73,12 +75,12 @@ const ForgotPasswordPage = ({ onBack, onLoginClick, onSignUpClick, onProfileClic
                 <div className="mt-6 text-center">
                   <p className="text-gray-600 text-sm">
                     Remember your password?{" "}
-                    <button
-                      onClick={onLoginClick}
+                    <Link
+                      to="/login"
                       className="text-red-500 hover:text-red-600 underline"
                     >
                       Log in
-                    </button>
+                    </Link>
                   </p>
                 </div>
               </>
@@ -106,12 +108,12 @@ const ForgotPasswordPage = ({ onBack, onLoginClick, onSignUpClick, onProfileClic
                     Try Another Email
                   </button>
                   
-                  <button
-                    onClick={onLoginClick}
-                    className="w-full text-red-500 hover:text-red-600 font-medium py-3 px-4 transition-colors"
+                  <Link
+                    to="/login"
+                    className="block w-full text-center text-red-500 hover:text-red-600 font-medium py-3 px-4 transition-colors"
                   >
                     Back to Login
-                  </button>
+                  </Link>
                 </div>
               </div>
             )}
@@ -120,7 +122,7 @@ const ForgotPasswordPage = ({ onBack, onLoginClick, onSignUpClick, onProfileClic
       </div>
 
       {/* Footer */}
-      <Footer onLoginClick={onLoginClick} />
+      <Footer />
     </div>
   );
 };

@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import Header from '../components/header/Header';
 import Footer from '../components/footer/Footer';
 
-const LoginPage = ({ onBack, onLoginClick, onSignUpClick, onForgotPasswordClick, onProfileClick, onAdminClick }) => {
+const LoginPage = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -24,7 +26,7 @@ const LoginPage = ({ onBack, onLoginClick, onSignUpClick, onForgotPasswordClick,
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
-      <Header onLoginClick={onLoginClick} onSignUpClick={onSignUpClick} onProfileClick={onProfileClick} onAdminClick={onAdminClick} />
+      <Header />
 
       {/* Main Content */}
       <div className="flex min-h-[calc(100vh-160px)]">
@@ -79,24 +81,24 @@ const LoginPage = ({ onBack, onLoginClick, onSignUpClick, onForgotPasswordClick,
                 >
                   Log In
                 </button>
-                <button 
-                  onClick={onForgotPasswordClick}
+                <Link 
+                  to="/forgot-password"
                   className="text-red-500 hover:text-red-600 text-sm"
                 >
                   Forget Password?
-                </button>
+                </Link>
               </div>
             </form>
 
             <div className="mt-6 text-center">
               <p className="text-gray-600 text-sm">
                 Don't have an account?{" "}
-                <button
-                  onClick={onSignUpClick}
+                <Link
+                  to="/signup"
                   className="text-red-500 hover:text-red-600 underline"
                 >
                   Sign up
-                </button>
+                </Link>
               </p>
             </div>
           </div>
@@ -104,7 +106,7 @@ const LoginPage = ({ onBack, onLoginClick, onSignUpClick, onForgotPasswordClick,
       </div>
 
       {/* Footer */}
-      <Footer onLoginClick={onLoginClick} />
+      <Footer />
     </div>
   );
 };

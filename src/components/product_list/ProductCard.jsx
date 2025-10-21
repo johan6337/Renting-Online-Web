@@ -1,7 +1,9 @@
 import StarRating from "../comments/StarRating"
 import { useMemo } from "react"
+import { useNavigate } from "react-router-dom"
 
 function ProductCard({ product, modeRate=true, view }) {
+    const navigate = useNavigate();
 
     let originalPrice = product.price.toFixed(2);
 
@@ -11,12 +13,17 @@ function ProductCard({ product, modeRate=true, view }) {
             return (originalPrice * (1 - product.sale / 100)).toFixed(2);
         }, [product.sale, originalPrice]);
 
-        
+    const handleClick = () => {
+        navigate(`/product/${product.id || 1}`);
+    };
 
     return (
         <>
-            <div className="rounded-lg h-full w-full sm:w-[4/5] md:w-[3/4] lg:w-[5/6]
-                transition-transform duration-300 ease-in-out hover:scale-105 hover:z-10 hover:cursor-pointer hover:ring-2 ring-gray-700 overflow-hidden" >
+            <div 
+                onClick={handleClick}
+                className="rounded-lg h-full w-full sm:w-[4/5] md:w-[3/4] lg:w-[5/6]
+                transition-transform duration-300 ease-in-out hover:scale-105 hover:z-10 hover:cursor-pointer hover:ring-2 ring-gray-700 overflow-hidden" 
+            >
                 <div className="w-full h-48 flex items-center justify-center bg-gradient-to-b from-gray-300 to-gray-200 rounded-lg overflow-hidden">
                     <img
                         src={product.image}

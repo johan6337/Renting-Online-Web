@@ -1,24 +1,60 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Header from '../components/header/Header';
 import Footer from '../components/footer/Footer';
 import { User, Phone, Mail, MapPin, Calendar, Star, Package, Clock, Trophy } from 'lucide-react';
 
-const ProfilePage = ({ profileData, onLoginClick, onSignUpClick, onAdminClick }) => {
+const ProfilePage = () => {
+  const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
-  const [userInfo, setUserInfo] = useState(profileData?.userInfo || {
-    firstName: 'John',
-    lastName: 'Doe',
-    email: 'john.doe@gmail.com',
-    phone: '+1 (555) 123-4567',
-    dateOfBirth: 'January 15, 1990',
-    address: '123 Main Street, Apt 4B',
-    city: 'New York',
-    state: 'NY',
-    zipCode: '10001',
-    country: 'United States'
-  });
+  
+  const profileData = {
+    userInfo: {
+      firstName: 'John',
+      lastName: 'Doe',
+      email: 'john.doe@gmail.com',
+      phone: '+1 (555) 123-4567',
+      dateOfBirth: 'January 15, 1990',
+      address: '123 Main Street, Apt 4B',
+      city: 'New York',
+      state: 'NY',
+      zipCode: '10001',
+      country: 'United States'
+    },
+    stats: [
+      { label: 'Total Rentals', value: '24', color: 'text-orange-500' },
+      { label: 'Hours Used', value: '12', color: 'text-yellow-500' },
+      { label: 'Rating', value: '4.8', color: 'text-green-500' },
+      { label: 'Member Since', value: '6 Months', color: 'text-blue-500' }
+    ],
+    activities: [
+      {
+        type: 'Rental Completed',
+        description: 'MacBook Air Completed - Returned on Oct 1, 2025',
+        time: '1 day ago',
+        status: 'completed',
+        color: 'bg-green-100 text-green-800'
+      },
+      {
+        type: 'New Rental',
+        description: 'Samsung Tab - Rented for 7 days',
+        time: '3 days ago',
+        status: 'active',
+        color: 'bg-blue-100 text-blue-800'
+      },
+      {
+        type: 'Review Received',
+        description: 'You received a review for Apple',
+        time: '1 week ago',
+        status: 'review',
+        color: 'bg-yellow-100 text-yellow-800'
+      }
+    ]
+  };
+  
+  const [userInfo, setUserInfo] = useState(profileData.userInfo);
 
-  const statsWithIcons = (profileData?.stats || []).map((stat, index) => {
+  const statsWithIcons = profileData.stats.map((stat, index) => {
     const icons = [Package, Clock, Star, Trophy];
     return {
       ...stat,
@@ -26,7 +62,7 @@ const ProfilePage = ({ profileData, onLoginClick, onSignUpClick, onAdminClick })
     };
   });
 
-  const activities = profileData?.activities || [];
+  const activities = profileData.activities;
 
   const handleEditProfile = () => {
     setIsEditing(!isEditing);
@@ -48,7 +84,7 @@ const ProfilePage = ({ profileData, onLoginClick, onSignUpClick, onAdminClick })
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <Header onLoginClick={onLoginClick} onSignUpClick={onSignUpClick} onProfileClick={() => {}} onAdminClick={onAdminClick} />
+      <Header />
 
       {/* Main Content */}
       <div className="max-w-4xl mx-auto px-4 py-8">
@@ -252,7 +288,7 @@ const ProfilePage = ({ profileData, onLoginClick, onSignUpClick, onAdminClick })
       </div>
 
       {/* Footer */}
-      <Footer onLoginClick={onLoginClick} />
+      <Footer />
     </div>
   );
 };

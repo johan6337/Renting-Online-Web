@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import Header from '../components/header/Header';
 import Footer from '../components/footer/Footer';
 
-const SignUpPage = ({ onBack, onLoginClick, onSignUpClick, onProfileClick, onAdminClick }) => {
+const SignUpPage = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     firstName: '',
     email: '',
@@ -30,7 +32,7 @@ const SignUpPage = ({ onBack, onLoginClick, onSignUpClick, onProfileClick, onAdm
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
-      <Header onLoginClick={onLoginClick} onSignUpClick={onSignUpClick} onProfileClick={onProfileClick} onAdminClick={onAdminClick} />
+      <Header />
 
       {/* Main Content */}
       <div className="flex min-h-[calc(100vh-160px)]">
@@ -112,12 +114,12 @@ const SignUpPage = ({ onBack, onLoginClick, onSignUpClick, onProfileClick, onAdm
             <div className="mt-6 text-center">
               <p className="text-gray-600 text-sm">
                 Already have account?{" "}
-                <button
-                  onClick={onLoginClick}
+                <Link
+                  to="/login"
                   className="text-red-500 hover:text-red-600 underline"
                 >
                   Log in
-                </button>
+                </Link>
               </p>
             </div>
           </div>
@@ -125,7 +127,7 @@ const SignUpPage = ({ onBack, onLoginClick, onSignUpClick, onProfileClick, onAdm
       </div>
 
       {/* Footer */}
-      <Footer onLoginClick={onLoginClick} />
+      <Footer />
     </div>
   );
 };

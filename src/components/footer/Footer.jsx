@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { FaFacebookF, FaTwitter, FaInstagram, FaLinkedinIn, FaPaperPlane } from 'react-icons/fa';
 import { FaGooglePlay, FaApple } from 'react-icons/fa';
 
-export default function Footer({ onLoginClick }) {
+export default function Footer() {
   const [email, setEmail] = useState('');
   
   const handleSubscribe = (e) => {
@@ -11,19 +12,6 @@ export default function Footer({ onLoginClick }) {
     console.log('Subscribing email:', email);
     setEmail('');
   };
-
-  const handleLoginClick = (e) => {
-    e.preventDefault(); // Prevent default link behavior
-    console.log('Login clicked!', onLoginClick); // Debug log
-    if (onLoginClick) {
-      onLoginClick();
-    }
-  };
-  
-
-
-
-   
   return (
     <footer className="bg-black text-white">
       <div className="max-w-7xl mx-auto px-6 py-16">
@@ -76,19 +64,19 @@ export default function Footer({ onLoginClick }) {
             <nav>
               <ul className="space-y-3 text-sm">
                 <li>
-                  <a href="/profile" className="hover:underline">
+                  <Link to="/profile" className="hover:underline">
                     My Account
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a href="/login" onClick={handleLoginClick} className="hover:underline cursor-pointer">
+                  <Link to="/login" className="hover:underline">
                     Login / Register
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a href="#" className="hover:underline">
+                  <Link to="/cart" className="hover:underline">
                     Cart
-                  </a>
+                  </Link>
                 </li>
                 <li>
                   <a href="#" className="hover:underline">

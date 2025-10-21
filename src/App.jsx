@@ -1,112 +1,63 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
+import { Routes, Route } from 'react-router-dom';
+import ProductPage from './pages/ProductPage';
 import HomePage from './pages/HomePage';
-import IntroPage from './pages/IntroPage';
 import OrdersPage from './pages/OrdersPage';
 import LoginPage from './pages/LoginPage';
 import SignUpPage from './pages/SignUpPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ProfilePage from './pages/ProfilePage';
-import AdminPage from './pages/AdminPage';
 import CartPage from './pages/CartPage';
-import Footer from './components/footer/Footer'
+import ProductDetails from './pages/ProductDetails';
 
-const App = ({ sampleComments, sampleOrders, sampleProducts, sampleProfile, sampleAdminData }) => {
-  // Start with intro page
-  const [currentPage, setCurrentPage] = useState('intro'); 
-  const introContent = {
-    products: sampleProducts,
-    comments: sampleComments
-  }
+// Seller Pages
+import SellerDashboard from './pages/seller/SellerDashboard';
+import SellerProducts from './pages/seller/SellerProducts';
+import SellerOrders from './pages/seller/SellerOrders';
+import AddProductPage from './pages/seller/AddProductPage';
 
-  const cartContent = {
-    items: sampleProducts.slice(0, 3),
-    totalPrice: sampleProducts.slice(0, 3).reduce((total, item) => total + item.price, 0)
-  }
-  
-  
-  // Handle URL (pathname) changes
-  useEffect(() => {
-    const handlePathChange = () => {
-      const pathname = window.location.pathname.substring(1);
-      if (pathname) {
-        setCurrentPage(pathname);
-      } else {
-        setCurrentPage('intro'); // Default to intro if no path
-      }
-    };
+// Admin Pages
+import AdminDashboard from './pages/admin/AdminDashboard';
+import AdminUsers from './pages/admin/AdminUsers';
+import AdminReports from './pages/admin/AdminReports';
 
-    window.addEventListener('popstate', handlePathChange);
-
-    // Check initial path
-    const initialPath = window.location.pathname.substring(1);
-    if (initialPath) {
-      setCurrentPage(initialPath);
-    }
-
-    return () => {
-      window.removeEventListener('popstate', handlePathChange);
-    };
-  }, []);
-
-  // Update URL pathname when page changes
-  const changePage = (page) => {
-    setCurrentPage(page);
-    const newPath = `/${page}`;
-    if (window.location.pathname !== newPath) {
-      window.history.pushState({}, '', newPath);
-    }
-  };
-
+const App = () => {
   return (
-    currentPage === "intro" ? <IntroPage content={introContent} onStart={() => changePage('home')} onLoginClick={() => changePage('login')} onSignUpClick={() => changePage('signup')} onProfileClick={() => changePage('profile')} onAdminClick={() => changePage('admin')} onCartClick={() => changePage('cart')}/> :
-    currentPage === "login" ? <LoginPage onBack={() => changePage('home')} onLoginClick={() => changePage('login')} onSignUpClick={() => changePage('signup')} onForgotPasswordClick={() => changePage('forgot-password')} onProfileClick={() => changePage('profile')} onAdminClick={() => changePage('admin')} /> :
-    currentPage === "signup" ? <SignUpPage onBack={() => changePage('home')} onLoginClick={() => changePage('login')} onSignUpClick={() => changePage('signup')} onProfileClick={() => changePage('profile')} onAdminClick={() => changePage('admin')} /> :
-    currentPage === "forgot-password" ? <ForgotPasswordPage onBack={() => changePage('home')} onLoginClick={() => changePage('login')} onSignUpClick={() => changePage('signup')} onProfileClick={() => changePage('profile')} onAdminClick={() => changePage('admin')} /> :
-    currentPage === "profile" ? <ProfilePage profileData={sampleProfile} onLoginClick={() => changePage('login')} onSignUpClick={() => changePage('signup')} onProfileClick={() => changePage('profile')} onAdminClick={() => changePage('admin')} /> :
-    currentPage === "admin" ? <AdminPage adminData={sampleAdminData} /> :
-    currentPage === "cart" ? <CartPage cartContent={cartContent} onBack={() => changePage('home')} onLoginClick={() => changePage('login')} onSignUpClick={() => changePage('signup')} onForgotPasswordClick={() => changePage('forgot-password')} onProfileClick={() => changePage('profile')} onAdminClick={() => changePage('admin')} onCartClick={() => changePage('cart')}/> :
-
-    <div className="bg-gray-50">
-      {/* Navigation Bar */}
-      <nav className="bg-white shadow-sm border-b border-gray-200">
-        <div className="px-4">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-8">
-              <h1 className="text-2xl font-bold text-gray-900 hover:cursor-pointer" onClick={() => changePage('intro')}>BorrowIt</h1>
-              <div className="flex gap-1">
-                <button
-                  onClick={() => changePage('home')}
-                  className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                    currentPage === 'home'
-                      ? 'bg-gray-900 text-white'
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-                  }`}
-                >
-                  Home
-                </button>
-                <button
-                  onClick={() => changePage('orders')}
-                  className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                    currentPage === 'orders'
-                      ? 'bg-gray-900 text-white'
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-                  }`}
-                >
-                  My Orders
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </nav>
-
-      {/* Page Content */}
-      <div>
-        {currentPage === 'home' && <HomePage comments={sampleComments} products={sampleProducts} onLoginClick={() => changePage('login')} onSignUpClick={() => changePage('signup')} onProfileClick={() => changePage('profile')} onAdminClick={() => changePage('admin')} onCartClick={() => changePage('cart')}/>}
-        {currentPage === 'orders' && <OrdersPage orders={sampleOrders} onLoginClick={() => changePage('login')} onSignUpClick={() => changePage('signup')} onProfileClick={() => changePage('profile')} onAdminClick={() => changePage('admin')} onCartClick={() => changePage('cart')}/>}
-      </div>
-      <Footer onLoginClick={() => changePage('login')} />
-    </div>
+    <Routes>
+      {/* Home Page - Has its own Header and Footer */}
+      <Route path="/" element={<HomePage />} />
+      
+      {/* Auth Pages - No Header/Footer */}
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/signup" element={<SignUpPage />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      
+      {/* Profile - Has its own layout */}
+      <Route path="/profile" element={<ProfilePage />} />
+      
+      {/* Seller Dashboard Routes */}
+      <Route path="/seller/dashboard" element={<SellerDashboard />} />
+      <Route path="/seller/products" element={<SellerProducts />} />
+      <Route path="/seller/orders" element={<SellerOrders />} />
+      <Route path="/seller/add-product" element={<AddProductPage />} />
+      
+      {/* Admin Dashboard Routes */}
+      <Route path="/admin/dashboard" element={<AdminDashboard />} />
+      <Route path="/admin/users" element={<AdminUsers />} />
+      <Route path="/admin/reports" element={<AdminReports />} />
+      
+      {/* Legacy admin route - redirect to new dashboard */}
+      <Route path="/admin" element={<AdminDashboard />} />
+      <Route path="/seller-dashboard" element={<SellerDashboard />} />
+      
+      {/* Cart - Has Header and Footer */}
+      <Route path="/cart" element={<CartPage />} />
+      
+      {/* Product & Orders Pages - Has Header and Footer */}
+      <Route path="/product" element={<ProductPage />} />
+      <Route path="/product/:productId" element={<ProductDetails />} />
+      <Route path="/orders" element={<OrdersPage />} />
+    </Routes>
   );
 };
 

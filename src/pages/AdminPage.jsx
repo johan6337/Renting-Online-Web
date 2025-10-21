@@ -2,11 +2,76 @@ import React, { useState } from 'react';
 import Sidebar_Admin from '../components/sidebar/Sidebar_Admin';
 import { Search, Filter, Download, MoreHorizontal, Edit, Trash, Eye, Users, CheckCircle, XCircle, Clock, AlertTriangle } from 'lucide-react';
 
-const AdminPage = ({ adminData }) => {
+const AdminPage = () => {
   const [activeFilter, setActiveFilter] = useState('All Users');
   const [searchTerm, setSearchTerm] = useState('');
 
-  const statsWithIcons = (adminData?.stats || []).map((stat, index) => {
+  const adminData = {
+    stats: [
+      { label: 'Total Users', value: '1,234', color: 'bg-blue-500' },
+      { label: 'Active Users', value: '1,189', color: 'bg-green-500' },
+      { label: 'Suspended', value: '32', color: 'bg-orange-500' },
+      { label: 'Pending Verification', value: '13', color: 'bg-purple-500' }
+    ],
+    users: [
+      {
+        id: '#10234',
+        name: 'John Anderson',
+        email: 'john.anderson@gmail.com',
+        phone: '+1 234-567-8901',
+        joinDate: 'Jan 15, 2025',
+        rentals: 12,
+        status: 'Active'
+      },
+      {
+        id: '#10233',
+        name: 'Sarah Mitchell',
+        email: 'sarah.mitchell@gmail.com',
+        phone: '+1 234-567-8902',
+        joinDate: 'Jan 14, 2025',
+        rentals: 8,
+        status: 'Active'
+      },
+      {
+        id: '#10232',
+        name: 'Michael Chen',
+        email: 'michael.chen@gmail.com',
+        phone: '+1 234-567-8903',
+        joinDate: 'Jan 13, 2025',
+        rentals: 5,
+        status: 'Suspended'
+      },
+      {
+        id: '#10231',
+        name: 'Emily Rodriguez',
+        email: 'emily.rodriguez@gmail.com',
+        phone: '+1 234-567-8904',
+        joinDate: 'Jan 12, 2025',
+        rentals: 15,
+        status: 'Active'
+      },
+      {
+        id: '#10230',
+        name: 'David Thompson',
+        email: 'david.thompson@gmail.com',
+        phone: '+1 234-567-8905',
+        joinDate: 'Jan 11, 2025',
+        rentals: 3,
+        status: 'Pending'
+      },
+      {
+        id: '#10229',
+        name: 'Lisa Parker',
+        email: 'lisa.parker@gmail.com',
+        phone: '+1 234-567-8906',
+        joinDate: 'Jan 10, 2025',
+        rentals: 20,
+        status: 'Active'
+      }
+    ]
+  };
+
+  const statsWithIcons = adminData.stats.map((stat, index) => {
     const icons = [Users, CheckCircle, XCircle, Clock];
     return {
       ...stat,
@@ -14,7 +79,7 @@ const AdminPage = ({ adminData }) => {
     };
   });
 
-  const users = adminData?.users || [];
+  const users = adminData.users;
 
   const getStatusColor = (status) => {
     switch (status) {

@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import {
   Search,
   ShoppingCart,
@@ -13,9 +14,10 @@ import {
   Settings,
 } from "lucide-react";
 
-export default function BorrowitHeader({ onLoginClick, onSignUpClick, onProfileClick, onAdminClick, onCartClick }) {
+export default function BorrowitHeader() {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const userMenuRef = useRef(null);
+  const navigate = useNavigate();
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -33,19 +35,19 @@ export default function BorrowitHeader({ onLoginClick, onSignUpClick, onProfileC
       <div className="mx-auto max-w-7xl px-3 sm:px-4 md:px-6">
         <div className="flex h-16 items-center gap-3">
           {/* Left: Logo */}
-          <a href="/home" className="shrink-0 select-none" aria-label="Borrowit home">
+          <Link to="/" className="shrink-0 select-none" aria-label="Borrowit home">
             <span className="text-2xl font-black tracking-tight leading-none">BORROWIT</span>
-          </a>
+          </Link>
 
           {/* Middle-left: Primary nav */}
-          <nav className="hidden md:flex items-center gap-6 ml-2">
+          {/* <nav className="hidden md:flex items-center gap-6 ml-2">
             <a href="#" className="text-sm font-medium text-gray-900 hover:opacity-80 flex items-center gap-1">
               Shop <ChevronDown className="h-4 w-4" />
             </a>
             <a href="#" className="text-sm text-gray-900 hover:opacity-80">On Sale</a>
             <a href="#" className="text-sm text-gray-900 hover:opacity-80">New Arrivals</a>
             <a href="#" className="text-sm text-gray-900 hover:opacity-80">Brands</a>
-          </nav>
+          </nav> */}
 
           {/* Middle: Search */}
           <div className="flex-1 flex justify-center">
@@ -69,7 +71,7 @@ export default function BorrowitHeader({ onLoginClick, onSignUpClick, onProfileC
               type="button"
               aria-label="Cart"
               className="p-1.5 rounded-full hover:bg-gray-100 transition-colors"
-              onClick={onCartClick}
+              onClick={() => navigate('/cart')}
             >
               <ShoppingCart className="h-6 w-6" />
             </button>
@@ -91,7 +93,7 @@ export default function BorrowitHeader({ onLoginClick, onSignUpClick, onProfileC
                     <li>
                       <button
                         onClick={() => {
-                          onLoginClick && onLoginClick();
+                          navigate('/login');
                           setShowUserMenu(false);
                         }}
                         className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 w-full text-left"
@@ -102,7 +104,7 @@ export default function BorrowitHeader({ onLoginClick, onSignUpClick, onProfileC
                     <li>
                       <button
                         onClick={() => {
-                          onSignUpClick && onSignUpClick();
+                          navigate('/signup');
                           setShowUserMenu(false);
                         }}
                         className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 w-full text-left"
@@ -113,7 +115,7 @@ export default function BorrowitHeader({ onLoginClick, onSignUpClick, onProfileC
                     <li>
                       <button
                         onClick={() => {
-                          onProfileClick && onProfileClick();
+                          navigate('/profile');
                           setShowUserMenu(false);
                         }}
                         className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 w-full text-left"
@@ -124,12 +126,46 @@ export default function BorrowitHeader({ onLoginClick, onSignUpClick, onProfileC
                     <li>
                       <button
                         onClick={() => {
-                          onAdminClick && onAdminClick();
+                          navigate('/orders');
                           setShowUserMenu(false);
                         }}
                         className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 w-full text-left"
                       >
-                        <Settings className="h-5 w-5" /> Admin Page
+                        <ShoppingCart className="h-5 w-5" /> My Orders
+                      </button>
+                    </li>
+                    <li>
+                      <button
+                        onClick={() => {
+                          navigate('/admin/dashboard');
+                          setShowUserMenu(false);
+                        }}
+                        className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 w-full text-left"
+                      >
+                        <Settings className="h-5 w-5" /> Admin Dashboard
+                      </button>
+                    </li>
+                    <li>
+                      <button
+                        onClick={() => {
+                          navigate('/seller/dashboard');
+                          setShowUserMenu(false);
+                        }}
+                        className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 w-full text-left"
+                      >
+                        <IdCard className="h-5 w-5" /> Seller Dashboard
+                      </button>
+                    </li>
+                    <li className="border-t border-gray-200 mt-1 pt-1">
+                      <button
+                        onClick={() => {
+                          // Add logout logic here
+                          console.log('Logging out...');
+                          setShowUserMenu(false);
+                        }}
+                        className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 w-full text-left text-red-600"
+                      >
+                        <LogOut className="h-5 w-5" /> Log Out
                       </button>
                     </li>
                   </ul>
