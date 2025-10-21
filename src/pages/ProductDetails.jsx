@@ -37,6 +37,10 @@ const ProductDetails = ({ product, details, onBack }) => {
                 return <div className='p-5 text-gray-600'>No FAQs available.</div>;
         }
     }
+
+    const updateProduct = (quantity) => {
+        product.quantity = quantity;
+    }
     
     return (
         <div className='h-screen'>
@@ -128,7 +132,8 @@ const ProductDetails = ({ product, details, onBack }) => {
                         </div>
 
                         {/* Nút Add to Cart */}
-                        <button className="flex-1 bg-black text-white font-bold py-3 rounded-full hover:bg-gray-800 transition-colors">
+                        <button className="flex-1 bg-black text-white font-bold py-3 rounded-full hover:bg-gray-800 transition-colors"
+                            onClick={() => updateProduct(quantity)}>
                             Add to Cart
                         </button>
                     </div>

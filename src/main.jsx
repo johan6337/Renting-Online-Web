@@ -389,17 +389,26 @@ const sampleOrders = [
 
 const sampleProducts = [
   {
+    id: 1,
     name: "Checkered Shirt",
     price: "$100",
     image: "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=400&h=400&fit=crop",
     sale: 20,
+    properties: {
+      color: "Red",
+      size: "M",
+      type: "Cotton",
+      brand: "FashionCo"
+    }
   },
   {
+    id: 2,
     name: "Denim Jacket",
     price: "$80",
     image: "https://images.unsplash.com/photo-1503341455253-b2e723bb3dbb?auto=format&fit=crop&w=400&q=80",
   },
   {
+    id: 3,
     name: "Wireless Headphones",
     price: "$120",
     image: "https://images.unsplash.com/photo-1580894908361-967195033215?auto=format&fit=crop&w=400&q=80",

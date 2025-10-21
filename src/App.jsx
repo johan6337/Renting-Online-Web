@@ -17,6 +17,11 @@ const App = ({ sampleComments, sampleOrders, sampleProducts, sampleProfile, samp
     products: sampleProducts,
     comments: sampleComments
   }
+
+  const cartContent = {
+    items: sampleProducts.slice(0, 3),
+    totalPrice: sampleProducts.slice(0, 3).reduce((total, item) => total + item.price, 0)
+  }
   
   
   // Handle URL (pathname) changes
@@ -59,7 +64,7 @@ const App = ({ sampleComments, sampleOrders, sampleProducts, sampleProfile, samp
     currentPage === "forgot-password" ? <ForgotPasswordPage onBack={() => changePage('home')} onLoginClick={() => changePage('login')} onSignUpClick={() => changePage('signup')} onProfileClick={() => changePage('profile')} onAdminClick={() => changePage('admin')} /> :
     currentPage === "profile" ? <ProfilePage profileData={sampleProfile} onLoginClick={() => changePage('login')} onSignUpClick={() => changePage('signup')} onProfileClick={() => changePage('profile')} onAdminClick={() => changePage('admin')} /> :
     currentPage === "admin" ? <AdminPage adminData={sampleAdminData} /> :
-    currentPage === "cart" ? <CartPage onBack={() => changePage('home')} onLoginClick={() => changePage('login')} onSignUpClick={() => changePage('signup')} onForgotPasswordClick={() => changePage('forgot-password')} onProfileClick={() => changePage('profile')} onAdminClick={() => changePage('admin')} onCartClick={() => changePage('cart')}/> :
+    currentPage === "cart" ? <CartPage cartContent={cartContent} onBack={() => changePage('home')} onLoginClick={() => changePage('login')} onSignUpClick={() => changePage('signup')} onForgotPasswordClick={() => changePage('forgot-password')} onProfileClick={() => changePage('profile')} onAdminClick={() => changePage('admin')} onCartClick={() => changePage('cart')}/> :
 
     <div className="bg-gray-50">
       {/* Navigation Bar */}
