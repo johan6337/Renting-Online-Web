@@ -3,13 +3,15 @@ import { useMemo } from "react"
 
 function ProductCard({ product, modeRate=true, view }) {
 
-    let originalPrice = parseFloat(product.price.replace('$', '')).toFixed(2);
+    let originalPrice = product.price.toFixed(2);
 
         const finalPrice = useMemo(() => {
             if (!product.sale || product.sale <= 0)
                 return originalPrice;
             return (originalPrice * (1 - product.sale / 100)).toFixed(2);
         }, [product.sale, originalPrice]);
+
+        
 
     return (
         <>

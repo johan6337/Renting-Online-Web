@@ -1,6 +1,9 @@
 import Header from '../components/header/Header';
 import Footer from '../components/footer/Footer';
-import { useState } from 'react';
+import { useState, Fragment } from 'react';
+
+import { BsTag } from 'react-icons/bs';
+import { HiOutlineArrowRight } from 'react-icons/hi';
 
 const CartPage = ({ cartContent, onBack, onLoginClick, onSignUpClick, onForgotPasswordClick, onProfileClick, onAdminClick, onCartClick}) => {
     const { items, totalPrice } = cartContent;
@@ -42,10 +45,10 @@ const CartPage = ({ cartContent, onBack, onLoginClick, onSignUpClick, onForgotPa
                 <h1 className='text-4xl font-black'>Your Cart</h1>
                 <div className='flex flex-row gap-4'>
                     {/* Cart items will be displayed here */}
-                    <div className='flex-1 border-2 border-gray-200 rounded-xl'>
+                    <div className='flex-[3] border-2 border-gray-200 rounded-xl'>
                         {itemList.map((item, index) => (
-                            <>
-                                <div key={item.id ?? index} className='flex flex-row relative gap-2 m-4'>
+                            <Fragment key={item.id ?? index}>
+                                <div className='flex flex-row relative gap-2 m-4'>
                                     {/* Item Image */}
                                     <div className='flex items-center'>
                                         <img src={item.image} alt={item.name} className='w-28 h-28 rounded-xl object-cover'/>
@@ -64,7 +67,7 @@ const CartPage = ({ cartContent, onBack, onLoginClick, onSignUpClick, onForgotPa
                                                 ))}
                                             </div>
                                         )}
-                                        <span className='text-xl font-bold text-black absolute bottom-0'>{item.price}</span>
+                                        <span className='text-xl font-bold text-black absolute bottom-0'>${item.price}</span>
                                     </div>
                                     
                                     {/* More Interactions */}
@@ -97,17 +100,60 @@ const CartPage = ({ cartContent, onBack, onLoginClick, onSignUpClick, onForgotPa
                                 {index < countItems - 1 && (
                                     <hr className='border-t-2 border-gray-100 mx-4' />
                                 )}
-                            </>
+                            </Fragment>
                         ))}
                     </div>
 
                     {/* Summary and Checkout */}
-                    <div className='flex-1 bg-green-300'>
+                    <div className='flex-[2] flex flex-col border-2 border-gray-200 rounded-xl'>
+                        <h2 className='text-xl md:text-2xl font-bold ml-4 mt-4'>Order Summary</h2>
+                        <div className='flex flex-col gap-4 my-4 mx-4 text-lg font-bold'>
+                            <div className='flex flex-row relative w-full'>
+                                <div className='font-medium text-gray-500'>Subtotal</div>
+                                <div className='absolute right-0 text-2xl'>${totalPrice}</div>
+                            </div>
+                            <div className='flex flex-row relative w-full'>
+                                <div className='font-medium text-gray-500'>Discount</div>
+                                <div className='absolute right-0 text-red-500 text-2xl'>-${totalPrice}</div>
+                            </div>
+                            <div className='flex flex-row relative w-full'>
+                                <div className='font-medium text-gray-500 '>Delivery Fee</div>
+                                <div className='absolute right-0 text-2xl'>$10</div>
+                            </div>
+
+                            <hr className='border-t-2 border-gray-100' />
+                            <div className='flex flex-row relative w-full'>
+                                    <div className='font-medium text-black '>Total</div>
+                                    <div className='absolute right-0 text-2xl'>${totalPrice}</div>
+                            </div>
+
+                            {/* Promo Code Section */}
+                            <div className='flex flex-row gap-3 items-center'>
+                                <div className='flex-1 flex flex-row items-center gap-3 bg-gray-100 rounded-full px-4 py-3'>
+                                    <BsTag className='text-gray-400 w-5 h-5' />
+                                    <input 
+                                        type='text' 
+                                        placeholder='Add promo code' 
+                                        className='bg-transparent w-full focus:outline-none text-gray-600 font-medium placeholder-gray-400 text-base' 
+                                    />
+                                </div>
+                                <button className='bg-black hover:bg-white text-white hover:text-black ease-in-out duration-500 px-7 py-3 rounded-2xl font-semibold text-base'>
+                                    Apply
+                                </button>
+                            </div>
+
+                            {/* Checkout Button */}
+                            <button className='group w-full bg-black hover:bg-white text-white hover:text-black transition-all ease-in-out duration-500 rounded-full py-4 flex justify-center items-center font-bold text-lg gap-2'>
+                                <span>Go to Checkout</span>
+                                <HiOutlineArrowRight className='w-5 h-5 transition-transform ease-in-out duration-300 group-hover:translate-x-2 md:group-hover:translate-x-10 hover:overflow-hidden' />
+                            </button>
+                            
+                        </div>
 
                     </div>
                 </div>
             </div>
-
+            
             <Footer />
         </div>
     )
