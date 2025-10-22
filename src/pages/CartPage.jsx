@@ -1,11 +1,12 @@
 import Header from '../components/header/Header';
 import Footer from '../components/footer/Footer';
 import { useState, Fragment } from 'react';
+import { useNavigate } from "react-router-dom";
 
 import { BsTag } from 'react-icons/bs';
 import { HiOutlineArrowRight } from 'react-icons/hi';
 
-const CartPage = ({ cartContent, onBack, onLoginClick, onSignUpClick, onForgotPasswordClick, onProfileClick, onAdminClick, onCartClick}) => {
+const CartPage = ({ cartContent }) => {
     const products = [
         {
             id: 1,
@@ -72,9 +73,11 @@ const CartPage = ({ cartContent, onBack, onLoginClick, onSignUpClick, onForgotPa
         })
     }
     
+
+    const navigate = useNavigate();
     return (
         <div className=''>
-            <Header onLoginClick={onLoginClick} onSignUpClick={onSignUpClick} onProfileClick={onProfileClick} onAdminClick={onAdminClick} onCartClick={onCartClick}/>
+            <Header onLoginClick={() => navigate("/")} onSignUpClick={() => navigate("/signup")} onProfileClick={() => navigate("/profile")} onAdminClick={() => navigate("/admin")} onCartClick={() => navigate("/cart")}/>
             <div className='flex flex-col gap-4 ml-4 md:ml-16 mr-4 md:mr-16 my-8'>
                 <h1 className='text-4xl font-black'>Your Cart</h1>
                 <div className='flex flex-row gap-4'>
@@ -171,13 +174,13 @@ const CartPage = ({ cartContent, onBack, onLoginClick, onSignUpClick, onForgotPa
                                         className='bg-transparent w-full focus:outline-none text-gray-600 font-medium placeholder-gray-400 text-base' 
                                     />
                                 </div>
-                                <button className='bg-black hover:bg-white text-white hover:text-black ease-in-out duration-500 px-7 py-3 rounded-2xl font-semibold text-base'>
+                                <button className='border-2 border-black bg-black hover:bg-white text-white hover:text-black ease-in-out duration-300 px-7 py-3 rounded-2xl font-semibold text-base'>
                                     Apply
                                 </button>
                             </div>
 
                             {/* Checkout Button */}
-                            <button className='group w-full bg-black hover:bg-white text-white hover:text-black transition-all ease-in-out duration-500 rounded-full py-4 flex justify-center items-center font-bold text-lg gap-2'>
+                            <button className='group w-full border-2 border-black bg-black hover:bg-white text-white hover:text-black transition-all ease-in-out duration-300 rounded-full py-4 flex justify-center items-center font-bold text-lg gap-2'>
                                 <span>Go to Checkout</span>
                                 <HiOutlineArrowRight className='w-5 h-5 transition-transform ease-in-out duration-300 group-hover:translate-x-2 md:group-hover:translate-x-10 hover:overflow-hidden' />
                             </button>
