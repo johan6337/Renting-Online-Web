@@ -3,7 +3,8 @@ import { Link, useLocation } from 'react-router-dom'
 import { 
   LayoutDashboard, 
   Users, 
-  FileText
+  FileText,
+  Gavel
 } from 'lucide-react'
 
 const Sidebar_Admin = ({ active }) => {
@@ -12,8 +13,9 @@ const Sidebar_Admin = ({ active }) => {
   const items = [
     { name: 'Dashboard', icon: LayoutDashboard, path: '/admin/dashboard' },
     { name: 'User Management', icon: Users, path: '/admin/users' },
+    { name: 'Resolve Violations', icon: Gavel, path: '/admin/resolve-violations' },
     { name: 'Reports', icon: FileText, path: '/admin/reports' }
-  ]
+  ];
 
   return (
     <aside className="w-[280px] min-h-screen bg-[#0a0a0a] text-white px-4 py-6 flex flex-col">

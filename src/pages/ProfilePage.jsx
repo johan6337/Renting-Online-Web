@@ -3,10 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import Header from '../components/header/Header';
 import Footer from '../components/footer/Footer';
 import { User, Phone, Mail, MapPin, Calendar, Star, Package, Clock, Trophy } from 'lucide-react';
+import ReportUserForm from './ReportUserForm';
 
 const ProfilePage = () => {
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
+  const [showReportForm, setShowReportForm] = useState(false);
   
   const profileData = {
     userInfo: {
@@ -92,12 +94,20 @@ const ProfilePage = () => {
         <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-2xl font-bold text-gray-900">My Profile</h1>
-            <button
-              onClick={isEditing ? handleSaveProfile : handleEditProfile}
-              className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
-            >
-              {isEditing ? 'Save Profile' : 'Edit Profile'}
-            </button>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowReportForm(true)}
+                className="bg-white hover:bg-gray-50 text-black border-2 border-red-500 px-4 py-2 rounded-md text-sm font-medium transition-colors"
+              >
+                Report User
+              </button>
+              <button
+                onClick={isEditing ? handleSaveProfile : handleEditProfile}
+                className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
+              >
+                {isEditing ? 'Save Profile' : 'Edit Profile'}
+              </button>
+            </div>
           </div>
 
           {/* Personal Information */}
@@ -289,6 +299,14 @@ const ProfilePage = () => {
 
       {/* Footer */}
       <Footer />
+
+      {/* Report User Form */}
+      {showReportForm && (
+        <ReportUserForm 
+          userName={`${userInfo.firstName} ${userInfo.lastName}`}
+          onClose={() => setShowReportForm(false)}
+        />
+      )}
     </div>
   );
 };
