@@ -20,6 +20,7 @@ import AddProductPage from './pages/seller/AddProductPage';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminUsers from './pages/admin/AdminUsers';
 import AdminReports from './pages/admin/AdminReports';
+import AdminViolations from './pages/admin/AdminViolations';
 
 const App = () => {
   return (
@@ -45,7 +46,8 @@ const App = () => {
       <Route path="/admin/dashboard" element={<AdminDashboard />} />
       <Route path="/admin/users" element={<AdminUsers />} />
       <Route path="/admin/reports" element={<AdminReports />} />
-      
+      <Route path="/admin/resolve-violations" element={<AdminViolations />} />
+
       {/* Legacy admin route - redirect to new dashboard */}
       <Route path="/admin" element={<AdminDashboard />} />
       <Route path="/seller-dashboard" element={<SellerDashboard />} />
