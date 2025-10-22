@@ -60,53 +60,53 @@ const HomePage = () => {
     const products = [
         {
             name: "Checkered Shirt",
-            price: "$100",
+            price: 100,
             image: "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=400&h=400&fit=crop",
             sale: 20,
         },
         {
             name: "Denim Jacket",
-            price: "$80",
+            price: 80,
             image: "https://images.unsplash.com/photo-1503341455253-b2e723bb3dbb?auto=format&fit=crop&w=400&q=80",
         },
         {
             name: "Wireless Headphones",
-            price: "$120",
+            price: 120,
             image: "https://images.unsplash.com/photo-1580894908361-967195033215?auto=format&fit=crop&w=400&q=80",
         },
         {
             name: "Running Shoes",
-            price: "$95",
+            price: 95,
             image: "https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?auto=format&fit=crop&w=400&q=80",
         },
         {
             name: "Leather Wallet",
-            price: "$40",
+            price: 40,
             image: "https://images.unsplash.com/photo-1657603644005-67891fcc1577?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1470"
         },
         {
             name: "Smart Watch",
-            price: "$199",
+            price: 199,
             image: "https://images.unsplash.com/photo-1664730021931-9abb25cb0852?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1470"
         },
         {
             name: "Backpack",
-            price: "$60",
+            price: 60,
             image: "https://images.unsplash.com/photo-1622560480654-d96214fdc887?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTB8fGJhY2twYWNrfGVufDB8fDB8fHww&auto=format&fit=crop&q=60&w=700"
         },
         {
             name: "Sunglasses",
-            price: "$75",
+            price: 75,
             image: "https://images.unsplash.com/photo-1572635196237-14b3f281503f?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8c3VuZ2xhc3Nlc3xlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&q=60&w=700"
         },
         {
             name: "Gaming Mouse",
-            price: "$49",
+            price: 49,
             image: "https://images.unsplash.com/photo-1628832306751-ec751454119c?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1545"
         },
         {
             name: "Bluetooth Speaker",
-            price: "$89",
+            price: 89,
             image: "https://images.unsplash.com/photo-1754142927775-8f1e97ebd030?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1374"
         }
     ]

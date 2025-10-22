@@ -13,8 +13,8 @@ const ProductDetails = () => {
     const product = {
         id: productId,
         name: "Gradient Graphic T-shirt",
-        price: "$145",
-        sale: 0,
+        price: 145,
+        sale: 20,
         image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop"
     };
     
@@ -45,13 +45,13 @@ const ProductDetails = () => {
         other_products: [
             {
                 name: "Polo with Tipping Details",
-                price: "$180",
+                price: 180,
                 image: "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=400&h=400&fit=crop",
                 sale: 0
             },
             {
                 name: "Black Striped T-shirt",
-                price: "$150",
+                price: 150,
                 image: "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=400&h=400&fit=crop",
                 sale: 30
             }
