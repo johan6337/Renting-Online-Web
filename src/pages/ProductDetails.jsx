@@ -58,7 +58,7 @@ const ProductDetails = () => {
         ]
     };
     
-    let originalPrice = parseFloat(product.price.replace('$', '')).toFixed(2);
+    let originalPrice = product.price.toFixed(2);
 
     const finalPrice = useMemo(() => {
         if (!product.sale || product.sale <= 0)
