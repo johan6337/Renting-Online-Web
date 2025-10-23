@@ -12,6 +12,7 @@ const OrdersPage = () => {
       orderNumber: "ORD-2025-0324",
       placedDate: "September 15, 2025",
       status: "Active",
+      sellerName: "Fashion Store Co.",
       items: [
         {
           productId: "PRD-001",
@@ -74,6 +75,7 @@ const OrdersPage = () => {
       orderNumber: "ORD-2025-0298",
       placedDate: "September 8, 2025",
       status: "Completed",
+      sellerName: "Trendy Apparel",
       items: [
         {
           productId: "PRD-003",

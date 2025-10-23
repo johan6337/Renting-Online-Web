@@ -1,13 +1,19 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Sidebar_Seller from '../../components/sidebar/Sidebar_Seller';
 import { Bell } from 'lucide-react';
+import OrderList from '../../components/orders/OrderList';
+import ReportUserForm from '../../pages/ReportUserForm';
 
 const SellerOrders = () => {
+  const [showReportForm, setShowReportForm] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState(null);
+
   const orders = [
     {
       id: "ORD-2025-0324",
       placedDate: "September 15, 2025",
       status: "Active",
+      buyerName: "John Anderson",
       items: [
         {
           name: "Checkered Shirt",
@@ -32,6 +38,7 @@ const SellerOrders = () => {
       id: "ORD-2025-0298",
       placedDate: "September 8, 2025",
       status: "Completed",
+      buyerName: "Sarah Mitchell",
       items: [
         {
           name: "Gradient Graphic T-shirt",
@@ -48,6 +55,7 @@ const SellerOrders = () => {
       id: "ORD-2025-0267",
       placedDate: "August 28, 2025",
       status: "Completed",
+      buyerName: "Michael Chen",
       items: [
         {
           name: "Black Striped T-shirt",
@@ -61,6 +69,11 @@ const SellerOrders = () => {
       totalAmount: 120
     }
   ];
+
+  const handleReportUser = (order) => {
+    setSelectedOrder(order);
+    setShowReportForm(true);
+  };
 
   return (
     <div className="flex min-h-screen bg-gray-50">
@@ -83,93 +96,25 @@ const SellerOrders = () => {
         </header>
 
         {/* Main Content */}
-        <main className="p-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-6">My Orders</h1>
-          
-          <div className="flex gap-4 mb-6 border-b border-gray-200">
-            {['All Orders', 'Active', 'Completed', 'Returned'].map((tab) => (
-              <button
-                key={tab}
-                className={`pb-3 px-4 font-medium transition-colors ${
-                  tab === 'All Orders'
-                    ? 'border-b-2 border-black text-black'
-                    : 'text-gray-500 hover:text-gray-900'
-                }`}
-              >
-                {tab}
-              </button>
-            ))}
-          </div>
-
-          <div className="space-y-6">
-            {orders.map((order) => (
-              <div key={order.id} className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
-                <div className="flex justify-between items-start mb-4">
-                  <div>
-                    <h3 className="text-lg font-bold text-gray-900">Order #{order.id}</h3>
-                    <p className="text-sm text-gray-500">Placed on {order.placedDate}</p>
-                  </div>
-                  <span className={`px-4 py-2 rounded-full text-sm font-semibold ${
-                    order.status === 'Active'
-                      ? 'bg-green-100 text-green-600'
-                      : 'bg-blue-100 text-blue-600'
-                  }`}>
-                    {order.status}
-                  </span>
-                </div>
-
-                <div className="space-y-3 mb-4">
-                  {order.items.map((item, idx) => (
-                    <div key={idx} className="flex gap-4 pb-3 border-b border-gray-100 last:border-0">
-                      <div className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
-                        <img 
-                          src={item.image} 
-                          alt={item.name}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                      <div className="flex-1">
-                        <h4 className="font-semibold text-gray-900">{item.name}</h4>
-                        <p className="text-sm text-gray-500">
-                          Size: {item.size} | Color: {item.color}
-                        </p>
-                        <p className="text-sm text-gray-600">Rental Period: {item.rentalPeriod}</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-lg font-bold text-gray-900">${item.price}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="flex justify-between items-center pt-4 border-t border-gray-200">
-                  <div>
-                    <p className="text-sm text-gray-500">Total Amount:</p>
-                    <p className="text-2xl font-bold text-gray-900">${order.totalAmount}</p>
-                  </div>
-                  <div className="flex gap-3">
-                    {order.status === 'Active' && (
-                      <button className="px-6 py-2.5 rounded-full bg-black text-white font-semibold hover:bg-gray-800 transition-colors">
-                        Track Order
-                      </button>
-                    )}
-                    {order.status === 'Completed' && (
-                      <>
-                        <button className="px-6 py-2.5 rounded-full border border-gray-300 text-gray-700 font-semibold hover:bg-gray-50 transition-colors">
-                          Rent Again
-                        </button>
-                        <button className="px-6 py-2.5 rounded-full bg-black text-white font-semibold hover:bg-gray-800 transition-colors">
-                          View Details
-                        </button>
-                      </>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+        <main>
+          <OrderList 
+            orders={orders} 
+            isSeller={true}
+            onReportUser={handleReportUser}
+          />
         </main>
       </div>
+
+      {/* Report User Form */}
+      {showReportForm && selectedOrder && (
+        <ReportUserForm 
+          userName={selectedOrder.buyerName}
+          onClose={() => {
+            setShowReportForm(false);
+            setSelectedOrder(null);
+          }}
+        />
+      )}
     </div>
   );
 };

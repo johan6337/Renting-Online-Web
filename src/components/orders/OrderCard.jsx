@@ -1,6 +1,6 @@
 import React from 'react';
 
-const OrderCard = ({ order, onViewDetails }) => {
+const OrderCard = ({ order, onViewDetails, onReportUser, isSeller = false }) => {
   const getStatusStyles = (status) => {
     switch (status.toLowerCase()) {
       case 'active':
@@ -16,13 +16,20 @@ const OrderCard = ({ order, onViewDetails }) => {
     }
   };
 
+  const orderNumber = order.orderNumber || order.id;
+  const placedDate = order.placedDate;
+  const otherPartyName = isSeller ? order.buyerName : order.sellerName;
+  const otherPartyLabel = isSeller ? 'Placed by' : 'From';
+
   return (
     <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition-shadow mb-6">
       {/* Order Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h3 className="text-lg font-bold text-gray-900">Order #{order.orderNumber}</h3>
-          <p className="text-sm text-gray-500 mt-1">Placed on {order.placedDate}</p>
+          <h3 className="text-lg font-bold text-gray-900">Order #{orderNumber}</h3>
+          <p className="text-sm text-gray-500">
+            {otherPartyLabel} {otherPartyName} • Placed on {placedDate}
+          </p>
         </div>
         <span className={`px-4 py-2 rounded-full text-sm font-semibold border ${getStatusStyles(order.status)}`}>
           {order.status}
@@ -32,31 +39,21 @@ const OrderCard = ({ order, onViewDetails }) => {
       {/* Order Items */}
       <div className="space-y-4 mb-6">
         {order.items.map((item, index) => (
-          <div key={item.productId || index} className="flex items-center gap-4 pb-4 border-b border-gray-100 last:border-0">
-            {/* Item Image */}
-            <div className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+          <div key={index} className="flex gap-4 pb-4 border-b border-gray-100 last:border-0">
+            <div className="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
               <img 
-                src={item.imageUrl} 
+                src={item.imageUrl || item.image} 
                 alt={item.name}
                 className="w-full h-full object-cover"
-                onError={(e) => {
-                  e.target.style.display = 'none';
-                  e.target.parentElement.innerHTML = '<div class="w-full h-full flex items-center justify-center text-gray-400 text-xs">No Image</div>';
-                }}
               />
             </div>
-
-            {/* Item Details */}
             <div className="flex-1">
-              <h4 className="font-semibold text-gray-900 text-base">{item.name}</h4>
-              <div className="text-sm text-gray-500 mt-1">
-                <span>Size: {item.size}</span>
-                {item.color && <span> | Color: {item.color}</span>}
-              </div>
-              <p className="text-sm text-gray-600 mt-1">Rental Period: {item.rentalPeriod}</p>
+              <h4 className="font-semibold text-gray-900 mb-1">{item.name}</h4>
+              <p className="text-sm text-gray-500 mb-1">
+                Size: {item.size} • Color: {item.color}
+              </p>
+              <p className="text-sm text-gray-600">Rental Period: {item.rentalPeriod}</p>
             </div>
-
-            {/* Item Price */}
             <div className="text-right">
               <p className="text-lg font-bold text-gray-900">${item.price}</p>
             </div>
@@ -67,15 +64,17 @@ const OrderCard = ({ order, onViewDetails }) => {
       {/* Order Footer */}
       <div className="flex items-center justify-between pt-4 border-t border-gray-200">
         <div>
-          <p className="text-sm text-gray-500">Total Amount:</p>
+          <p className="text-sm text-gray-500 mb-1">Total Amount</p>
           <p className="text-2xl font-bold text-gray-900">${order.totalAmount}</p>
         </div>
-        
         <div className="flex gap-3">
-          {order.status.toLowerCase() === 'completed' && (
+          {(order.status.toLowerCase() === 'completed' || order.status.toLowerCase() === 'returned') && (
             <>
-              <button className="px-6 py-2.5 rounded-full border border-gray-300 text-gray-700 font-semibold hover:bg-gray-50 transition-colors">
-                Rent Again
+              <button 
+                onClick={() => onReportUser && onReportUser(order)}
+                className="px-6 py-2.5 rounded-full bg-red-500 text-white font-semibold hover:bg-red-600 transition-colors"
+              >
+                Report User
               </button>
               <button 
                 onClick={() => onViewDetails && onViewDetails(order)}
@@ -93,7 +92,7 @@ const OrderCard = ({ order, onViewDetails }) => {
               Track Order
             </button>
           )}
-          {order.status.toLowerCase() === 'returned' && (
+          {order.status.toLowerCase() === 'cancelled' && (
             <button 
               onClick={() => onViewDetails && onViewDetails(order)}
               className="px-6 py-2.5 rounded-full bg-black text-white font-semibold hover:bg-gray-800 transition-colors"
