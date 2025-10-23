@@ -79,65 +79,73 @@ const AdminActionForm = ({ report, onClose }) => {
             </div>
           </div>
 
-          {/* Action Details */}
-          <div className="mb-6">
-            <label className="block text-sm font-semibold text-gray-900 mb-4">
-              Action Details
-            </label>
-            <div className="space-y-4 bg-gray-50 border border-gray-200 rounded-lg p-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-900 mb-2">
-                  Trust Score Deduction Amount (Points):
-                </label>
-                <input
-                  type="number"
-                  value={trustScoreDeduction}
-                  onChange={(e) => setTrustScoreDeduction(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                  placeholder="Enter points"
-                />
-              </div>
+          {/* Action Details - Only show if action is selected */}
+          {selectedAction && (
+            <div className="mb-6">
+              <label className="block text-sm font-semibold text-gray-900 mb-4">
+                Action Details
+              </label>
+              <div className="space-y-4 bg-gray-50 border border-gray-200 rounded-lg p-4">
+                {/* Trust Score Deduction - Hide if "nothing" is selected */}
+                {selectedAction !== 'nothing' && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-900 mb-2">
+                      Trust Score Deduction Amount (Points):
+                    </label>
+                    <input
+                      type="number"
+                      value={trustScoreDeduction}
+                      onChange={(e) => setTrustScoreDeduction(e.target.value)}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                      placeholder="Enter points"
+                    />
+                  </div>
+                )}
 
-              <div>
-                <label className="block text-sm font-medium text-gray-900 mb-2">
-                  Restriction Duration (Days):
-                </label>
-                <input
-                  type="number"
-                  value={restrictionDuration}
-                  onChange={(e) => setRestrictionDuration(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                  placeholder="Enter days"
-                />
-              </div>
+                {/* Restriction Duration - Only show if "restriction" is selected */}
+                {selectedAction === 'restriction' && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-900 mb-2">
+                      Restriction Duration (Days):
+                    </label>
+                    <input
+                      type="number"
+                      value={restrictionDuration}
+                      onChange={(e) => setRestrictionDuration(e.target.value)}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                      placeholder="Enter days"
+                    />
+                  </div>
+                )}
 
-              <div>
-                <label className="block text-sm font-medium text-gray-900 mb-2">
-                  Reason for Action (User-facing):
-                </label>
-                <textarea
-                  value={reasonForAction}
-                  onChange={(e) => setReasonForAction(e.target.value)}
-                  rows="3"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none"
-                  placeholder="Enter reason that will be shown to the user"
-                />
-              </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-900 mb-2">
+                    Reason for Action (User-facing):
+                  </label>
+                  <textarea
+                    value={reasonForAction}
+                    onChange={(e) => setReasonForAction(e.target.value)}
+                    rows="3"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none"
+                    placeholder="Enter reason that will be shown to the user"
+                  />
+                </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-900 mb-2">
-                  Internal Moderator Notes:
-                </label>
-                <textarea
-                  value={moderatorNotes}
-                  onChange={(e) => setModeratorNotes(e.target.value)}
-                  rows="3"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none"
-                  placeholder="Enter internal notes for moderation team"
-                />
+                <div>
+                  <label className="block text-sm font-medium text-gray-900 mb-2">
+                    Internal Moderator Notes:
+                  </label>
+                  <textarea
+                    value={moderatorNotes}
+                    onChange={(e) => setModeratorNotes(e.target.value)}
+                    rows="3"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none"
+                    placeholder="Enter internal notes for moderation team"
+                  />
+                </div>
               </div>
             </div>
-          </div>
+          )}
 
           {/* Submit Button */}
           <button
