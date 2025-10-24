@@ -1,6 +1,14 @@
 import React from 'react';
 
-const OrderDetail = ({ order, onBack }) => {
+const OrderDetail = ({
+  order,
+  onBack,
+  onOpenReceiveSchedule,
+  onOpenReturnSchedule,
+  receiveDetails,
+  returnDetails,
+  canEditReturn,
+}) => {
   if (!order) {
     return (
       <div className="text-center py-16">
@@ -151,6 +159,73 @@ const OrderDetail = ({ order, onBack }) => {
             </p>
           </div>
         )}
+      </div>
+      <div className="grid gap-6 mt-6 md:grid-cols-2">
+        <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+          <div className="flex items-start justify-between">
+            <div>
+              <h3 className="text-xl font-bold text-gray-900">Receiving</h3>
+              <p className="mt-1 text-sm text-gray-600">
+                Set when and where you want to receive this order.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={onOpenReceiveSchedule}
+              className="rounded-full border border-indigo-200 px-4 py-1.5 text-sm font-semibold text-indigo-600 transition-colors hover:bg-indigo-50 hover:border-indigo-300"
+            >
+              {receiveDetails ? 'Edit' : 'Add'}
+            </button>
+          </div>
+          <div className="mt-4 rounded-xl bg-indigo-50/60 p-4 text-sm text-gray-700">
+            <p>
+              <span className="font-semibold text-gray-900">Date:</span>{' '}
+              {receiveDetails?.date || 'Not set'}
+            </p>
+            <p className="mt-2">
+              <span className="font-semibold text-gray-900">Location:</span>{' '}
+              {receiveDetails?.location || 'Not set'}
+            </p>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+          <div className="flex items-start justify-between">
+            <div>
+              <h3 className="text-xl font-bold text-gray-900">Return</h3>
+              <p className="mt-1 text-sm text-gray-600">
+                Let us know the return plan so the seller can prepare.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={onOpenReturnSchedule}
+              disabled={!canEditReturn}
+              className={`rounded-full border px-4 py-1.5 text-sm font-semibold transition-colors ${
+                canEditReturn
+                  ? 'border-indigo-200 text-indigo-600 hover:bg-indigo-50 hover:border-indigo-300'
+                  : 'border-gray-200 text-gray-400 cursor-not-allowed'
+              }`}
+            >
+              {returnDetails ? 'Edit' : 'Add'}
+            </button>
+          </div>
+          <div className="mt-4 rounded-xl bg-indigo-50/60 p-4 text-sm text-gray-700">
+            <p>
+              <span className="font-semibold text-gray-900">Date:</span>{' '}
+              {returnDetails?.date || 'Not set'}
+            </p>
+            <p className="mt-2">
+              <span className="font-semibold text-gray-900">Location:</span>{' '}
+              {returnDetails?.location || 'Not set'}
+            </p>
+            {!canEditReturn && (
+              <p className="mt-3 text-xs text-gray-500">
+                Return scheduling unlocks after the order is marked as received.
+              </p>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );

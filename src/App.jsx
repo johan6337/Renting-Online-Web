@@ -9,6 +9,8 @@ import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ProfilePage from './pages/ProfilePage';
 import CartPage from './pages/CartPage';
 import ProductDetails from './pages/ProductDetails';
+import ReviewPage from './pages/Review';
+import ReviewSummary from './pages/ReviewSummary';
 
 // Seller Pages
 import SellerDashboard from './pages/seller/SellerDashboard';
@@ -59,6 +61,8 @@ const App = () => {
       <Route path="/product" element={<ProductPage />} />
       <Route path="/product/:productId" element={<ProductDetails />} />
       <Route path="/orders" element={<OrdersPage />} />
+      <Route path="/review" element={<ReviewPage />} />
+      <Route path="/review/completed" element={<ReviewSummary />} />
     </Routes>
   );
 };

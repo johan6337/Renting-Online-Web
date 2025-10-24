@@ -14,7 +14,7 @@ import {
   Settings,
 } from "lucide-react";
 
-export default function BorrowitHeader() {
+export default function Header() {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const userMenuRef = useRef(null);
   const navigate = useNavigate();
@@ -183,14 +183,14 @@ export default function BorrowitHeader() {
 USAGE
 -----
 1) Install icons: `npm i lucide-react`
-2) Import and render: `import BorrowitHeader from './BorrowitHeader'`
+2) Import and render: `import Header from './Header'`
 3) Click the user icon to toggle the dropdown.
 */
 
 // import React from "react";
 // import { Search, ShoppingCart, UserRound, ChevronDown } from "lucide-react";
 
-// export default function BorrowitHeader() {
+// export default function Header() {
 //   return (
 //     <header className="w-full bg-white">
 //       <div className="mx-auto max-w-7xl px-3 sm:px-4 md:px-6">
