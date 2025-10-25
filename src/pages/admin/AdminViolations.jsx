@@ -3,6 +3,7 @@ import Sidebar_Admin from '../../components/sidebar/Sidebar_Admin';
 import { Bell, Search, Filter } from 'lucide-react';
 import AdminActionForm from './AdminActionForm';
 import ReportDetailModal from './ReportDetailModal';
+import ActionViewModal from './ActionViewModal';
 
 const AdminReportedUsers = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -10,6 +11,7 @@ const AdminReportedUsers = () => {
   const [selectedReport, setSelectedReport] = useState(null);
   const [showActionForm, setShowActionForm] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
+  const [showActionView, setShowActionView] = useState(false);
 
   const reportedUsers = [
     { 
@@ -34,7 +36,16 @@ const AdminReportedUsers = () => {
       reportingUser: 'Nick Gurr', 
       reason: 'Impersonation or Fake Account',
       dateFiled: 'Jan 13, 2025',
-      status: 'Resolved'
+      status: 'Resolved',
+      action: {
+        type: 'Account Restriction',
+        trustScoreDeduction: 50,
+        restrictionDuration: 7,
+        reasonForAction: 'User was found to be impersonating another person, violating our community guidelines.',
+        moderatorNotes: 'Verified with multiple reports. User account temporarily restricted.',
+        resolvedDate: 'Jan 14, 2025',
+        resolvedBy: 'Admin John'
+      }
     },
     { 
       id: 4, 
@@ -42,7 +53,14 @@ const AdminReportedUsers = () => {
       reportingUser: 'Mike Hawk', 
       reason: 'Intellectual Property Infringement',
       dateFiled: 'Jan 12, 2025',
-      status: 'Pending'
+      status: 'Dismissed',
+      action: {
+        type: 'Dismiss Report',
+        reasonForAction: 'After investigation, no evidence of intellectual property infringement was found.',
+        moderatorNotes: 'Report appears to be unfounded. No action taken.',
+        resolvedDate: 'Jan 13, 2025',
+        resolvedBy: 'Admin Sarah'
+      }
     },
     { 
       id: 5, 
@@ -58,7 +76,30 @@ const AdminReportedUsers = () => {
       reportingUser: 'Vin Diesel', 
       reason: 'Harassment or Hate Speech',
       dateFiled: 'Jan 10, 2025',
-      status: 'Resolved'
+      status: 'Resolved',
+      action: {
+        type: 'Official Warning',
+        trustScoreDeduction: 25,
+        reasonForAction: 'User violated community standards by posting hateful content.',
+        moderatorNotes: 'First offense. Official warning issued.',
+        resolvedDate: 'Jan 11, 2025',
+        resolvedBy: 'Admin Mike'
+      }
+    },
+    { 
+      id: 7, 
+      reportedUser: 'Alex Johnson', 
+      reportingUser: 'Ben Dover', 
+      reason: 'Spam or Misleading Content',
+      dateFiled: 'Jan 9, 2025',
+      status: 'Dismissed',
+      action: {
+        type: 'Dismiss Report',
+        reasonForAction: 'Content was verified to be legitimate and not spam.',
+        moderatorNotes: 'False report. No violation found.',
+        resolvedDate: 'Jan 10, 2025',
+        resolvedBy: 'Admin Lisa'
+      }
     },
   ];
 
@@ -73,6 +114,11 @@ const AdminReportedUsers = () => {
   const handleResolveClick = (report) => {
     setSelectedReport(report);
     setShowActionForm(true);
+  };
+
+  const handleViewActionClick = (report) => {
+    setSelectedReport(report);
+    setShowActionView(true);
   };
 
   const handleViewDetailClick = (report) => {
@@ -90,26 +136,29 @@ const AdminReportedUsers = () => {
     setSelectedReport(null);
   };
 
+  const handleCloseActionView = () => {
+    setShowActionView(false);
+    setSelectedReport(null);
+  };
+
+  const getStatusStyles = (status) => {
+    switch (status) {
+      case 'Pending':
+        return 'bg-yellow-100 text-yellow-700';
+      case 'Resolved':
+        return 'bg-green-100 text-green-700';
+      case 'Dismissed':
+        return 'bg-gray-100 text-gray-700';
+      default:
+        return 'bg-gray-100 text-gray-700';
+    }
+  };
+
   return (
     <div className="flex min-h-screen bg-gray-50">
       <Sidebar_Admin active="Resolve Violations" />
       
       <div className="flex-1">
-        {/* Top Header */}
-        {/* <header className="bg-white border-b border-gray-200 px-8 py-4">
-          <div className="flex justify-end items-center">
-            <div className="flex items-center gap-4">
-              <button className="p-2 hover:bg-gray-100 rounded-full transition-colors">
-                <Bell className="h-6 w-6 text-gray-600" />
-              </button>
-              <div className="flex items-center gap-3 pl-4 border-l border-gray-200">
-                <span className="text-sm font-medium text-gray-700">Admin account</span>
-                <div className="w-10 h-10 bg-gradient-to-br from-purple-400 to-blue-400 rounded-full"></div>
-              </div>
-            </div>
-          </div>
-        </header> */}
-
         {/* Main Content */}
         <main className="p-8">
           <div className="flex justify-between items-center mb-6">
@@ -138,6 +187,7 @@ const AdminReportedUsers = () => {
                 <option>All</option>
                 <option>Pending</option>
                 <option>Resolved</option>
+                <option>Dismissed</option>
               </select>
             </div>
           </div>
@@ -183,15 +233,11 @@ const AdminReportedUsers = () => {
                         View details
                       </button>
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-600">{report.dateFiled}
+                    <td className="px-6 py-4 text-sm text-gray-600">
                       {report.dateFiled}
                     </td>
                     <td className="px-6 py-4">
-                      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                        report.status === 'Pending' 
-                          ? 'bg-yellow-100 text-yellow-700' 
-                          : 'bg-green-100 text-green-700'
-                      }`}>
+                      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusStyles(report.status)}`}>
                         {report.status}
                       </span>
                     </td>
@@ -205,6 +251,7 @@ const AdminReportedUsers = () => {
                         </button>
                       ) : (
                         <button 
+                          onClick={() => handleViewActionClick(report)}
                           className="text-blue-600 hover:text-blue-800 hover:underline text-sm font-medium transition-colors"
                         >
                           View
@@ -230,6 +277,13 @@ const AdminReportedUsers = () => {
         <ReportDetailModal
           report={selectedReport}
           onClose={handleCloseDetailModal}
+        />
+      )}
+
+      {showActionView && (
+        <ActionViewModal
+          report={selectedReport}
+          onClose={handleCloseActionView}
         />
       )}
     </div>
