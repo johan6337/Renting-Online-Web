@@ -92,7 +92,7 @@ const ReportUserForm = ({ userName, onClose }) => {
           </div>
 
           {/* Attachments */}
-          <div className="mb-6">
+          {/* <div className="mb-6">
             <label className="block text-sm font-semibold text-gray-900 mb-2">
               Add attachments (optional)
             </label>
@@ -110,7 +110,7 @@ const ReportUserForm = ({ userName, onClose }) => {
                 Selected: {attachments.name}
               </p>
             )}
-          </div>
+          </div> */}
 
           {/* Action Buttons */}
           <div className="flex gap-3 pt-4 border-t border-gray-200">

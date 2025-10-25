@@ -2,12 +2,14 @@ import React, { useState } from 'react';
 import Sidebar_Admin from '../../components/sidebar/Sidebar_Admin';
 import { Bell, Search, Filter } from 'lucide-react';
 import AdminActionForm from './AdminActionForm';
+import ReportDetailModal from './ReportDetailModal';
 
 const AdminReportedUsers = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [selectedReport, setSelectedReport] = useState(null);
   const [showActionForm, setShowActionForm] = useState(false);
+  const [showDetailModal, setShowDetailModal] = useState(false);
 
   const reportedUsers = [
     { 
@@ -73,8 +75,18 @@ const AdminReportedUsers = () => {
     setShowActionForm(true);
   };
 
+  const handleViewDetailClick = (report) => {
+    setSelectedReport(report);
+    setShowDetailModal(true);
+  };
+
   const handleCloseForm = () => {
     setShowActionForm(false);
+    setSelectedReport(null);
+  };
+
+  const handleCloseDetailModal = () => {
+    setShowDetailModal(false);
     setSelectedReport(null);
   };
 
@@ -84,7 +96,7 @@ const AdminReportedUsers = () => {
       
       <div className="flex-1">
         {/* Top Header */}
-        <header className="bg-white border-b border-gray-200 px-8 py-4">
+        {/* <header className="bg-white border-b border-gray-200 px-8 py-4">
           <div className="flex justify-end items-center">
             <div className="flex items-center gap-4">
               <button className="p-2 hover:bg-gray-100 rounded-full transition-colors">
@@ -96,7 +108,7 @@ const AdminReportedUsers = () => {
               </div>
             </div>
           </div>
-        </header>
+        </header> */}
 
         {/* Main Content */}
         <main className="p-8">
@@ -164,11 +176,14 @@ const AdminReportedUsers = () => {
                       {report.reportingUser}
                     </td>
                     <td className="px-6 py-4 text-sm">
-                      <button className="text-blue-600 hover:text-blue-800 hover:underline font-medium transition-colors">
+                      <button 
+                        onClick={() => handleViewDetailClick(report)}
+                        className="text-blue-600 hover:text-blue-800 hover:underline font-medium transition-colors"
+                      >
                         View details
                       </button>
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-600">
+                    <td className="px-6 py-4 text-sm text-gray-600">{report.dateFiled}
                       {report.dateFiled}
                     </td>
                     <td className="px-6 py-4">
@@ -208,6 +223,13 @@ const AdminReportedUsers = () => {
         <AdminActionForm 
           report={selectedReport}
           onClose={handleCloseForm}
+        />
+      )}
+
+      {showDetailModal && (
+        <ReportDetailModal
+          report={selectedReport}
+          onClose={handleCloseDetailModal}
         />
       )}
     </div>

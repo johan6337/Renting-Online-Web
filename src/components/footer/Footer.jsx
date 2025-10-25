@@ -15,9 +15,9 @@ export default function Footer() {
   return (
     <footer className="bg-black text-white">
       <div className="max-w-7xl mx-auto px-6 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 lg:gap-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-12">
           {/* Exclusive Section */}
-          <div className="space-y-4">
+          {/* <div className="space-y-4">
             <h3 className="text-xl font-bold">Exclusive</h3>
             <p className="text-base font-medium">Subscribe</p>
             <p className="text-sm">Get 10% off your first order</p>
@@ -38,21 +38,21 @@ export default function Footer() {
                 <FaPaperPlane className="w-5 h-5" />
               </button>
             </form>
-          </div>
+          </div> */}
 
           {/* Support Section */}
           <div className="space-y-4">
             <h3 className="text-xl font-bold">Support</h3>
             <address className="not-italic space-y-3 text-sm">
-              <p>111 Bijoy sarani, Dhaka,<br />DH 1515, Bangladesh.</p>
+              <p>268 Ly Thuong Kiet,<br />Dien Hong Ward,  Ho Chi Minh City</p>
               <p>
-                <a href="mailto:exclusive@gmail.com" className="hover:underline">
-                  exclusive@gmail.com
+                <a href="mailto:hieu.tranducminh@gmail.com" className="hover:underline">
+                  hieu.tranducminh@gmail.com
                 </a>
               </p>
               <p>
                 <a href="tel:+88015888889999" className="hover:underline">
-                  +88015-88888-9999
+                  +84 12345678
                 </a>
               </p>
             </address>
@@ -77,15 +77,10 @@ export default function Footer() {
                   <Link to="/cart" className="hover:underline">
                     Cart
                   </Link>
-                </li>
+                </li>            
                 <li>
-                  <a href="#" className="hover:underline">
-                    Wishlist
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:underline">
-                    Shop
+                  <a href="/product" className="hover:underline">
+                    Products
                   </a>
                 </li>
               </ul>
@@ -93,7 +88,7 @@ export default function Footer() {
           </div>
 
           {/* Quick Link Section */}
-          <div className="space-y-4">
+          {/* <div className="space-y-4">
             <h3 className="text-xl font-bold">Quick Link</h3>
             <nav>
               <ul className="space-y-3 text-sm">
@@ -119,7 +114,7 @@ export default function Footer() {
                 </li>
               </ul>
             </nav>
-          </div>
+          </div> */}
 
           {/* Social Media Icons */}
           <div className="space-y-4">
@@ -147,7 +142,7 @@ export default function Footer() {
       <div className="border-t border-gray-800">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <p className="text-center text-sm text-gray-400">
-            © Copyright Rimel 2022. All right reserved
+            Made by Team 4 - Minh Hieu - Cong Hieu - Minh Hoang - Van Hoang - Thuong Hai
           </p>
         </div>
       </div>

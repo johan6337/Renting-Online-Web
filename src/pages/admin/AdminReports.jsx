@@ -16,7 +16,7 @@ const AdminReports = () => {
       
       <div className="flex-1">
         {/* Top Header */}
-        <header className="bg-white border-b border-gray-200 px-8 py-4">
+        {/* <header className="bg-white border-b border-gray-200 px-8 py-4">
           <div className="flex justify-end items-center">
             <div className="flex items-center gap-4">
               <button className="p-2 hover:bg-gray-100 rounded-full transition-colors">
@@ -28,7 +28,7 @@ const AdminReports = () => {
               </div>
             </div>
           </div>
-        </header>
+        </header> */}
 
         {/* Main Content */}
         <main className="p-8">

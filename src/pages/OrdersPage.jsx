@@ -1,21 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../components/header/Header';
 import Footer from '../components/footer/Footer';
 import OrderList from '../components/orders/OrderList';
 import OrderDetail from '../components/orders/OrderDetail';
 import OrderScheduleModal from '../components/orders/OrderScheduleModal';
-
-const hasTimelineStepCompleted = (order, stepTitle) => {
-  if (!order || !Array.isArray(order.timeline)) {
-    return false;
-  }
-  const normalizedStep = stepTitle.trim().toLowerCase();
-  return order.timeline.some(
-    (event) =>
-      (event?.title || '').trim().toLowerCase() === normalizedStep && event.completed
-  );
-};
+import RatingModal from '../components/orders/RatingModal';
 
 const OrdersPage = () => {
   const navigate = useNavigate();
@@ -24,13 +14,74 @@ const OrdersPage = () => {
   const [scheduleModalType, setScheduleModalType] = useState(null);
   const [scheduleOrderNumber, setScheduleOrderNumber] = useState(null);
   const [scheduleByOrder, setScheduleByOrder] = useState({});
-  const [autoPrompted, setAutoPrompted] = useState({});
+  const [ratingModalOpen, setRatingModalOpen] = useState(false);
+  const [ratingOrderNumber, setRatingOrderNumber] = useState(null);
+  const [orderRatings, setOrderRatings] = useState({});
 
-  const orders = [
+  const [orders, setOrders] = useState([
+    {
+      orderNumber: "ORD-2025-0325",
+      placedDate: "September 16, 2025",
+      status: "Ordered",
+      sellerName: "Premium Fashion",
+      items: [
+        {
+          productId: "PRD-005",
+          name: "Designer Coat",
+          size: "Large",
+          color: "Grey",
+          rentalPeriod: "5 days",
+          price: 300,
+          imageUrl: "https://images.unsplash.com/photo-1539533018447-63fcce2678e3?w=400&h=400&fit=crop"
+        }
+      ],
+      totalAmount: 300,
+      subtotal: 300,
+      shippingAddress: {
+        name: "John Doe",
+        address: "123 Fashion Street",
+        city: "New York",
+        state: "NY",
+        zipCode: "10001",
+        phone: "+1 (555) 123-4567"
+      },
+      timeline: [
+        {
+          title: "Order Placed",
+          date: "September 16, 2025 - 11:00 AM",
+          completed: true,
+          description: "Your order has been confirmed and payment received."
+        },
+        {
+          title: "Shipping",
+          date: "Pending",
+          completed: false,
+          description: "Waiting for seller to confirm and ship."
+        },
+        {
+          title: "Received",
+          date: "Pending",
+          completed: false,
+          description: "Awaiting confirmation that you received the items."
+        },
+        {
+          title: "Using",
+          date: "Pending",
+          completed: false,
+          description: "You will be using the rented items."
+        },
+        {
+          title: "Returned",
+          date: "Pending",
+          completed: false,
+          description: "Items will be returned to the seller."
+        }
+      ]
+    },
     {
       orderNumber: "ORD-2025-0324",
       placedDate: "September 15, 2025",
-      status: "Active",
+      status: "Shipping",
       sellerName: "Fashion Store Co.",
       items: [
         {
@@ -68,19 +119,149 @@ const OrdersPage = () => {
           title: "Order Placed",
           date: "September 15, 2025 - 10:30 AM",
           completed: true,
-          description: "Your order has been confirmed and is being prepared."
+          description: "Your order has been confirmed and payment received."
+        },
+        {
+          title: "Shipping",
+          date: "September 15, 2025 - 2:00 PM",
+          completed: true,
+          description: "Items are being shipped to your location."
         },
         {
           title: "Received",
           date: "Expected: September 17, 2025",
           completed: false,
-          description: "Awaiting confirmation that the rental items were received."
+          description: "Awaiting confirmation that you received the items."
+        },
+        {
+          title: "Using",
+          date: "Pending",
+          completed: false,
+          description: "You are using the rented items."
         },
         {
           title: "Returned",
           date: "Pending",
           completed: false,
-          description: "Return details will appear once the items are sent back."
+          description: "Items will be returned to the seller."
+        }
+      ]
+    },
+    {
+      orderNumber: "ORD-2025-0299",
+      placedDate: "September 10, 2025",
+      status: "Using",
+      sellerName: "Style Hub",
+      items: [
+        {
+          productId: "PRD-004",
+          name: "Leather Jacket",
+          size: "Large",
+          color: "Black",
+          rentalPeriod: "5 days",
+          price: 250,
+          imageUrl: "https://images.unsplash.com/photo-1551028719-00167b16eac5?w=400&h=400&fit=crop"
+        }
+      ],
+      totalAmount: 250,
+      subtotal: 250,
+      shippingAddress: {
+        name: "John Doe",
+        address: "123 Fashion Street",
+        city: "New York",
+        state: "NY",
+        zipCode: "10001",
+        phone: "+1 (555) 123-4567"
+      },
+      timeline: [
+        {
+          title: "Order Placed",
+          date: "September 10, 2025 - 9:00 AM",
+          completed: true,
+          description: "Your order has been confirmed and payment received."
+        },
+        {
+          title: "Shipping",
+          date: "September 10, 2025 - 11:00 AM",
+          completed: true,
+          description: "Items shipped successfully."
+        },
+        {
+          title: "Received",
+          date: "September 12, 2025 - 3:00 PM",
+          completed: true,
+          description: "You confirmed receiving the items."
+        },
+        {
+          title: "Using",
+          date: "September 12, 2025 - 3:00 PM",
+          completed: true,
+          description: "Currently using the rented items."
+        },
+        {
+          title: "Returned",
+          date: "Expected: September 17, 2025",
+          completed: false,
+          description: "Return the items when rental period ends."
+        }
+      ]
+    },
+    {
+      orderNumber: "ORD-2025-0300",
+      placedDate: "September 9, 2025",
+      status: "Return",
+      sellerName: "Urban Wear",
+      items: [
+        {
+          productId: "PRD-006",
+          name: "Casual Hoodie",
+          size: "Medium",
+          color: "Navy",
+          rentalPeriod: "4 days",
+          price: 95,
+          imageUrl: "https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=400&h=400&fit=crop"
+        }
+      ],
+      totalAmount: 95,
+      subtotal: 95,
+      shippingAddress: {
+        name: "John Doe",
+        address: "123 Fashion Street",
+        city: "New York",
+        state: "NY",
+        zipCode: "10001",
+        phone: "+1 (555) 123-4567"
+      },
+      timeline: [
+        {
+          title: "Order Placed",
+          date: "September 9, 2025 - 1:00 PM",
+          completed: true,
+          description: "Your order has been confirmed and payment received."
+        },
+        {
+          title: "Shipping",
+          date: "September 9, 2025 - 4:00 PM",
+          completed: true,
+          description: "Items shipped successfully."
+        },
+        {
+          title: "Received",
+          date: "September 11, 2025 - 10:00 AM",
+          completed: true,
+          description: "You confirmed receiving the items."
+        },
+        {
+          title: "Using",
+          date: "September 11, 2025 - 10:00 AM",
+          completed: true,
+          description: "Used the rented items."
+        },
+        {
+          title: "Returned",
+          date: "September 15, 2025 - 2:00 PM",
+          completed: true,
+          description: "Return initiated. Waiting for seller confirmation."
         }
       ]
     },
@@ -113,24 +294,143 @@ const OrdersPage = () => {
       timeline: [
         {
           title: "Order Placed",
-          date: "September 8, 2025",
-          completed: true
+          date: "September 8, 2025 - 10:00 AM",
+          completed: true,
+          description: "Your order has been confirmed and payment received."
+        },
+        {
+          title: "Shipping",
+          date: "September 8, 2025 - 2:00 PM",
+          completed: true,
+          description: "Items shipped successfully."
         },
         {
           title: "Received",
-          date: "September 10, 2025",
+          date: "September 10, 2025 - 11:00 AM",
           completed: true,
-          description: "Items confirmed as received."
+          description: "You confirmed receiving the items."
+        },
+        {
+          title: "Using",
+          date: "September 10, 2025 - 11:00 AM",
+          completed: true,
+          description: "Used the rented items."
         },
         {
           title: "Returned",
-          date: "September 13, 2025",
+          date: "September 13, 2025 - 4:00 PM",
           completed: true,
-          description: "Item successfully returned."
+          description: "Items successfully returned and order completed."
+        }
+      ]
+    },
+    {
+      orderNumber: "ORD-2025-0297",
+      placedDate: "September 7, 2025",
+      status: "Completed",
+      sellerName: "Chic Boutique",
+      items: [
+        {
+          productId: "PRD-007",
+          name: "Evening Dress",
+          size: "Small",
+          color: "Red",
+          rentalPeriod: "2 days",
+          price: 220,
+          imageUrl: "https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=400&h=400&fit=crop"
+        }
+      ],
+      totalAmount: 220,
+      subtotal: 220,
+      shippingAddress: {
+        name: "John Doe",
+        address: "123 Fashion Street",
+        city: "New York",
+        state: "NY",
+        zipCode: "10001",
+        phone: "+1 (555) 123-4567"
+      },
+      timeline: [
+        {
+          title: "Order Placed",
+          date: "September 7, 2025 - 8:00 AM",
+          completed: true,
+          description: "Your order has been confirmed and payment received."
+        },
+        {
+          title: "Shipping",
+          date: "September 7, 2025 - 12:00 PM",
+          completed: true,
+          description: "Items shipped successfully."
+        },
+        {
+          title: "Received",
+          date: "September 9, 2025 - 9:00 AM",
+          completed: true,
+          description: "You confirmed receiving the items."
+        },
+        {
+          title: "Using",
+          date: "September 9, 2025 - 9:00 AM",
+          completed: true,
+          description: "Used the rented items."
+        },
+        {
+          title: "Returned",
+          date: "September 11, 2025 - 5:00 PM",
+          completed: true,
+          description: "Items successfully returned and order completed."
         }
       ]
     }
-  ];
+  ]);
+
+  const handleConfirmReceived = (order) => {
+    setOrders(prevOrders =>
+      prevOrders.map(o => {
+        if (o.orderNumber === order.orderNumber) {
+          // Update timeline to mark "Received" and "Using" as completed
+          const updatedTimeline = o.timeline.map(event => {
+            if (event.title.toLowerCase() === 'received' || event.title.toLowerCase() === 'using') {
+              return {
+                ...event,
+                completed: true,
+                date: event.title.toLowerCase() === 'received' 
+                  ? new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) + ' - ' + new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
+                  : event.date
+              };
+            }
+            return event;
+          });
+          return { ...o, status: 'Using', timeline: updatedTimeline };
+        }
+        return o;
+      })
+    );
+  };
+
+  const handleInitiateReturn = (order) => {
+    setOrders(prevOrders =>
+      prevOrders.map(o => {
+        if (o.orderNumber === order.orderNumber) {
+          // Update timeline to mark "Returned" as completed
+          const updatedTimeline = o.timeline.map(event => {
+            if (event.title.toLowerCase() === 'returned') {
+              return {
+                ...event,
+                completed: true,
+                date: new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) + ' - ' + new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }),
+                description: 'Return initiated by customer.'
+              };
+            }
+            return event;
+          });
+          return { ...o, status: 'Return', timeline: updatedTimeline };
+        }
+        return o;
+      })
+    );
+  };
 
   const handleViewDetails = (order) => {
     setSelectedOrder(order);
@@ -141,6 +441,20 @@ const OrdersPage = () => {
   };
 
   const isCompletedOrder = (order) => order.status?.toLowerCase() === 'completed';
+
+  const handleOpenRatingModal = (order) => {
+    setRatingOrderNumber(order.orderNumber);
+    setRatingModalOpen(true);
+  };
+
+  const handleSubmitRating = (ratingData) => {
+    setOrderRatings(prev => ({
+      ...prev,
+      [ratingOrderNumber]: ratingData
+    }));
+    setRatingModalOpen(false);
+    setRatingOrderNumber(null);
+  };
 
   const hasStoredReview = () => {
     if (typeof window === 'undefined') {
@@ -161,27 +475,12 @@ const OrdersPage = () => {
   };
 
   const handleOpenScheduleModal = (order, type) => {
-    if (type === 'return' && !hasTimelineStepCompleted(order, 'received')) {
-      return;
-    }
     setScheduleOrderNumber(order.orderNumber);
     setScheduleModalType(type);
     setScheduleModalOpen(true);
   };
 
   const handleCloseScheduleModal = () => {
-    setAutoPrompted((prev) => {
-      if (!scheduleOrderNumber || !scheduleModalType) {
-        return prev;
-      }
-      return {
-        ...prev,
-        [scheduleOrderNumber]: {
-          ...(prev[scheduleOrderNumber] || {}),
-          [scheduleModalType]: true,
-        },
-      };
-    });
     setScheduleModalOpen(false);
     setScheduleOrderNumber(null);
     setScheduleModalType(null);
@@ -211,54 +510,8 @@ const OrdersPage = () => {
       ? scheduleByOrder[scheduleOrderNumber]?.[scheduleModalType]
       : null;
 
-  useEffect(() => {
-    if (!selectedOrder || scheduleModalOpen) {
-      return;
-    }
-
-    const orderNumber = selectedOrder.orderNumber;
-    const scheduleForOrder = scheduleByOrder[orderNumber] || {};
-    const promptStatus = autoPrompted[orderNumber] || {};
-
-    if (
-      hasTimelineStepCompleted(selectedOrder, 'order placed') &&
-      !scheduleForOrder.receive &&
-      !promptStatus.receive
-    ) {
-      setAutoPrompted((prev) => ({
-        ...prev,
-        [orderNumber]: {
-          ...(prev[orderNumber] || {}),
-          receive: true,
-        },
-      }));
-      setScheduleOrderNumber(orderNumber);
-      setScheduleModalType('receive');
-      setScheduleModalOpen(true);
-      return;
-    }
-
-    if (
-      hasTimelineStepCompleted(selectedOrder, 'received') &&
-      !scheduleForOrder.return &&
-      !promptStatus.return
-    ) {
-      setAutoPrompted((prev) => ({
-        ...prev,
-        [orderNumber]: {
-          ...(prev[orderNumber] || {}),
-          return: true,
-        },
-      }));
-      setScheduleOrderNumber(orderNumber);
-      setScheduleModalType('return');
-      setScheduleModalOpen(true);
-    }
-  }, [selectedOrder, scheduleModalOpen, scheduleByOrder, autoPrompted]);
-
   if (selectedOrder) {
     const selectedIsCompleted = isCompletedOrder(selectedOrder);
-    const selectedHasReceivedCompleted = hasTimelineStepCompleted(selectedOrder, 'received');
 
     return (
       <div className="bg-gray-50 min-h-screen">
@@ -270,22 +523,27 @@ const OrdersPage = () => {
           onOpenReturnSchedule={() => handleOpenScheduleModal(selectedOrder, 'return')}
           receiveDetails={selectedReceiveSchedule}
           returnDetails={selectedReturnSchedule}
-          canEditReturn={selectedHasReceivedCompleted}
+          canEditReturn={true}
         />
         {selectedIsCompleted && (
           <div className="max-w-5xl mx-auto px-4">
             <div className="bg-white border border-indigo-100 rounded-2xl shadow-sm p-6 mb-10">
-              <h2 className="text-xl font-semibold text-gray-800">Ready to review this order?</h2>
+              <h2 className="text-xl font-semibold text-gray-800">
+                {orderRatings[selectedOrder.orderNumber] ? 'Your Rating' : 'Rate This Order'}
+              </h2>
               <p className="text-gray-600 mt-2">
-                Share your experience for order #{selectedOrder.orderNumber} to help fellow renters.
+                {orderRatings[selectedOrder.orderNumber] 
+                  ? `You rated this order ${orderRatings[selectedOrder.orderNumber].rating} stars.`
+                  : `Share your experience for order #${selectedOrder.orderNumber} to help fellow renters.`
+                }
               </p>
               <div className="mt-4">
                 <button
                   type="button"
-                  onClick={() => handleReviewNavigation(selectedOrder)}
+                  onClick={() => handleOpenRatingModal(selectedOrder)}
                   className="inline-flex items-center justify-center px-6 py-3 rounded-full bg-indigo-600 text-white font-semibold hover:bg-indigo-700 transition-colors"
                 >
-                  Review Order
+                  {orderRatings[selectedOrder.orderNumber] ? 'Edit Rating' : 'Rate Order'}
                 </button>
               </div>
             </div>
@@ -298,6 +556,16 @@ const OrdersPage = () => {
           initialSchedule={modalInitialSchedule}
           type={scheduleModalType}
         />
+        <RatingModal
+          isOpen={ratingModalOpen}
+          onClose={() => {
+            setRatingModalOpen(false);
+            setRatingOrderNumber(null);
+          }}
+          onSubmit={handleSubmitRating}
+          orderNumber={ratingOrderNumber}
+          existingRating={ratingOrderNumber ? orderRatings[ratingOrderNumber] : null}
+        />
         <Footer />
       </div>
     );
@@ -306,7 +574,12 @@ const OrdersPage = () => {
   return (
     <div className="bg-gray-50 min-h-screen">
       <Header />
-      <OrderList orders={orders} onViewDetails={handleViewDetails} />
+      <OrderList 
+        orders={orders} 
+        onViewDetails={handleViewDetails}
+        onConfirmReceived={handleConfirmReceived}
+        onInitiateReturn={handleInitiateReturn}
+      />
       <OrderScheduleModal
         open={scheduleModalOpen}
         onClose={handleCloseScheduleModal}

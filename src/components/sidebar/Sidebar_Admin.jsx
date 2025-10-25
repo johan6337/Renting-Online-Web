@@ -14,7 +14,7 @@ const Sidebar_Admin = ({ active }) => {
     { name: 'Dashboard', icon: LayoutDashboard, path: '/admin/dashboard' },
     { name: 'User Management', icon: Users, path: '/admin/users' },
     { name: 'Resolve Violations', icon: Gavel, path: '/admin/resolve-violations' },
-    { name: 'Reports', icon: FileText, path: '/admin/reports' }
+    // { name: 'Reports', icon: FileText, path: '/admin/reports' }
   ];
 
   return (

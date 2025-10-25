@@ -19,7 +19,7 @@ const AdminUsers = () => {
       
       <div className="flex-1">
         {/* Top Header */}
-        <header className="bg-white border-b border-gray-200 px-8 py-4">
+        {/* <header className="bg-white border-b border-gray-200 px-8 py-4">
           <div className="flex justify-end items-center">
             <div className="flex items-center gap-4">
               <button className="p-2 hover:bg-gray-100 rounded-full transition-colors">
@@ -31,16 +31,12 @@ const AdminUsers = () => {
               </div>
             </div>
           </div>
-        </header>
+        </header> */}
 
         {/* Main Content */}
         <main className="p-8">
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-3xl font-bold text-gray-900">User Management</h1>
-            <button className="bg-black text-white px-6 py-2.5 rounded-full font-semibold hover:bg-gray-800 transition-colors flex items-center gap-2">
-              <Plus className="h-5 w-5" />
-              Add User
-            </button>
           </div>
 
           <div className="mb-6">
@@ -65,7 +61,7 @@ const AdminUsers = () => {
                   <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Role</th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Status</th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Join Date</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Actions</th>
+                  {/* <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Actions</th> */}
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
@@ -84,7 +80,7 @@ const AdminUsers = () => {
                       </span>
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-600">{user.joinDate}</td>
-                    <td className="px-6 py-4">
+                    {/* <td className="px-6 py-4">
                       <div className="flex gap-2">
                         <button className="text-blue-600 hover:text-blue-800 text-sm font-medium">
                           Edit
@@ -93,7 +89,7 @@ const AdminUsers = () => {
                           Delete
                         </button>
                       </div>
-                    </td>
+                    </td> */}
                   </tr>
                 ))}
               </tbody>

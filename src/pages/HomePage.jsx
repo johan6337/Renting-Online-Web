@@ -59,52 +59,62 @@ const HomePage = () => {
 
     const products = [
         {
+            id: 1,
             name: "Checkered Shirt",
             price: 100,
             image: "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=400&h=400&fit=crop",
             sale: 20,
         },
         {
+            id: 2,
             name: "Denim Jacket",
             price: 80,
             image: "https://images.unsplash.com/photo-1503341455253-b2e723bb3dbb?auto=format&fit=crop&w=400&q=80",
         },
         {
+            id: 3,
             name: "Wireless Headphones",
             price: 120,
             image: "https://images.unsplash.com/photo-1580894908361-967195033215?auto=format&fit=crop&w=400&q=80",
         },
         {
+            id: 4,
             name: "Running Shoes",
             price: 95,
             image: "https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?auto=format&fit=crop&w=400&q=80",
         },
         {
+            id: 5,
             name: "Leather Wallet",
             price: 40,
             image: "https://images.unsplash.com/photo-1657603644005-67891fcc1577?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1470"
         },
         {
+            id: 6,
             name: "Smart Watch",
             price: 199,
             image: "https://images.unsplash.com/photo-1664730021931-9abb25cb0852?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1470"
         },
         {
+            id: 7,
             name: "Backpack",
             price: 60,
             image: "https://images.unsplash.com/photo-1622560480654-d96214fdc887?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTB8fGJhY2twYWNrfGVufDB8fDB8fHww&auto=format&fit=crop&q=60&w=700"
         },
         {
+            id: 8,
             name: "Sunglasses",
             price: 75,
             image: "https://images.unsplash.com/photo-1572635196237-14b3f281503f?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8c3VuZ2xhc3Nlc3xlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&q=60&w=700"
         },
         {
+            id: 9,
             name: "Gaming Mouse",
             price: 49,
             image: "https://images.unsplash.com/photo-1628832306751-ec751454119c?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1545"
         },
         {
+            id: 10,
             name: "Bluetooth Speaker",
             price: 89,
             image: "https://images.unsplash.com/photo-1754142927775-8f1e97ebd030?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1374"
@@ -160,7 +170,7 @@ const HomePage = () => {
                     <div className="flex-1 flex justify-center items-center mb-6 md:mb-20">
                         <img
                             className="w-full max-w-xs md:max-w-md h-48 md:h-3/4 object-cover rounded-3xl mr-0 md:mr-5"
-                            src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80"
+                            src="https://img.freepik.com/premium-vector/e-commerce-web-design-concept-with-people-characters_9209-4610.jpg"
                             alt="intro image"
                         />
                     </div>
@@ -200,10 +210,10 @@ const HomePage = () => {
                     </button>
                 </div>
             </div>
-            <div className='m-20 border border-t-gray-200'></div>
+            {/* <div className='m-20 border border-t-gray-200'></div> */}
 
-            <h2 className="pl-9 md:pl-14 text-2xl md:text-4xl font-black mb-6">OUR HAPPY CUSTOMERS</h2>
-            <CommentList comments={comments} totalReviews={comments.length} />
+            {/* <h2 className="pl-9 md:pl-14 text-2xl md:text-4xl font-black mb-6">OUR HAPPY CUSTOMERS</h2>
+            <CommentList comments={comments} totalReviews={comments.length} /> */}
 
             <Footer />
         </div>

@@ -2,16 +2,18 @@ import React, { useState } from 'react';
 import OrderCard from './OrderCard';
 import ReportUserForm from '../../pages/ReportUserForm';
 
-const OrderList = ({ orders = [], onViewDetails, isSeller = false }) => {
+const OrderList = ({ orders = [], onViewDetails, onTrackOrder, isSeller = false, onConfirmPayment, onCompleteOrder, onConfirmReceived, onInitiateReturn }) => {
   const [activeTab, setActiveTab] = useState('all');
   const [showReportForm, setShowReportForm] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
 
   const tabs = [
     { id: 'all', label: 'All Orders' },
-    { id: 'active', label: 'Active' },
+    { id: 'ordered', label: 'Ordered' },
+    { id: 'shipping', label: 'Shipping' },
+    { id: 'using', label: 'Using' },
+    { id: 'return', label: 'Return' },
     { id: 'completed', label: 'Completed' },
-    { id: 'returned', label: 'Returned' },
   ];
 
   const filteredOrders = orders.filter(order => {
@@ -59,8 +61,13 @@ const OrderList = ({ orders = [], onViewDetails, isSeller = false }) => {
             key={order.orderNumber || order.id} 
             order={order} 
             onViewDetails={onViewDetails}
+            onTrackOrder={onTrackOrder}
             onReportUser={handleReportUser}
             isSeller={isSeller}
+            onConfirmPayment={onConfirmPayment}
+            onCompleteOrder={onCompleteOrder}
+            onConfirmReceived={onConfirmReceived}
+            onInitiateReturn={onInitiateReturn}
           />
         ))
       ) : (

@@ -128,9 +128,9 @@ const CartPage = ({ cartContent }) => {
 
                                         {/* Quantity Selector */}
                                         <div className="flex items-stretch bg-gray-100 overflow-hidden rounded-full px-2 md:px-4 py-1 md:py-3">
-                                            <button className='flex-1 flex justify-center items-center text-xl font-bold px-2 md:px-1 py-0 md:py-0' onClick={() => handleChangeQuantity(item.id, +1)}>+</button>
-                                            <span className='font-bold text-base md:text-lg px-2'>{item.quantity}</span>
                                             <button className='flex-1 flex justify-center items-center text-xl font-bold px-2 md:px-1 py-0 md:py-0 disabled:opacity-50' onClick={() => handleChangeQuantity(item.id, -1)} disabled={item.quantity === 1} >-</button>
+                                            <span className='font-bold text-base md:text-lg px-2'>{item.quantity}</span>
+                                            <button className='flex-1 flex justify-center items-center text-xl font-bold px-2 md:px-1 py-0 md:py-0' onClick={() => handleChangeQuantity(item.id, +1)}>+</button>
                                         </div>
                                     </div>
                                 </div>
@@ -180,7 +180,10 @@ const CartPage = ({ cartContent }) => {
                             </div>
 
                             {/* Checkout Button */}
-                            <button className='group w-full border-2 border-black bg-black hover:bg-white text-white hover:text-black transition-all ease-in-out duration-300 rounded-full py-4 flex justify-center items-center font-bold text-lg gap-2'>
+                            <button 
+                                onClick={() => navigate('/payment', { state: { totalAmount: totalPrice } })}
+                                className='group w-full border-2 border-black bg-black hover:bg-white text-white hover:text-black transition-all ease-in-out duration-300 rounded-full py-4 flex justify-center items-center font-bold text-lg gap-2'
+                            >
                                 <span>Go to Checkout</span>
                                 <HiOutlineArrowRight className='w-5 h-5 transition-transform ease-in-out duration-300 group-hover:translate-x-2 md:group-hover:translate-x-10 hover:overflow-hidden' />
                             </button>

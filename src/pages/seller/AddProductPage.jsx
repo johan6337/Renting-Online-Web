@@ -1,16 +1,36 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import Sidebar_Seller from '../../components/sidebar/Sidebar_Seller';
 import { Bell, ImagePlus, Trash2, ChevronDown } from 'lucide-react';
 
 const AddProductPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const editProduct = location.state?.product; // Get product data if editing
+  const isEditMode = !!editProduct;
+
   const [productName, setProductName] = useState('');
   const [shortDescription, setShortDescription] = useState('');
   const [fullDescription, setFullDescription] = useState('');
   const [price, setPrice] = useState('');
-  const [currency, setCurrency] = useState('Unselected');
+  const [category, setCategory] = useState('');
+  const [sale, setSale] = useState('');
   const [images, setImages] = useState([]);
+
+  // Populate fields if editing
+  useEffect(() => {
+    if (editProduct) {
+      setProductName(editProduct.name || '');
+      setShortDescription(editProduct.shortDescription || '');
+      setFullDescription(editProduct.fullDescription || '');
+      setPrice(editProduct.price?.toString() || '');
+      setCategory(editProduct.category || '');
+      setSale(editProduct.sale?.toString() || '');
+      if (editProduct.image) {
+        setImages([editProduct.image]);
+      }
+    }
+  }, [editProduct]);
 
   const handleImageUpload = (e) => {
     const files = Array.from(e.target.files);
@@ -28,7 +48,13 @@ const AddProductPage = () => {
       alert('Please fill in required fields');
       return;
     }
-    console.log('Continuing to next step...');
+    if (isEditMode) {
+      console.log('Updating product...');
+      alert('Product updated successfully!');
+    } else {
+      console.log('Creating new product...');
+      alert('Product created successfully!');
+    }
     // Navigate to next step or save product
     navigate('/seller/products');
   };
@@ -39,7 +65,7 @@ const AddProductPage = () => {
       
       <div className="flex-1">
         {/* Top Header */}
-        <header className="bg-white border-b border-gray-200 px-8 py-4">
+        {/* <header className="bg-white border-b border-gray-200 px-8 py-4">
           <div className="flex justify-end items-center">
             <div className="flex items-center gap-4">
               <button className="p-2 hover:bg-gray-100 rounded-full transition-colors">
@@ -51,11 +77,16 @@ const AddProductPage = () => {
               </div>
             </div>
           </div>
-        </header>
+        </header> */}
 
         {/* Main Content */}
         <main className="p-8 max-w-4xl">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Product Information</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            {isEditMode ? 'Edit Product' : 'Product Information'}
+          </h1>
+          {isEditMode && (
+            <p className="text-gray-600 mb-4">Update your product information below</p>
+          )}
           
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
             {/* Product Name */}
@@ -151,22 +182,26 @@ const AddProductPage = () => {
             </div>
 
             {/* Price Section */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Product Price Currency
+                  Product Category
                 </label>
                 <div className="relative">
                   <select
-                    value={currency}
-                    onChange={(e) => setCurrency(e.target.value)}
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value)}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black/10 focus:border-black outline-none appearance-none bg-white"
                   >
-                    <option value="Unselected">Unselected</option>
-                    <option value="USD">USD ($)</option>
-                    <option value="EUR">EUR (€)</option>
-                    <option value="GBP">GBP (£)</option>
-                    <option value="VND">VND (₫)</option>
+                    <option value="">Select Category</option>
+                    <option value="clothes">Clothes</option>
+                    <option value="cars">Cars</option>
+                    <option value="electronics">Electronics</option>
+                    <option value="furniture">Furniture</option>
+                    <option value="books">Books</option>
+                    <option value="sports">Sports & Recreation</option>
+                    <option value="tools">Tools & Equipment</option>
+                    <option value="appliances">Appliances</option>
                   </select>
                   <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
                 </div>
@@ -174,20 +209,36 @@ const AddProductPage = () => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Product Price
+                  Product Price (VND)
                 </label>
                 <input
-                  type="text"
+                  type="number"
                   value={price}
                   onChange={(e) => setPrice(e.target.value)}
                   placeholder="0"
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black/10 focus:border-black outline-none"
+                  min="0"
                 />
                 {!price && (
                   <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
-                    <span className="text-red-500">⚠</span> Please enter the product currency first.
+                    <span className="text-red-500">⚠</span> Please enter the product price.
                   </p>
                 )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Sale Discount (%)
+                </label>
+                <input
+                  type="number"
+                  value={sale}
+                  onChange={(e) => setSale(e.target.value)}
+                  placeholder="0"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black/10 focus:border-black outline-none"
+                  min="0"
+                  max="100"
+                />
               </div>
             </div>
           </div>
@@ -203,18 +254,18 @@ const AddProductPage = () => {
             </button>
             
             <div className="flex gap-3">
-              <button
+              {/* <button
                 onClick={handleDraft}
                 className="px-6 py-3 border border-gray-300 rounded-full text-gray-700 font-semibold hover:bg-gray-50 transition-colors"
               >
                 Draft
-              </button>
+              </button> */}
               <button
                 onClick={handleContinue}
                 className="px-6 py-3 bg-black text-white rounded-full font-semibold hover:bg-gray-800 transition-colors flex items-center gap-2"
               >
-                Continue
-                <ChevronDown className="h-5 w-5 rotate-[-90deg]" />
+                {isEditMode ? 'Update Product' : 'Confirm'}
+                
               </button>
             </div>
           </div>

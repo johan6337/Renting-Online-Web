@@ -11,6 +11,7 @@ import CartPage from './pages/CartPage';
 import ProductDetails from './pages/ProductDetails';
 import ReviewPage from './pages/Review';
 import ReviewSummary from './pages/ReviewSummary';
+import PaymentPage from './pages/PaymentPage';
 
 // Seller Pages
 import SellerDashboard from './pages/seller/SellerDashboard';
@@ -43,6 +44,7 @@ const App = () => {
       <Route path="/seller/products" element={<SellerProducts />} />
       <Route path="/seller/orders" element={<SellerOrders />} />
       <Route path="/seller/add-product" element={<AddProductPage />} />
+      <Route path="/seller/edit-product" element={<AddProductPage />} />
       
       {/* Admin Dashboard Routes */}
       <Route path="/admin/dashboard" element={<AdminDashboard />} />
@@ -56,6 +58,7 @@ const App = () => {
       
       {/* Cart - Has Header and Footer */}
       <Route path="/cart" element={<CartPage />} />
+      <Route path="/payment" element={<PaymentPage />} />
       
       {/* Product & Orders Pages - Has Header and Footer */}
       <Route path="/product" element={<ProductPage />} />

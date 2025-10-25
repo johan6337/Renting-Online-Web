@@ -11,7 +11,7 @@ function ProductList({ View = "horizontal", Products = [], modeRate = false }) {
         }
     }
     const [page, setPage] = useState(1);
-    const itemQuantity = View === "horizontal" ? 4 : 9;
+    const itemQuantity = View === "horizontal" ? 4 : 15;
 
     const startIdx = (page - 1) * itemQuantity;
     const endIdx = startIdx + itemQuantity;

@@ -16,7 +16,7 @@ const AdminDashboard = () => {
       
       <div className="flex-1">
         {/* Top Header */}
-        <header className="bg-white border-b border-gray-200 px-8 py-4">
+        {/* <header className="bg-white border-b border-gray-200 px-8 py-4">
           <div className="flex justify-end items-center">
             <div className="flex items-center gap-4">
               <button className="p-2 hover:bg-gray-100 rounded-full transition-colors">
@@ -28,7 +28,7 @@ const AdminDashboard = () => {
               </div>
             </div>
           </div>
-        </header>
+        </header> */}
 
         {/* Main Content */}
         <main className="p-8">
@@ -56,7 +56,7 @@ const AdminDashboard = () => {
               </div>
             </div>
             
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            {/* <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
               <h2 className="text-xl font-bold text-gray-900 mb-4">System Status</h2>
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
@@ -78,7 +78,7 @@ const AdminDashboard = () => {
                   </span>
                 </div>
               </div>
-            </div>
+            </div> */}
           </div>
         </main>
       </div>

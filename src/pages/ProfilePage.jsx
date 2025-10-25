@@ -7,6 +7,7 @@ import { User, Phone, Mail, MapPin, Calendar, Star, Package, Clock, Trophy } fro
 const ProfilePage = () => {
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
+  const [avatarPreview, setAvatarPreview] = useState(null);
   
   const profileData = {
     userInfo: {
@@ -19,7 +20,8 @@ const ProfilePage = () => {
       city: 'New York',
       state: 'NY',
       zipCode: '10001',
-      country: 'United States'
+      country: 'United States',
+      avatar: 'https://ui-avatars.com/api/?name=John+Doe&background=random&size=200'
     },
     stats: [
       { label: 'Total Rentals', value: '24', color: 'text-orange-500' },
@@ -81,6 +83,21 @@ const ProfilePage = () => {
     }));
   };
 
+  const handleAvatarChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setAvatarPreview(reader.result);
+        setUserInfo(prev => ({
+          ...prev,
+          avatar: reader.result
+        }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -98,6 +115,32 @@ const ProfilePage = () => {
             >
               {isEditing ? 'Save Profile' : 'Edit Profile'}
             </button>
+          </div>
+
+          {/* Avatar Section */}
+          <div className="flex flex-col items-center mb-8 pb-8 border-b border-gray-200">
+            <div className="relative">
+              <img
+                src={avatarPreview || userInfo.avatar}
+                alt="Profile Avatar"
+                className="w-32 h-32 rounded-full object-cover border-4 border-gray-200"
+              />
+              {isEditing && (
+                <label className="absolute bottom-0 right-0 bg-red-500 hover:bg-red-600 text-white rounded-full p-2 cursor-pointer transition-colors">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                  </svg>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleAvatarChange}
+                    className="hidden"
+                  />
+                </label>
+              )}
+            </div>
+            <h2 className="mt-4 text-xl font-semibold text-gray-900">{userInfo.firstName} {userInfo.lastName}</h2>
+            <p className="text-gray-600">{userInfo.email}</p>
           </div>
 
           {/* Personal Information */}

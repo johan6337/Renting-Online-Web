@@ -79,11 +79,29 @@ const SellerProducts = () => {
       <div className="flex items-center gap-1">
         {[...Array(5)].map((_, index) => {
           if (index < fullStars) {
-            return <span key={index} className="text-yellow-400">★</span>;
+            return (
+              <svg key={index} className="w-4 h-4 text-yellow-400 fill-current" viewBox="0 0 20 20">
+                <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
+              </svg>
+            );
           } else if (index === fullStars && hasHalfStar) {
-            return <span key={index} className="text-yellow-400">⯨</span>;
+            return (
+              <svg key={index} className="w-4 h-4 text-yellow-400" viewBox="0 0 20 20">
+                <defs>
+                  <linearGradient id={`half-${index}`}>
+                    <stop offset="50%" stopColor="currentColor" />
+                    <stop offset="50%" stopColor="#D1D5DB" />
+                  </linearGradient>
+                </defs>
+                <path fill={`url(#half-${index})`} d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
+              </svg>
+            );
           } else {
-            return <span key={index} className="text-gray-300">★</span>;
+            return (
+              <svg key={index} className="w-4 h-4 text-gray-300 fill-current" viewBox="0 0 20 20">
+                <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
+              </svg>
+            );
           }
         })}
         <span className="text-sm text-gray-600 ml-1">{rating}/5</span>
@@ -97,7 +115,7 @@ const SellerProducts = () => {
       
       <div className="flex-1">
         {/* Top Header */}
-        <header className="bg-white border-b border-gray-200 px-8 py-4">
+        {/* <header className="bg-white border-b border-gray-200 px-8 py-4">
           <div className="flex justify-end items-center">
             <div className="flex items-center gap-4">
               <button className="p-2 hover:bg-gray-100 rounded-full transition-colors">
@@ -109,7 +127,7 @@ const SellerProducts = () => {
               </div>
             </div>
           </div>
-        </header>
+        </header> */}
 
         {/* Main Content */}
         <main className="p-8">
@@ -135,14 +153,18 @@ const SellerProducts = () => {
                 className="w-full bg-gray-100 pl-12 pr-4 py-3 rounded-full text-sm placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-black/10"
               />
             </div>
-            <button className="flex items-center gap-2 px-6 py-3 bg-gray-100 rounded-full text-sm font-medium hover:bg-gray-200 transition-colors">
+            {/* <button className="flex items-center gap-2 px-6 py-3 bg-gray-100 rounded-full text-sm font-medium hover:bg-gray-200 transition-colors">
               Sort by: {sortBy} <ChevronDown className="h-4 w-4" />
-            </button>
+            </button> */}
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {products.map((product) => (
-              <div key={product.id} className="bg-gray-100 rounded-2xl overflow-hidden hover:shadow-md transition-shadow">
+              <div 
+                key={product.id} 
+                onClick={() => navigate('/seller/edit-product', { state: { product } })}
+                className="bg-gray-100 rounded-2xl overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
+              >
                 <div className="aspect-square bg-gray-200 overflow-hidden">
                   <img 
                     src={product.image} 

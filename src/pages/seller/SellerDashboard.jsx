@@ -9,7 +9,7 @@ const SellerDashboard = () => {
     {
       id: "ORD-2025-0324",
       placedDate: "September 15, 2025",
-      status: "Active",
+      status: "Using",
       totalAmount: 467
     },
     {
@@ -32,7 +32,7 @@ const SellerDashboard = () => {
       
       <div className="flex-1">
         {/* Top Header */}
-        <header className="bg-white border-b border-gray-200 px-8 py-4">
+        {/* <header className="bg-white border-b border-gray-200 px-8 py-4">
           <div className="flex justify-end items-center">
             <div className="flex items-center gap-4">
               <button className="p-2 hover:bg-gray-100 rounded-full transition-colors">
@@ -44,7 +44,7 @@ const SellerDashboard = () => {
               </div>
             </div>
           </div>
-        </header>
+        </header> */}
 
         {/* Main Content */}
         <main className="p-8">
@@ -62,7 +62,7 @@ const SellerDashboard = () => {
             <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
               <h3 className="text-gray-500 text-sm font-medium mb-2">Active Orders</h3>
               <p className="text-3xl font-bold text-gray-900">
-                {orders.filter(o => o.status === 'Active').length}
+                {orders.filter(o => o.status === 'Using').length}
               </p>
             </div>
           </div>
@@ -77,7 +77,7 @@ const SellerDashboard = () => {
                     <p className="text-sm text-gray-500">{order.placedDate}</p>
                   </div>
                   <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
-                    order.status === 'Active' 
+                    order.status === 'Using' 
                       ? 'bg-green-100 text-green-600' 
                       : 'bg-blue-100 text-blue-600'
                   }`}>
