@@ -13,13 +13,7 @@ const CartPage = ({ cartContent }) => {
             name: "Checkered Shirt",
             price: 100,
             image: "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=400&h=400&fit=crop",
-            sale: 20,
-            properties: {
-                color: "Red",
-                size: "M",
-                type: "Cotton",
-                brand: "FashionCo"
-            }
+            sale: 20
         },
         {
             id: 2,
@@ -43,10 +37,13 @@ const CartPage = ({ cartContent }) => {
 
     const { items, totalPrice } = cartContent;
 
-    // Hard code quantity cho items
+    // Hard code quantity and rental days for items
     items.forEach(item => {
         if (!item.quantity) {
             item.quantity = 1;
+        }
+        if (!item.rentalDays) {
+            item.rentalDays = 1;
         }
     })
 
@@ -72,6 +69,31 @@ const CartPage = ({ cartContent }) => {
             })
         })
     }
+
+    const handleChangeRentalDays = (itemID, amount) => {
+        setItemList(currentList => {
+            return currentList.map(item => {
+                // Return original item if not the one to update
+                if (item.id !== itemID) return item;
+
+                // Update rental days for the matching item
+                const newRentalDays = Math.max(1, item.rentalDays + amount);
+                return {
+                    ...item,
+                    rentalDays: newRentalDays
+                };
+            })
+        })
+    }
+
+    // Calculate total price based on quantity, rental days, and individual prices
+    const calculateTotalPrice = () => {
+        return itemList.reduce((total, item) => {
+            return total + (item.price * item.quantity * item.rentalDays);
+        }, 0);
+    }
+
+    const calculatedTotal = calculateTotalPrice();
     
 
     const navigate = useNavigate();
@@ -85,14 +107,14 @@ const CartPage = ({ cartContent }) => {
                     <div className='flex-[3] border-2 border-gray-200 rounded-xl'>
                         {itemList.map((item, index) => (
                             <Fragment key={item.id ?? index}>
-                                <div className='flex flex-row relative gap-2 m-4'>
+                                <div className='flex flex-row gap-4 m-4 items-start'>
                                     {/* Item Image */}
-                                    <div className='flex items-center'>
-                                        <img src={item.image} alt={item.name} className='w-28 h-28 rounded-xl object-cover'/>
+                                    <div className='flex-shrink-0'>
+                                        <img src={item.image} alt={item.name} className='w-24 h-24 md:w-28 md:h-28 rounded-xl object-cover'/>
                                     </div>
 
                                     {/* Item Info */}
-                                    <div className='flex flex-col relative'>
+                                    <div className='flex-1 flex flex-col gap-2 min-w-0'>
                                         <h2 className='text-base md:text-xl font-bold'>{item.name}</h2>
                                         {item.properties && (
                                             <div className={`grid grid-flow-col grid-rows-2 grid-cols-${cols} items-start gap-x-4`}>
@@ -104,18 +126,20 @@ const CartPage = ({ cartContent }) => {
                                                 ))}
                                             </div>
                                         )}
-                                        <span className='text-xl font-bold text-black absolute bottom-0'>${item.price}</span>
+                                        <div className='mt-auto'>
+                                            <span className='text-sm text-gray-600 block'>${item.price}/day × {item.rentalDays} day{item.rentalDays > 1 ? 's' : ''}</span>
+                                            <span className='text-xl font-bold text-black'>${item.price * item.rentalDays}</span>
+                                        </div>
                                     </div>
                                     
                                     {/* More Interactions */}
-                                    <div className='h-full absolute right-0 flex flex-col justify-between'>
+                                    <div className='flex-shrink-0 flex flex-col items-end gap-3'>
                                         {/* Remove Item From Cart */}
                                         <button className='flex flex-row justify-end'>
                                             <svg 
                                                 xmlns="http://www.w3.org/2000/svg" 
                                                 viewBox="0 0 24 24" 
                                                 fill="currentColor" 
-                                                // Add your Tailwind classes here
                                                 className="w-5 h-5 text-red-500 hover:text-red-700"
                                             >
                                                 <path 
@@ -124,13 +148,26 @@ const CartPage = ({ cartContent }) => {
                                                 clipRule="evenodd" 
                                                 />
                                             </svg>
-                                            </button>
+                                        </button>
+
+                                        {/* Rental Days Selector */}
+                                        <div className="flex flex-col gap-1">
+                                            <span className="text-xs text-gray-500 text-center">Rental Days</span>
+                                            <div className="flex items-center bg-gray-100 rounded-full px-3 py-2">
+                                                <button className='text-lg font-bold px-2 disabled:opacity-50' onClick={() => handleChangeRentalDays(item.id, -1)} disabled={item.rentalDays === 1} >-</button>
+                                                <span className='font-bold text-base min-w-[2rem] text-center'>{item.rentalDays}</span>
+                                                <button className='text-lg font-bold px-2' onClick={() => handleChangeRentalDays(item.id, +1)}>+</button>
+                                            </div>
+                                        </div>
 
                                         {/* Quantity Selector */}
-                                        <div className="flex items-stretch bg-gray-100 overflow-hidden rounded-full px-2 md:px-4 py-1 md:py-3">
-                                            <button className='flex-1 flex justify-center items-center text-xl font-bold px-2 md:px-1 py-0 md:py-0 disabled:opacity-50' onClick={() => handleChangeQuantity(item.id, -1)} disabled={item.quantity === 1} >-</button>
-                                            <span className='font-bold text-base md:text-lg px-2'>{item.quantity}</span>
-                                            <button className='flex-1 flex justify-center items-center text-xl font-bold px-2 md:px-1 py-0 md:py-0' onClick={() => handleChangeQuantity(item.id, +1)}>+</button>
+                                        <div className="flex flex-col gap-1">
+                                            <span className="text-xs text-gray-500 text-center">Quantity</span>
+                                            <div className="flex items-center bg-gray-100 rounded-full px-3 py-2">
+                                                <button className='text-lg font-bold px-2 disabled:opacity-50' onClick={() => handleChangeQuantity(item.id, -1)} disabled={item.quantity === 1} >-</button>
+                                                <span className='font-bold text-base min-w-[2rem] text-center'>{item.quantity}</span>
+                                                <button className='text-lg font-bold px-2' onClick={() => handleChangeQuantity(item.id, +1)}>+</button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -147,11 +184,11 @@ const CartPage = ({ cartContent }) => {
                         <div className='flex flex-col gap-4 my-4 mx-4 text-lg font-bold'>
                             <div className='flex flex-row relative w-full'>
                                 <div className='font-medium text-gray-500'>Subtotal</div>
-                                <div className='absolute right-0 text-2xl'>${totalPrice}</div>
+                                <div className='absolute right-0 text-2xl'>${calculatedTotal}</div>
                             </div>
                             <div className='flex flex-row relative w-full'>
                                 <div className='font-medium text-gray-500'>Discount</div>
-                                <div className='absolute right-0 text-red-500 text-2xl'>-${totalPrice}</div>
+                                <div className='absolute right-0 text-red-500 text-2xl'>-$0</div>
                             </div>
                             <div className='flex flex-row relative w-full'>
                                 <div className='font-medium text-gray-500 '>Delivery Fee</div>
@@ -161,7 +198,7 @@ const CartPage = ({ cartContent }) => {
                             <hr className='border-t-2 border-gray-100' />
                             <div className='flex flex-row relative w-full'>
                                     <div className='font-medium text-black '>Total</div>
-                                    <div className='absolute right-0 text-2xl'>${totalPrice}</div>
+                                    <div className='absolute right-0 text-2xl'>${calculatedTotal + 10}</div>
                             </div>
 
                             {/* Promo Code Section */}
@@ -181,7 +218,7 @@ const CartPage = ({ cartContent }) => {
 
                             {/* Checkout Button */}
                             <button 
-                                onClick={() => navigate('/payment', { state: { totalAmount: totalPrice } })}
+                                onClick={() => navigate('/payment', { state: { totalAmount: calculatedTotal + 10 } })}
                                 className='group w-full border-2 border-black bg-black hover:bg-white text-white hover:text-black transition-all ease-in-out duration-300 rounded-full py-4 flex justify-center items-center font-bold text-lg gap-2'
                             >
                                 <span>Go to Checkout</span>
