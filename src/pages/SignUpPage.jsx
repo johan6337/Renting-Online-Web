@@ -6,10 +6,13 @@ import Footer from '../components/footer/Footer';
 const SignUpPage = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    firstName: '',
+    username: '',
     email: '',
-    password: ''
+    password: '',
+    role: 'customer'
   });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   const handleInputChange = (e) => {
     setFormData({
@@ -18,10 +21,64 @@ const SignUpPage = () => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError(null);
+    setLoading(true);
     console.log('SignUp submitted:', formData);
-    // Handle signup logic here
+
+    try {
+      const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:3456';
+      console.log('API Base URL:', apiBase);
+      
+      const res = await fetch(`${apiBase}/api/users/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          username: formData.username,
+          email: formData.email,
+          password: formData.password,
+          role: formData.role
+        })
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        console.error('Register failed response:', { status: res.status, body: data });
+
+        // Handle specific errors from backend
+        if (res.status === 400) {
+          if (data.message && data.message.includes('User already exists')) {
+            setError('User already exists with this email');
+          } else if (data.message && data.message.includes('Username is already taken')) {
+            setError('Username is already taken');
+          } else {
+            setError(data.message || 'Registration failed');
+          }
+        } else {
+          setError(data.message || `Request failed with status ${res.status}`);
+        }
+        return;
+      }
+
+      console.log('Register success:', data);
+      
+      // Store token if provided
+      if (data.data && data.data.token) {
+        localStorage.setItem('token', data.data.token);
+      }
+
+      // Redirect to login or home page
+      navigate('/login');
+    } catch (err) {
+      console.error('Register error:', err);
+      setError(err.message || 'An unexpected error occurred');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleGoogleSignUp = () => {
@@ -59,9 +116,9 @@ const SignUpPage = () => {
               <div>
                 <input
                   type="text"
-                  name="firstName"
-                  placeholder="First name"
-                  value={formData.firstName}
+                  name="username"
+                  placeholder="Username"
+                  value={formData.username}
                   onChange={handleInputChange}
                   className="w-full px-0 py-3 border-0 border-b-2 border-gray-200 bg-transparent text-gray-900 placeholder-gray-500 focus:outline-none focus:border-gray-900 transition-colors"
                   required
@@ -72,7 +129,7 @@ const SignUpPage = () => {
                 <input
                   type="email"
                   name="email"
-                  placeholder="Email or Phone Number"
+                  placeholder="Email"
                   value={formData.email}
                   onChange={handleInputChange}
                   className="w-full px-0 py-3 border-0 border-b-2 border-gray-200 bg-transparent text-gray-900 placeholder-gray-500 focus:outline-none focus:border-gray-900 transition-colors"
@@ -92,12 +149,32 @@ const SignUpPage = () => {
                 />
               </div>
 
+              <div>
+                <select
+                  name="role"
+                  value={formData.role}
+                  onChange={handleInputChange}
+                  className="w-full px-0 py-3 border-0 border-b-2 border-gray-200 bg-transparent text-gray-900 focus:outline-none focus:border-gray-900 transition-colors"
+                  required
+                >
+                  <option value="customer">Customer</option>
+                  <option value="seller">Seller</option>
+                </select>
+              </div>
+
+              {error && (
+                <div className="text-sm text-red-600 bg-red-50 p-3 rounded">
+                  {error}
+                </div>
+              )}
+
               <div className="space-y-4">
                 <button
                   type="submit"
-                  className="w-full bg-red-500 hover:bg-red-600 text-white font-medium py-3 px-12 rounded-md transition-colors"
+                  className="w-full bg-red-500 hover:bg-red-600 text-white font-medium py-3 px-4 rounded-md transition-colors disabled:opacity-50"
+                  disabled={loading}
                 >
-                  Create Account
+                  {loading ? 'Creating Account...' : 'Create Account'}
                 </button>
 
                 <button

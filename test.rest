@@ -1,0 +1,10 @@
+### Variables
+@baseUrl = http://localhost:3456
+@contentType = application/json
+
+### Register new user - Success case
+GET {{baseUrl}}/api/users/session-status
+
+Content-Type: {{contentType}}
+
+ 

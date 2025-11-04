@@ -9,7 +9,8 @@ const LoginPage = () => {
     email: '',
     password: ''
   });
-
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   const handleInputChange = (e) => {
     setFormData({
       ...formData,
@@ -17,10 +18,68 @@ const LoginPage = () => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Login submitted:', formData);
-    // Handle login logic here
+    console.log('FORM SUBMIT TRIGGERED!'); // Debug log
+    setError(null);
+    setLoading(true);
+    console.log('Login submitted:', formData); //debug log
+
+    try {
+      const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:3456';
+      console.log('API Base URL:', apiBase); // Debug log
+      
+      const res = await fetch('/api/users/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include', // Important for session cookies
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password
+        })
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        console.error('Login failed response:', { status: res.status, body: data });
+
+        // Detect specific error messages
+        if (res.status === 404 || (data && typeof data.message === 'string' && /(not found|not exist|user.*not.*exist)/i.test(data.message))) {
+          setError('User not exist');
+        } else if (res.status === 409 || (data && typeof data.message === 'string' && /already.*exist/i.test(data.message))) {
+          setError('User already exists');
+        } else if (res.status === 401) {
+          setError('Invalid email or password');
+        } else {
+          setError(data.message || `Request failed with status ${res.status}`);
+        }
+        return;
+      }
+
+      console.log('Login success:', data);
+      
+      // Session-based auth - no need to store tokens
+      // Just redirect and let Header component handle session check
+      if (data.success) {
+        // Trigger custom event to update header
+        window.dispatchEvent(new CustomEvent('loginSuccess'));
+        
+        // Small delay to ensure session is set before navigation
+        setTimeout(() => {
+          navigate('/');
+        }, 100);
+      } else {
+        setError(data.message || 'Login failed');
+      }
+    } catch (err) {
+      console.error('Login error:', err);
+      setError(err.message || 'An unexpected error occurred');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -74,12 +133,19 @@ const LoginPage = () => {
                 />
               </div>
 
+              {error && (
+                <div className="text-sm text-red-600 bg-red-50 p-3 rounded">
+                  {error}
+                </div>
+              )}
+
               <div className="flex items-center justify-between">
                 <button
                   type="submit"
-                  className="bg-red-500 hover:bg-red-600 text-white font-medium py-3 px-12 rounded-md transition-colors"
+                  className="bg-red-500 hover:bg-red-600 text-white font-medium py-3 px-12 rounded-md transition-colors disabled:opacity-50"
+                  disabled={loading}
                 >
-                  Log In
+                  {loading ? 'Logging in...' : 'Log In'}
                 </button>
                 <Link 
                   to="/forgot-password"
