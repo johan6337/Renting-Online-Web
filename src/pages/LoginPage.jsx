@@ -60,7 +60,6 @@ const LoginPage = () => {
       }
 
       console.log('Login success:', data);
-      console.log('User role:', data.data?.role); // Debug log
       
       // Session-based auth - no need to store tokens
       // Just redirect and let Header component handle session check
@@ -68,23 +67,64 @@ const LoginPage = () => {
         // Trigger custom event to update header
         window.dispatchEvent(new CustomEvent('loginSuccess'));
         
-        // Small delay to ensure session is set before navigation
-        const userRole = data.data?.role || data.role;
-        console.log('Redirecting user with role:', userRole); // Debug log
-        
-        if (userRole === 'admin') {
-           setTimeout(() => {
-             console.log('Navigating to admin dashboard...');
-             navigate('/admin/dashboard');
-           }, 100);
-        } else if (userRole === 'seller') {
-           setTimeout(() => {
-             console.log('Navigating to seller dashboard...');
-             navigate('/seller/dashboard');
-           }, 100);
-        } else {
+        // Fetch user info to get role
+        try {
+          const userRes = await fetch('/api/users/me', {
+            credentials: 'include',
+            cache: 'no-cache'
+          });
+          
+          if (userRes.ok) {
+            const userData = await userRes.json();
+            console.log('User data from /me:', userData); // Debug log
+            
+            const userRole = userData.data?.role;
+            console.log('Redirecting user with role:', userRole); // Debug log
+            
+            if (userRole === 'admin') {
+               setTimeout(() => {
+                 console.log('Navigating to admin...');
+                 navigate('/admin');
+               }, 100);
+            } else if (userRole === 'seller') {
+               setTimeout(() => {
+                 console.log('Navigating to seller dashboard...');
+                 navigate('/seller/dashboard');
+               }, 100);
+            } else {
+              setTimeout(() => {
+                console.log('Navigating to home...');
+                navigate('/');
+              }, 100);
+            }
+          } else {
+            console.log('userRes not ok, trying to get role from login response...');
+            // Try to get role from login response
+            const userRole = data.data?.user?.role;
+            console.log('Role from login response:', userRole);
+            
+            if (userRole === 'admin') {
+               setTimeout(() => {
+                 console.log('Navigating to admin...');
+                 navigate('/admin');
+               }, 100);
+            } else if (userRole === 'seller') {
+               setTimeout(() => {
+                 console.log('Navigating to seller dashboard...');
+                 navigate('/seller/dashboard');
+               }, 100);
+            } else {
+              setTimeout(() => {
+                console.log('Navigating to home...');
+                navigate('/');
+              }, 100);
+            }
+          }
+        } catch (meError) {
+          console.error('Error fetching user info:', meError);
+          // Fallback to home
           setTimeout(() => {
-            console.log('Navigating to home...');
+            console.log('Error fallback navigation to home...');
             navigate('/');
           }, 100);
         }

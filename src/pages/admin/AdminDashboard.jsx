@@ -1,14 +1,51 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Sidebar_Admin from '../../components/sidebar/Sidebar_Admin';
 import { Bell } from 'lucide-react';
 
 const AdminDashboard = () => {
-  const stats = [
-    { label: 'Total Users', value: 1234 },
-    { label: 'Total Products', value: 567 },
-    { label: 'Total Orders', value: 890 },
-    { label: 'Revenue', value: '$45,678' }
-  ];
+  const [stats, setStats] = useState([
+    { label: 'Total Users', value: 'Loading...' },
+    { label: 'Total Products', value: 'Loading...' },
+    { label: 'Total Orders', value: 'Loading...' },
+    { label: 'Revenue', value: 'Loading...' }
+  ]);
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch users data from API
+  const fetchUsers = async () => {
+    try {
+      const response = await fetch('/api/users', {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          setUsers(data.data.users);
+          // Update stats with real data
+          setStats([
+            { label: 'Total Users', value: data.data.pagination.total },
+            { label: 'Total Products', value: 'hardcore' }, 
+            { label: 'Total Orders', value: 'hardcore' },  
+            { label: 'Revenue', value: 'hardcore' }
+          ]);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching users:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
 
   return (
     <div className="flex min-h-screen bg-gray-50">
@@ -45,40 +82,88 @@ const AdminDashboard = () => {
           
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">Recent Activity</h2>
+              <h2 className="text-xl font-bold text-gray-900 mb-4">Recent Users</h2>
               <div className="space-y-4">
-                {[1, 2, 3, 4].map((item) => (
-                  <div key={item} className="pb-4 border-b border-gray-200 last:border-0">
-                    <p className="text-sm text-gray-600">User activity #{item}</p>
-                    <p className="text-xs text-gray-400 mt-1">2 hours ago</p>
-                  </div>
-                ))}
+                {loading ? (
+                  <div className="text-gray-500">Loading users...</div>
+                ) : users.length > 0 ? (
+                  users.slice(0, 5).map((user) => (
+                    <div key={user.user_id} className="pb-4 border-b border-gray-200 last:border-0">
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <p className="text-sm font-medium text-gray-900">{user.username}</p>
+                          <p className="text-xs text-gray-500">{user.email}</p>
+                        </div>
+                        <div className="text-right">
+                          <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                            user.role === 'admin' ? 'bg-purple-100 text-purple-800' :
+                            user.role === 'seller' ? 'bg-blue-100 text-blue-800' :
+                            'bg-gray-100 text-gray-800'
+                          }`}>
+                            {user.role}
+                          </span>
+                          <p className="text-xs text-gray-400 mt-1">
+                            {user.status === 'active' ? 'Active' : user.status}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-gray-500">No users found</div>
+                )}
               </div>
             </div>
             
-            {/* <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">System Status</h2>
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <h2 className="text-xl font-bold text-gray-900 mb-4">User Statistics</h2>
               <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Server Status</span>
-                  <span className="px-3 py-1 bg-green-100 text-green-600 rounded-full text-sm font-semibold">
-                    Online
-                  </span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Database</span>
-                  <span className="px-3 py-1 bg-green-100 text-green-600 rounded-full text-sm font-semibold">
-                    Connected
-                  </span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">API Status</span>
-                  <span className="px-3 py-1 bg-green-100 text-green-600 rounded-full text-sm font-semibold">
-                    Active
-                  </span>
-                </div>
+                {loading ? (
+                  <div className="text-gray-500">Loading statistics...</div>
+                ) : (
+                  (() => {
+                    const roleStats = users.reduce((acc, user) => {
+                      acc[user.role] = (acc[user.role] || 0) + 1;
+                      return acc;
+                    }, {});
+                    
+                    const statusStats = users.reduce((acc, user) => {
+                      acc[user.status] = (acc[user.status] || 0) + 1;
+                      return acc;
+                    }, {});
+
+                    return (
+                      <>
+                        <div>
+                          <h3 className="text-sm font-medium text-gray-700 mb-2">By Role</h3>
+                          {Object.entries(roleStats).map(([role, count]) => (
+                            <div key={role} className="flex justify-between items-center mb-1">
+                              <span className="text-gray-600 capitalize">{role}</span>
+                              <span className="font-semibold text-gray-900">{count}</span>
+                            </div>
+                          ))}
+                        </div>
+                        <div className="pt-4 border-t border-gray-200">
+                          <h3 className="text-sm font-medium text-gray-700 mb-2">By Status</h3>
+                          {Object.entries(statusStats).map(([status, count]) => (
+                            <div key={status} className="flex justify-between items-center mb-1">
+                              <span className="text-gray-600 capitalize">{status}</span>
+                              <span className={`font-semibold ${
+                                status === 'active' ? 'text-green-600' :
+                                status === 'banned' ? 'text-red-600' :
+                                'text-gray-900'
+                              }`}>
+                                {count}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </>
+                    );
+                  })()
+                )}
               </div>
-            </div> */}
+            </div>
           </div>
         </main>
       </div>

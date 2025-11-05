@@ -108,6 +108,11 @@ export default function Header() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Don't render header for admin users
+  if (user?.role === 'admin') {
+    return null;
+  }
+
   return (
     <header className="w-full bg-white relative">
       <div className="mx-auto max-w-7xl px-3 sm:px-4 md:px-6">
