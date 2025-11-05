@@ -12,6 +12,7 @@ import ProductDetails from './pages/ProductDetails';
 import ReviewPage from './pages/Review';
 import ReviewSummary from './pages/ReviewSummary';
 import PaymentPage from './pages/PaymentPage';
+import NotFoundPage from './pages/NotFoundPage';
 
 // Seller Pages
 import SellerDashboard from './pages/seller/SellerDashboard';
@@ -66,6 +67,9 @@ const App = () => {
       <Route path="/orders" element={<OrdersPage />} />
       <Route path="/review" element={<ReviewPage />} />
       <Route path="/review/completed" element={<ReviewSummary />} />
+      
+      {/* 404 Page - Catch all unmatched routes */}
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );
 };

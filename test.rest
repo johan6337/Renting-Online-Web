@@ -2,9 +2,7 @@
 @baseUrl = http://localhost:3456
 @contentType = application/json
 
-### Register new user - Success case
-GET {{baseUrl}}/api/users/session-status
-
+### Get current user - Using cookies (if you have them set)
+GET {{baseUrl}}/api/users/me
 Content-Type: {{contentType}}
-
- 
+Cookie: authToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NCwiaWF0IjoxNzYyMzUyMjgxLCJleHAiOjE3NjQ5NDQyODF9.twzYRHlgirZzIcFuehO2db-WUCQWagd1elyzdcRej_E

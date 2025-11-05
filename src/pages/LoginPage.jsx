@@ -60,6 +60,7 @@ const LoginPage = () => {
       }
 
       console.log('Login success:', data);
+      console.log('User role:', data.data?.role); // Debug log
       
       // Session-based auth - no need to store tokens
       // Just redirect and let Header component handle session check
@@ -68,9 +69,25 @@ const LoginPage = () => {
         window.dispatchEvent(new CustomEvent('loginSuccess'));
         
         // Small delay to ensure session is set before navigation
-        setTimeout(() => {
-          navigate('/');
-        }, 100);
+        const userRole = data.data?.role || data.role;
+        console.log('Redirecting user with role:', userRole); // Debug log
+        
+        if (userRole === 'admin') {
+           setTimeout(() => {
+             console.log('Navigating to admin dashboard...');
+             navigate('/admin/dashboard');
+           }, 100);
+        } else if (userRole === 'seller') {
+           setTimeout(() => {
+             console.log('Navigating to seller dashboard...');
+             navigate('/seller/dashboard');
+           }, 100);
+        } else {
+          setTimeout(() => {
+            console.log('Navigating to home...');
+            navigate('/');
+          }, 100);
+        }
       } else {
         setError(data.message || 'Login failed');
       }
