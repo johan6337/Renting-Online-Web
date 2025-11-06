@@ -1,10 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Header from '../components/header/Header';
 import Footer from '../components/footer/Footer';
+import { getReviewByOrder } from '../api/reviews';
 
 const SAMPLE_REVIEW_SUMMARY = Object.freeze({
   orderNumber: 'ORD-2025-0298',
+  productId: 'PRD-002',
+  productName: 'Checkered Shirt',
   satisfaction: 'loved-it',
   experience: {
     fit: true,
@@ -19,10 +22,10 @@ const SAMPLE_REVIEW_SUMMARY = Object.freeze({
 });
 
 const satisfactionDetails = {
-  'loved-it': { label: 'Loved it', emoji: '😍' },
-  'liked-it': { label: 'Liked it', emoji: '😊' },
-  'it-was-okay': { label: 'It was okay', emoji: '🙂' },
-  'not-great': { label: 'Not great', emoji: '😕' }
+  'loved-it': { label: 'Loved it', emoji: '\u{1F60D}' },
+  'liked-it': { label: 'Liked it', emoji: '\u{1F642}' },
+  'it-was-okay': { label: 'It was okay', emoji: '\u{1F610}' },
+  'not-great': { label: 'Not great', emoji: '\u{1F641}' }
 };
 
 const experienceHighlightLabels = {
@@ -41,44 +44,156 @@ const defaultExperienceState = {
   worthThePrice: false
 };
 
+const loadStoredReview = () => {
+  if (typeof window === 'undefined') {
+    return null;
+  }
+  try {
+    const raw = localStorage.getItem('postRentalReview');
+    return raw ? JSON.parse(raw) : null;
+  } catch (error) {
+    console.warn('Failed to load stored review:', error);
+    return null;
+  }
+};
+
 const ReviewSummary = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [review, setReview] = useState(null);
+  const [storedReview, setStoredReview] = useState(() => loadStoredReview());
+  const [review, setReview] = useState(() => {
+    const initial = loadStoredReview();
+    return initial
+      ? {
+          ...initial,
+          experience: {
+            ...defaultExperienceState,
+            ...(initial.experience || {})
+          }
+        }
+      : null;
+  });
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState(null);
+  const lastFetchedOrderRef = useRef(null);
 
-  useEffect(() => {
+  const persistReviewLocally = useCallback((payload) => {
+    setStoredReview(payload);
     if (typeof window === 'undefined') {
       return;
     }
-
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-
     try {
-      const raw = localStorage.getItem('postRentalReview');
-      if (raw) {
-        const parsed = JSON.parse(raw);
+      localStorage.setItem('postRentalReview', JSON.stringify(payload));
+    } catch (error) {
+      console.warn('Failed to persist review:', error);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, []);
+
+  const storedOrderNumber = storedReview?.orderNumber || null;
+  const stateOrderNumber = location.state?.orderNumber || null;
+  const derivedOrderNumber = stateOrderNumber || storedOrderNumber || null;
+  const shouldFetchFromServer = Boolean(stateOrderNumber || storedReview?.id);
+
+  useEffect(() => {
+    if (!shouldFetchFromServer || !derivedOrderNumber) {
+      return;
+    }
+    if (lastFetchedOrderRef.current === derivedOrderNumber) {
+      return;
+    }
+    lastFetchedOrderRef.current = derivedOrderNumber;
+
+    let isCancelled = false;
+
+    const fetchReview = async () => {
+      setIsLoading(true);
+      setErrorMessage(null);
+      try {
+        const remote = await getReviewByOrder(derivedOrderNumber);
+        if (isCancelled) {
+          return;
+        }
+        persistReviewLocally(remote);
         setReview({
-          ...parsed,
-          orderNumber: parsed.orderNumber || location.state?.orderNumber || null,
+          ...remote,
           experience: {
             ...defaultExperienceState,
-            ...(parsed.experience || {})
+            ...(remote.experience || {})
           }
         });
-      } else {
-        setReview(null);
+      } catch (error) {
+        if (isCancelled) {
+          return;
+        }
+        if (error?.name === 'ApiError' && error.status === 404) {
+          setReview(null);
+        } else {
+          setErrorMessage(error?.message || 'Unable to load your review right now.');
+        }
+      } finally {
+        if (!isCancelled) {
+          setIsLoading(false);
+        }
       }
-    } catch (error) {
-      console.warn('Failed to load stored review:', error);
+    };
+
+    fetchReview();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [derivedOrderNumber, persistReviewLocally, shouldFetchFromServer]);
+
+  useEffect(() => {
+    if (stateOrderNumber) {
+      lastFetchedOrderRef.current = null;
+    }
+  }, [stateOrderNumber]);
+
+  useEffect(() => {
+    if (derivedOrderNumber) {
+      return;
+    }
+    if (storedReview) {
+      setReview({
+        ...storedReview,
+        experience: {
+          ...defaultExperienceState,
+          ...(storedReview.experience || {})
+        }
+      });
+    } else {
       setReview(null);
     }
-  }, [location]);
+  }, [derivedOrderNumber, storedReview]);
 
-  const orderNumber = location.state?.orderNumber || review?.orderNumber || null;
+  const orderNumber = derivedOrderNumber || review?.orderNumber || null;
 
   const handleEditReview = () =>
-    navigate('/review', { state: { allowEdit: true, orderNumber } });
-  const handleWriteReview = () => navigate('/review', { state: { orderNumber } });
+    navigate('/review', {
+      state: {
+        allowEdit: true,
+        orderNumber,
+        productId: review?.productId || storedReview?.productId || null,
+        productName: review?.productName || storedReview?.productName || null
+      }
+    });
+
+  const handleWriteReview = () =>
+    navigate('/review', {
+      state: {
+        orderNumber,
+        productId: review?.productId || storedReview?.productId || null,
+        productName: review?.productName || storedReview?.productName || null
+      }
+    });
+
   const handleLoadSampleReview = () => {
     const sampleTimestamp = new Date().toISOString();
     const sampleOrderNumber = orderNumber || SAMPLE_REVIEW_SUMMARY.orderNumber || null;
@@ -92,16 +207,12 @@ const ReviewSummary = () => {
       submittedAt: sampleTimestamp
     };
 
-    try {
-      localStorage.setItem('postRentalReview', JSON.stringify(sample));
-    } catch (error) {
-      console.warn('Failed to persist sample review:', error);
-    }
-
+    persistReviewLocally(sample);
+    lastFetchedOrderRef.current = null;
     setReview(sample);
   };
 
-  const satisfactionDetail = review ? satisfactionDetails[review.satisfaction] : null;
+  const satisfactionDetail = review?.satisfaction ? satisfactionDetails[review.satisfaction] : null;
   const selectedHighlights = review
     ? Object.entries(review.experience || {})
         .filter(([, isSelected]) => isSelected)
@@ -112,6 +223,7 @@ const ReviewSummary = () => {
   const submittedDate = review?.submittedAt
     ? new Date(review.submittedAt).toLocaleString()
     : null;
+  const photosCount = typeof review?.photosCount === 'number' ? review.photosCount : review?.photos?.length || 0;
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -134,6 +246,18 @@ const ReviewSummary = () => {
           </p>
         </div>
 
+        {errorMessage && (
+          <div className="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {errorMessage}
+          </div>
+        )}
+
+        {isLoading && (
+          <div className="mb-6 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
+            Loading your review...
+          </div>
+        )}
+
         {review ? (
           <div className="space-y-6">
             <section className="bg-white shadow-sm rounded-lg p-8">
@@ -144,6 +268,7 @@ const ReviewSummary = () => {
                   </h2>
                   <div className="text-sm text-gray-500 mt-1 space-y-1">
                     {orderNumber && <p>Order #{orderNumber}</p>}
+                    {review?.productName && <p>Product: {review.productName}</p>}
                     {submittedDate && <p>Submitted on {submittedDate}</p>}
                   </div>
                 </div>
@@ -213,8 +338,8 @@ const ReviewSummary = () => {
                     Photos Shared
                   </h3>
                   <p className="text-gray-800">
-                    {review.photosCount > 0
-                      ? `You uploaded ${review.photosCount} photo${review.photosCount > 1 ? 's' : ''}.`
+                    {photosCount > 0
+                      ? `You uploaded ${photosCount} photo${photosCount > 1 ? 's' : ''}.`
                       : 'No photos were uploaded with this review.'}
                   </p>
                 </div>
@@ -279,3 +404,6 @@ const ReviewSummary = () => {
 };
 
 export default ReviewSummary;
+
+
+

@@ -1,10 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Header from '../components/header/Header';
 import Footer from '../components/footer/Footer';
+import { createReview, getReviewByOrder, updateReview } from '../api/reviews';
 
 const SAMPLE_REVIEW_DATA = Object.freeze({
   orderNumber: 'ORD-2025-0298',
+  productId: 'PRD-002',
+  productName: 'Checkered Shirt',
   satisfaction: 'loved-it',
   experience: {
     fit: true,
@@ -18,10 +21,33 @@ const SAMPLE_REVIEW_DATA = Object.freeze({
   photosCount: 0
 });
 
+const DEFAULT_EXPERIENCE_STATE = {
+  fit: false,
+  quality: false,
+  easeOfUse: false,
+  style: false,
+  worthThePrice: false
+};
+
+const SATISFACTION_OPTIONS = [
+  { id: 'loved-it', emoji: '\u{1F60D}', label: 'Loved it' },
+  { id: 'liked-it', emoji: '\u{1F642}', label: 'Liked it' },
+  { id: 'it-was-okay', emoji: '\u{1F610}', label: 'It was okay' },
+  { id: 'not-great', emoji: '\u{1F641}', label: 'Not great' }
+];
+
+const EXPERIENCE_HIGHLIGHTS = [
+  { id: 'fit', label: 'Fit and sizing were just right' },
+  { id: 'quality', label: 'Quality matched the listing' },
+  { id: 'easeOfUse', label: 'Easy to use and care for' },
+  { id: 'style', label: 'Felt confident wearing/using it' },
+  { id: 'worthThePrice', label: 'Worth the rental price' }
+];
+
 export default function Review() {
   const navigate = useNavigate();
   const location = useLocation();
-  const [storedReview] = useState(() => {
+  const [storedReview, setStoredReview] = useState(() => {
     if (typeof window === 'undefined') {
       return null;
     }
@@ -33,32 +59,113 @@ export default function Review() {
       return null;
     }
   });
+  const persistReviewLocally = useCallback((payload) => {
+    setStoredReview(payload);
+    if (typeof window === 'undefined') {
+      return;
+    }
+    try {
+      localStorage.setItem('postRentalReview', JSON.stringify(payload));
+    } catch (error) {
+      console.warn('Failed to persist review locally:', error);
+    }
+  }, []);
+
   const cartItemCount = 3;
-  const defaultExperience = {
-    fit: false,
-    quality: false,
-    easeOfUse: false,
-    style: false,
-    worthThePrice: false
-  };
   const allowEdit = Boolean(location.state?.allowEdit);
   const orderNumberFromState = location.state?.orderNumber || null;
   const orderNumber = orderNumberFromState || storedReview?.orderNumber || null;
+  const initialProductId =
+    location.state?.productId ||
+    location.state?.product?.productId ||
+    storedReview?.productId ||
+    SAMPLE_REVIEW_DATA.productId ||
+    null;
+  const initialProductName =
+    location.state?.productName ||
+    location.state?.product?.name ||
+    storedReview?.productName ||
+    SAMPLE_REVIEW_DATA.productName ||
+    'Selected Item';
+  const [productId, setProductId] = useState(initialProductId);
+  const [productName, setProductName] = useState(initialProductName);
   const [satisfaction, setSatisfaction] = useState(storedReview?.satisfaction || '');
   const [experience, setExperience] = useState(() => ({
-    ...defaultExperience,
+    ...DEFAULT_EXPERIENCE_STATE,
     ...(storedReview?.experience || {})
   }));
   const [highlights, setHighlights] = useState(storedReview?.highlights || '');
   const [improvements, setImprovements] = useState(storedReview?.improvements || '');
   const [photos, setPhotos] = useState([]);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState(null);
+  const [loadError, setLoadError] = useState(null);
+  const [isLoadingExisting, setIsLoadingExisting] = useState(false);
 
   useEffect(() => {
-    if (storedReview && !allowEdit) {
-      navigate('/review/completed', { replace: true, state: { orderNumber } });
+    if (storedReview?.id && !allowEdit) {
+      navigate('/review/completed', {
+        replace: true,
+        state: { orderNumber: storedReview.orderNumber }
+      });
     }
-  }, [storedReview, allowEdit, navigate, orderNumber]);
+  }, [storedReview, allowEdit, navigate]);
+
+  useEffect(() => {
+    if (!orderNumber) {
+      return;
+    }
+
+    let isCancelled = false;
+    const hydrateReview = async () => {
+      setIsLoadingExisting(true);
+      setLoadError(null);
+      try {
+        const existing = await getReviewByOrder(orderNumber);
+        if (isCancelled) {
+          return;
+        }
+        persistReviewLocally(existing);
+        setProductId((prev) => existing.productId || prev);
+        setProductName((prev) => existing.productName || prev);
+        setSatisfaction(existing.satisfaction || '');
+        setExperience({
+          ...DEFAULT_EXPERIENCE_STATE,
+          ...(existing.experience || {})
+        });
+        setHighlights(existing.highlights || '');
+        setImprovements(existing.improvements || '');
+        setPhotos([]);
+
+        if (!allowEdit) {
+          navigate('/review/completed', {
+            replace: true,
+            state: { orderNumber: existing.orderNumber }
+          });
+        }
+      } catch (error) {
+        if (isCancelled) {
+          return;
+        }
+        if (error?.name === 'ApiError' && error.status === 404) {
+          setLoadError(null);
+        } else {
+          setLoadError(error?.message || 'Unable to load review details.');
+        }
+      } finally {
+        if (!isCancelled) {
+          setIsLoadingExisting(false);
+        }
+      }
+    };
+
+    hydrateReview();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [orderNumber, allowEdit, navigate, persistReviewLocally]);
 
   const triggerSuccessBanner = () => {
     setShowSuccess(true);
@@ -67,7 +174,7 @@ export default function Review() {
 
   const handleLoadSample = () => {
     const experienceWithDefaults = {
-      ...defaultExperience,
+      ...DEFAULT_EXPERIENCE_STATE,
       ...SAMPLE_REVIEW_DATA.experience
     };
     const sampleOrderNumber = orderNumber || SAMPLE_REVIEW_DATA.orderNumber || null;
@@ -78,18 +185,16 @@ export default function Review() {
       submittedAt: new Date().toISOString()
     };
 
+    setProductId(samplePayload.productId);
+    setProductName(samplePayload.productName);
     setSatisfaction(samplePayload.satisfaction);
     setExperience(experienceWithDefaults);
     setHighlights(samplePayload.highlights);
     setImprovements(samplePayload.improvements);
     setPhotos([]);
 
-    try {
-      localStorage.setItem('postRentalReview', JSON.stringify(samplePayload));
-    } catch (error) {
-      console.warn('Failed to save sample review:', error);
-    }
-
+    persistReviewLocally(samplePayload);
+    setLoadError(null);
     triggerSuccessBanner();
   };
 
@@ -113,42 +218,71 @@ export default function Review() {
     setPhotos((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const serializePhotos = () =>
+    photos
+      .map((photo) => {
+        if (typeof photo === 'string') {
+          return photo;
+        }
+        if (photo?.url) {
+          return photo.url;
+        }
+        return null;
+      })
+      .filter(Boolean);
 
-    const data = {
-      orderNumber,
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!orderNumber) {
+      setSubmitError('An order number is required before submitting feedback.');
+      return;
+    }
+    if (!productId) {
+      setSubmitError('We could not determine which product this review is for.');
+      return;
+    }
+
+    setSubmitError(null);
+    setIsSubmitting(true);
+
+    const basePayload = {
       satisfaction,
       experience,
       highlights,
       improvements,
-      photosCount: photos.length
+      photos: serializePhotos()
     };
 
-    console.log('Post-Rental Feedback:', data);
     try {
-      localStorage.setItem('postRentalReview', JSON.stringify({ ...data, submittedAt: new Date().toISOString() }));
+      let savedReview;
+      if (storedReview?.id) {
+        savedReview = await updateReview(storedReview.id, basePayload);
+      } else {
+        savedReview = await createReview({
+          ...basePayload,
+          productId,
+          orderNumber
+        });
+      }
+
+      const reviewForStorage = {
+        ...savedReview,
+        productId: savedReview.productId || productId,
+        productName: savedReview.productName || productName
+      };
+
+      persistReviewLocally(reviewForStorage);
+      triggerSuccessBanner();
     } catch (error) {
-      console.warn('Failed to save review locally:', error);
+      if (error?.details?.errors?.length) {
+        setSubmitError(error.details.errors.join(' '));
+      } else {
+        setSubmitError(error?.message || 'Unable to save your feedback right now.');
+      }
+    } finally {
+      setIsSubmitting(false);
     }
-
-    triggerSuccessBanner();
   };
-
-  const satisfactionOptions = [
-    { id: 'loved-it', emoji: '😍', label: 'Loved it' },
-    { id: 'liked-it', emoji: '😊', label: 'Liked it' },
-    { id: 'it-was-okay', emoji: '😐', label: 'It was okay' },
-    { id: 'not-great', emoji: '😕', label: 'Not great' }
-  ];
-
-  const experienceHighlights = [
-    { id: 'fit', label: 'Fit and sizing were just right' },
-    { id: 'quality', label: 'Quality matched the listing' },
-    { id: 'easeOfUse', label: 'Easy to use and care for' },
-    { id: 'style', label: 'Felt confident wearing/using it' },
-    { id: 'worthThePrice', label: 'Worth the rental price' }
-  ];
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -170,6 +304,24 @@ export default function Review() {
           </div>
         </div>
 
+        {loadError && (
+          <div className="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {loadError}
+          </div>
+        )}
+
+        {isLoadingExisting && (
+          <div className="mb-6 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
+            Loading your saved feedback...
+          </div>
+        )}
+
+        {(!orderNumber || !productId) && (
+          <div className="mb-6 rounded-lg border border-yellow-200 bg-yellow-50 px-4 py-3 text-sm text-yellow-800">
+            To submit a review, open this page from a completed order so we can link it to the right product.
+          </div>
+        )}
+
         {/* Success Message */}
         {showSuccess && (
           <div className="fixed inset-x-0 top-6 flex justify-center px-4 z-50 pointer-events-none">
@@ -181,8 +333,9 @@ export default function Review() {
               <div className="mt-4 flex justify-end">
                 <button
                   type="button"
-                  onClick={() => navigate('/review/completed', { state: { orderNumber } })}
-                  className="inline-flex items-center justify-center px-4 py-2 bg-indigo-600 text-white rounded-full font-medium hover:bg-indigo-700 transition-colors"
+                  onClick={() => orderNumber && navigate('/review/completed', { state: { orderNumber } })}
+                  disabled={!orderNumber}
+                  className="inline-flex items-center justify-center px-4 py-2 bg-indigo-600 text-white rounded-full font-medium hover:bg-indigo-700 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                   View My Review
                 </button>
@@ -198,19 +351,22 @@ export default function Review() {
               👕
             </div>
             <div className="flex-1">
-              <h2 className="text-xl font-bold text-gray-800 mb-2">Checkered Shirt</h2>
+              <h2 className="text-xl font-bold text-gray-800 mb-2">
+                {productName || 'Selected Item'}
+              </h2>
               <span className="inline-block px-4 py-1.5 bg-indigo-100 text-indigo-800 rounded-full text-sm font-medium mb-3">
                 Share your honest review
               </span>
               <div className="flex flex-col md:flex-row gap-2 md:gap-8">
                 <div className="text-sm text-gray-600">
-                  <span className="font-medium text-gray-800">Renter:</span> Sarah Johnson
+                  <span className="font-medium text-gray-800">Order #:</span> {orderNumber || 'Not linked'}
                 </div>
                 <div className="text-sm text-gray-600">
-                  <span className="font-medium text-gray-800">Rental Period:</span> 7 days
+                  <span className="font-medium text-gray-800">Product ID:</span> {productId || 'Unknown'}
                 </div>
                 <div className="text-sm text-gray-600">
-                  <span className="font-medium text-gray-800">Return Date:</span> Oct 1, 2025
+                  <span className="font-medium text-gray-800">Status:</span>{' '}
+                  {storedReview?.id ? 'Submitted' : 'Draft'}
                 </div>
               </div>
             </div>
@@ -226,13 +382,19 @@ export default function Review() {
             Tell Us About Your Rental
           </h3>
 
+          {submitError && (
+            <div className="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              {submitError}
+            </div>
+          )}
+
           {/* Overall Satisfaction */}
           <div className="mb-8">
             <label className="block text-sm font-medium text-gray-800 mb-3">
               Overall Satisfaction <span className="text-red-500">*</span>
             </label>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {satisfactionOptions.map((option) => (
+              {SATISFACTION_OPTIONS.map((option) => (
                 <div key={option.id}>
                   <input
                     type="radio"
@@ -266,7 +428,7 @@ export default function Review() {
               What stood out during your rental?
             </label>
             <div className="space-y-3">
-              {experienceHighlights.map((item) => (
+              {EXPERIENCE_HIGHLIGHTS.map((item) => (
                 <div key={item.id} className="flex items-center p-3 bg-gray-50 rounded-lg">
                   <input
                     type="checkbox"
@@ -362,16 +524,18 @@ export default function Review() {
             </button>
             <button
               type="button"
-              onClick={() => navigate('/review/completed', { state: { orderNumber } })}
-              className="px-8 py-3 bg-indigo-500 text-white rounded-lg font-medium hover:bg-indigo-600 transition-colors"
+              onClick={() => orderNumber && navigate('/review/completed', { state: { orderNumber } })}
+              disabled={!orderNumber}
+              className="px-8 py-3 bg-indigo-500 text-white rounded-lg font-medium hover:bg-indigo-600 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
             >
               View My Review
             </button>
             <button
               type="submit"
-              className="px-8 py-3 bg-red-500 text-white rounded-lg font-medium hover:bg-red-600 transition-colors"
+              disabled={!orderNumber || !productId || isSubmitting}
+              className="px-8 py-3 bg-red-500 text-white rounded-lg font-medium hover:bg-red-600 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              Submit Feedback
+              {isSubmitting ? 'Saving...' : 'Submit Feedback'}
             </button>
           </div>
         </form>
@@ -380,3 +544,4 @@ export default function Review() {
     </div>
   );
 }
+
