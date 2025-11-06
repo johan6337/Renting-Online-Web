@@ -4,36 +4,19 @@ import Header from '../components/header/Header';
 import Footer from '../components/footer/Footer';
 import { createReview, getReviewByOrder, updateReview } from '../api/reviews';
 
-const SAMPLE_REVIEW_DATA = Object.freeze({
-  orderNumber: 'ORD-2025-0298',
-  productId: 'PRD-002',
-  productName: 'Checkered Shirt',
-  satisfaction: 'loved-it',
-  experience: {
-    fit: true,
-    quality: true,
-    easeOfUse: false,
-    style: true,
-    worthThePrice: true
-  },
-  highlights: 'The outfit fit perfectly and felt premium throughout the rental period. Friends kept asking where I got it!',
-  improvements: 'Would love a few more color options and a garment bag in the box for easy returns.',
-  photosCount: 0
-});
-
 const DEFAULT_EXPERIENCE_STATE = {
   fit: false,
   quality: false,
   easeOfUse: false,
   style: false,
-  worthThePrice: false
+  worthThePrice: false,
 };
 
 const SATISFACTION_OPTIONS = [
   { id: 'loved-it', emoji: '\u{1F60D}', label: 'Loved it' },
   { id: 'liked-it', emoji: '\u{1F642}', label: 'Liked it' },
   { id: 'it-was-okay', emoji: '\u{1F610}', label: 'It was okay' },
-  { id: 'not-great', emoji: '\u{1F641}', label: 'Not great' }
+  { id: 'not-great', emoji: '\u{1F641}', label: 'Not great' },
 ];
 
 const EXPERIENCE_HIGHLIGHTS = [
@@ -41,61 +24,31 @@ const EXPERIENCE_HIGHLIGHTS = [
   { id: 'quality', label: 'Quality matched the listing' },
   { id: 'easeOfUse', label: 'Easy to use and care for' },
   { id: 'style', label: 'Felt confident wearing/using it' },
-  { id: 'worthThePrice', label: 'Worth the rental price' }
+  { id: 'worthThePrice', label: 'Worth the rental price' },
 ];
 
 export default function Review() {
   const navigate = useNavigate();
   const location = useLocation();
-  const [storedReview, setStoredReview] = useState(() => {
-    if (typeof window === 'undefined') {
-      return null;
-    }
-    try {
-      const raw = localStorage.getItem('postRentalReview');
-      return raw ? JSON.parse(raw) : null;
-    } catch (error) {
-      console.warn('Failed to load saved review:', error);
-      return null;
-    }
-  });
-  const persistReviewLocally = useCallback((payload) => {
-    setStoredReview(payload);
-    if (typeof window === 'undefined') {
-      return;
-    }
-    try {
-      localStorage.setItem('postRentalReview', JSON.stringify(payload));
-    } catch (error) {
-      console.warn('Failed to persist review locally:', error);
-    }
-  }, []);
 
-  const cartItemCount = 3;
-  const allowEdit = Boolean(location.state?.allowEdit);
-  const orderNumberFromState = location.state?.orderNumber || null;
-  const orderNumber = orderNumberFromState || storedReview?.orderNumber || null;
-  const initialProductId =
+  const orderNumber = location.state?.orderNumber || null;
+  const derivedProductId =
     location.state?.productId ||
     location.state?.product?.productId ||
-    storedReview?.productId ||
-    SAMPLE_REVIEW_DATA.productId ||
+    location.state?.product?.product_id ||
     null;
-  const initialProductName =
+  const derivedProductName =
     location.state?.productName ||
     location.state?.product?.name ||
-    storedReview?.productName ||
-    SAMPLE_REVIEW_DATA.productName ||
     'Selected Item';
-  const [productId, setProductId] = useState(initialProductId);
-  const [productName, setProductName] = useState(initialProductName);
-  const [satisfaction, setSatisfaction] = useState(storedReview?.satisfaction || '');
-  const [experience, setExperience] = useState(() => ({
-    ...DEFAULT_EXPERIENCE_STATE,
-    ...(storedReview?.experience || {})
-  }));
-  const [highlights, setHighlights] = useState(storedReview?.highlights || '');
-  const [improvements, setImprovements] = useState(storedReview?.improvements || '');
+
+  const [reviewId, setReviewId] = useState(null);
+  const [productId, setProductId] = useState(derivedProductId);
+  const [productName, setProductName] = useState(derivedProductName);
+  const [satisfaction, setSatisfaction] = useState('');
+  const [experience, setExperience] = useState({ ...DEFAULT_EXPERIENCE_STATE });
+  const [highlights, setHighlights] = useState('');
+  const [improvements, setImprovements] = useState('');
   const [photos, setPhotos] = useState([]);
   const [showSuccess, setShowSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -103,17 +56,36 @@ export default function Review() {
   const [loadError, setLoadError] = useState(null);
   const [isLoadingExisting, setIsLoadingExisting] = useState(false);
 
-  useEffect(() => {
-    if (storedReview?.id && !allowEdit) {
-      navigate('/review/completed', {
-        replace: true,
-        state: { orderNumber: storedReview.orderNumber }
+  const applyReviewToForm = useCallback(
+    (data) => {
+      if (!data) {
+        return;
+      }
+
+      setReviewId(data.id || data.reviewId || null);
+      setProductId(data.productId ?? derivedProductId ?? null);
+      setProductName(data.productName ?? derivedProductName);
+      setSatisfaction(data.satisfaction || '');
+      setExperience({
+        ...DEFAULT_EXPERIENCE_STATE,
+        ...(data.experience || {}),
       });
-    }
-  }, [storedReview, allowEdit, navigate]);
+      setHighlights(data.highlights || '');
+      setImprovements(data.improvements || '');
+      setPhotos(
+        Array.isArray(data.photos)
+          ? data.photos.map((photo) =>
+              typeof photo === 'string' ? { url: photo, persisted: true } : photo
+            )
+          : []
+      );
+    },
+    [derivedProductId, derivedProductName]
+  );
 
   useEffect(() => {
     if (!orderNumber) {
+      setLoadError('Order number is required to submit a review.');
       return;
     }
 
@@ -123,33 +95,14 @@ export default function Review() {
       setLoadError(null);
       try {
         const existing = await getReviewByOrder(orderNumber);
-        if (isCancelled) {
-          return;
-        }
-        persistReviewLocally(existing);
-        setProductId((prev) => existing.productId || prev);
-        setProductName((prev) => existing.productName || prev);
-        setSatisfaction(existing.satisfaction || '');
-        setExperience({
-          ...DEFAULT_EXPERIENCE_STATE,
-          ...(existing.experience || {})
-        });
-        setHighlights(existing.highlights || '');
-        setImprovements(existing.improvements || '');
-        setPhotos([]);
-
-        if (!allowEdit) {
-          navigate('/review/completed', {
-            replace: true,
-            state: { orderNumber: existing.orderNumber }
-          });
+        if (!isCancelled) {
+          applyReviewToForm(existing);
         }
       } catch (error) {
-        if (isCancelled) {
-          return;
-        }
+        if (isCancelled) return;
         if (error?.name === 'ApiError' && error.status === 404) {
-          setLoadError(null);
+          setReviewId(null);
+          setPhotos([]);
         } else {
           setLoadError(error?.message || 'Unable to load review details.');
         }
@@ -161,41 +114,14 @@ export default function Review() {
     };
 
     hydrateReview();
-
     return () => {
       isCancelled = true;
     };
-  }, [orderNumber, allowEdit, navigate, persistReviewLocally]);
+  }, [orderNumber, applyReviewToForm]);
 
   const triggerSuccessBanner = () => {
     setShowSuccess(true);
     setTimeout(() => setShowSuccess(false), 5000);
-  };
-
-  const handleLoadSample = () => {
-    const experienceWithDefaults = {
-      ...DEFAULT_EXPERIENCE_STATE,
-      ...SAMPLE_REVIEW_DATA.experience
-    };
-    const sampleOrderNumber = orderNumber || SAMPLE_REVIEW_DATA.orderNumber || null;
-    const samplePayload = {
-      ...SAMPLE_REVIEW_DATA,
-      experience: experienceWithDefaults,
-      orderNumber: sampleOrderNumber,
-      submittedAt: new Date().toISOString()
-    };
-
-    setProductId(samplePayload.productId);
-    setProductName(samplePayload.productName);
-    setSatisfaction(samplePayload.satisfaction);
-    setExperience(experienceWithDefaults);
-    setHighlights(samplePayload.highlights);
-    setImprovements(samplePayload.improvements);
-    setPhotos([]);
-
-    persistReviewLocally(samplePayload);
-    setLoadError(null);
-    triggerSuccessBanner();
   };
 
   const handleExperienceToggle = (key) => {
@@ -208,7 +134,7 @@ export default function Review() {
       .filter((file) => file.type.startsWith('image/'))
       .map((file) => ({
         file,
-        url: URL.createObjectURL(file)
+        url: URL.createObjectURL(file),
       }));
 
     setPhotos((prev) => [...prev, ...newPhotos]);
@@ -233,45 +159,41 @@ export default function Review() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (!orderNumber) {
-      setSubmitError('An order number is required before submitting feedback.');
+      setSubmitError('Missing order information. Return to your orders and try again.');
       return;
     }
+
     if (!productId) {
-      setSubmitError('We could not determine which product this review is for.');
+      setSubmitError('Missing product information for this order.');
       return;
     }
 
     setSubmitError(null);
     setIsSubmitting(true);
 
-    const basePayload = {
+    const payload = {
       satisfaction,
       experience,
       highlights,
       improvements,
-      photos: serializePhotos()
+      photos: serializePhotos(),
     };
 
     try {
       let savedReview;
-      if (storedReview?.id) {
-        savedReview = await updateReview(storedReview.id, basePayload);
+      if (reviewId) {
+        savedReview = await updateReview(reviewId, payload);
       } else {
         savedReview = await createReview({
-          ...basePayload,
+          ...payload,
           productId,
-          orderNumber
+          orderNumber,
         });
       }
 
-      const reviewForStorage = {
-        ...savedReview,
-        productId: savedReview.productId || productId,
-        productName: savedReview.productName || productName
-      };
-
-      persistReviewLocally(reviewForStorage);
+      applyReviewToForm(savedReview);
       triggerSuccessBanner();
     } catch (error) {
       if (error?.details?.errors?.length) {
@@ -284,13 +206,13 @@ export default function Review() {
     }
   };
 
+  const cartItemCount = 3;
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <Header cartItemCount={cartItemCount} />
 
-      {/* Main Content */}
       <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        {/* Page Header */}
         <div className="bg-white shadow-sm rounded-lg p-8 mb-8">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             <div>
@@ -316,20 +238,17 @@ export default function Review() {
           </div>
         )}
 
-        {(!orderNumber || !productId) && (
+        {!orderNumber && (
           <div className="mb-6 rounded-lg border border-yellow-200 bg-yellow-50 px-4 py-3 text-sm text-yellow-800">
-            To submit a review, open this page from a completed order so we can link it to the right product.
+            Open this page directly from one of your completed orders so we know which rental you are reviewing.
           </div>
         )}
 
-        {/* Success Message */}
         {showSuccess && (
           <div className="fixed inset-x-0 top-6 flex justify-center px-4 z-50 pointer-events-none">
             <div className="pointer-events-auto max-w-md w-full bg-green-100 border border-green-300 text-green-800 px-6 py-4 rounded-xl shadow-lg">
               <strong className="block text-lg font-semibold">Thanks for the love!</strong>
-              <p className="mt-1 text-sm">
-                Your feedback has been saved successfully.
-              </p>
+              <p className="mt-1 text-sm">Your feedback has been saved successfully.</p>
               <div className="mt-4 flex justify-end">
                 <button
                   type="button"
@@ -344,16 +263,13 @@ export default function Review() {
           </div>
         )}
 
-        {/* Rental Details */}
         <div className="bg-white shadow-sm rounded-lg p-8 mb-8">
           <div className="flex flex-col md:flex-row gap-5 pb-5 border-b border-gray-100 mb-5">
             <div className="w-32 h-32 bg-gray-100 rounded-lg flex items-center justify-center text-5xl flex-shrink-0">
-              👕
+              🧾
             </div>
             <div className="flex-1">
-              <h2 className="text-xl font-bold text-gray-800 mb-2">
-                {productName || 'Selected Item'}
-              </h2>
+              <h2 className="text-xl font-bold text-gray-800 mb-2">{productName}</h2>
               <span className="inline-block px-4 py-1.5 bg-indigo-100 text-indigo-800 rounded-full text-sm font-medium mb-3">
                 Share your honest review
               </span>
@@ -366,7 +282,7 @@ export default function Review() {
                 </div>
                 <div className="text-sm text-gray-600">
                   <span className="font-medium text-gray-800">Status:</span>{' '}
-                  {storedReview?.id ? 'Submitted' : 'Draft'}
+                  {reviewId ? 'Submitted' : 'Draft'}
                 </div>
               </div>
             </div>
@@ -376,7 +292,6 @@ export default function Review() {
           </p>
         </div>
 
-        {/* Feedback Form */}
         <form onSubmit={handleSubmit} className="bg-white shadow-sm rounded-lg p-8">
           <h3 className="text-xl font-bold text-gray-800 mb-6 pb-4 border-b border-gray-100">
             Tell Us About Your Rental
@@ -388,7 +303,6 @@ export default function Review() {
             </div>
           )}
 
-          {/* Overall Satisfaction */}
           <div className="mb-8">
             <label className="block text-sm font-medium text-gray-800 mb-3">
               Overall Satisfaction <span className="text-red-500">*</span>
@@ -422,7 +336,6 @@ export default function Review() {
             </div>
           </div>
 
-          {/* Experience Highlights */}
           <div className="mb-8">
             <label className="block text-sm font-medium text-gray-800 mb-3">
               What stood out during your rental?
@@ -445,7 +358,6 @@ export default function Review() {
             </div>
           </div>
 
-          {/* Highlights */}
           <div className="mb-8">
             <label htmlFor="highlights" className="block text-sm font-medium text-gray-800 mb-2">
               What did you love most?
@@ -459,7 +371,6 @@ export default function Review() {
             />
           </div>
 
-          {/* Improvements */}
           <div className="mb-8">
             <label htmlFor="improvements" className="block text-sm font-medium text-gray-800 mb-2">
               Anything we could improve?
@@ -473,7 +384,6 @@ export default function Review() {
             />
           </div>
 
-          {/* Photo Upload */}
           <div className="mb-8">
             <label className="block text-sm font-medium text-gray-800 mb-2">
               Share Photos from Your Rental (Optional)
@@ -498,14 +408,14 @@ export default function Review() {
             {photos.length > 0 && (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 mt-5">
                 {photos.map((photo, index) => (
-                  <div key={index} className="relative w-full h-32 rounded-lg overflow-hidden bg-gray-100">
-                    <img src={photo.url} alt={`Upload ${index + 1}`} className="w-full h-full object-cover" />
+                  <div key={`${photo.url}-${index}`} className="relative w-full h-32 rounded-lg overflow-hidden bg-gray-100">
+                    <img src={photo.url || photo} alt={`Upload ${index + 1}`} className="w-full h-full object-cover" />
                     <button
                       type="button"
                       onClick={() => removePhoto(index)}
                       className="absolute top-1 right-1 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors"
                     >
-                      ×
+                      ✕
                     </button>
                   </div>
                 ))}
@@ -513,7 +423,6 @@ export default function Review() {
             )}
           </div>
 
-          {/* Form Actions */}
           <div className="flex flex-col sm:flex-row gap-4 justify-end pt-6">
             <button
               type="button"
@@ -544,4 +453,3 @@ export default function Review() {
     </div>
   );
 }
-

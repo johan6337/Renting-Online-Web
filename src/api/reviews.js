@@ -1,15 +1,32 @@
-const trimTrailingSlash = (value = "") => {
+const normalizeBase = (value = "") => {
   if (!value) return "";
   return value.endsWith("/") ? value.slice(0, -1) : value;
 };
 
-const API_BASE = trimTrailingSlash(import.meta.env.VITE_API_URL || "");
+const API_BASE = normalizeBase(import.meta.env.VITE_API_URL || "");
 
-const withBase = (path) => {
-  if (!API_BASE) {
+const ensureApiPrefix = (path) => {
+  if (!path || path.startsWith('/api')) {
     return path;
   }
-  return `${API_BASE}${path}`;
+  return path.startsWith('/')
+    ? `/api${path}`
+    : `/api/${path}`;
+};
+
+const withBase = (path) => {
+  const normalizedPath = ensureApiPrefix(path || '/api');
+
+  if (!API_BASE) {
+    return normalizedPath;
+  }
+
+  const isAbsolute = /^https?:\/\//i.test(normalizedPath);
+  if (isAbsolute) {
+    return normalizedPath;
+  }
+
+  return `${API_BASE}${normalizedPath}`;
 };
 
 class ApiError extends Error {
