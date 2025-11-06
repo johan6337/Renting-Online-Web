@@ -40,7 +40,7 @@ export default function Header() {
 
   const checkSessionStatus = async () => {
     try {
-      const sessionRes = await fetch('/api/users/session-status', {
+      const sessionRes = await fetch('/api/users/me', {
         credentials: 'include',
         cache: 'no-cache'
       });
@@ -52,40 +52,25 @@ export default function Header() {
         return;
       }
       
-      const sessionData = await sessionRes.json().catch(() => null);
-      
-      if (sessionData && sessionData.success && sessionData.sessionActive) {
-        const userRes = await fetch('/api/users/me', {
-          credentials: 'include',
-          cache: 'no-cache'
-        });
-        
-        if (!userRes.ok && userRes.status !== 304) {
-          setUser(null);
-          setIsAuthenticated(false);
-          setLoading(false);
-          return;
-        }
-        
-        const userData = await userRes.json().catch(() => null);
-        
-        if (userData && userData.success && userData.data) {
+      const userData = await sessionRes.json().catch(() => null);
+
+      if (userData && userData.success && userData.sessionValid) {
+
           setUser(userData.data);
           setIsAuthenticated(true);
-        } else {
-          setUser(null);
-          setIsAuthenticated(false);
         }
-      } else {
+      else {
         setUser(null);
         setIsAuthenticated(false);
       }
     } catch (error) {
+      console.error('Error checking session status:', error);
       setUser(null);
       setIsAuthenticated(false);
     } finally {
       setLoading(false);
     }
+    
   };
 
   const handleLogout = async () => {
@@ -122,6 +107,11 @@ export default function Header() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  // Don't render header for admin users
+  if (user?.role === 'admin') {
+    return null;
+  }
 
   return (
     <header className="w-full bg-white relative">

@@ -1,13 +1,33 @@
 import React from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { 
   LayoutDashboard, 
   Package, 
-  ShoppingCart 
+  ShoppingCart,
+  LogOut
 } from 'lucide-react'
 
 const Sidebar_Seller = ({ active }) => {
   const location = useLocation();
+  const navigate = useNavigate();
+  
+  const handleLogout = async () => {
+    try {
+      const response = await fetch('/api/users/logout', {
+        method: 'POST',
+        credentials: 'include'
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        navigate('/login');
+      }
+    } catch (error) {
+      console.error('Logout error:', error);
+      navigate('/login');
+    }
+  };
   
   const items = [
     { name: 'Dashboard', icon: LayoutDashboard, path: '/seller/dashboard' },
@@ -49,6 +69,19 @@ const Sidebar_Seller = ({ active }) => {
           })}
         </ul>
       </nav>
+      
+      {/* Logout Button */}
+      <div className="mt-auto pt-4 border-t border-gray-700">
+        <button
+          onClick={handleLogout}
+          className="flex items-center gap-3.5 px-4 py-3.5 rounded-lg w-full
+                     text-[#8e8e8e] hover:bg-[#1a1a1a] hover:text-white
+                     transition-all duration-200 text-[15px] font-medium"
+        >
+          <LogOut size={20} className="flex-shrink-0" />
+          <span className="flex-1 text-left">Logout</span>
+        </button>
+      </div>
     </aside>
   )
 }
