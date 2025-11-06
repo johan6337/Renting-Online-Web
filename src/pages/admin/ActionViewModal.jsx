@@ -1,14 +1,28 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { X, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 
-const ActionViewModal = ({ report, onClose }) => {
-  if (!report || !report.action) return null;
+const ActionViewModal = ({ report, onClose, onActionCancelled }) => {
+  const [isCancelling, setIsCancelling] = useState(false);
+  const [error, setError] = useState(null);
+
+  if (!report) return null;
+
+  const formatDateTime = (dateString) => {
+    if (!dateString) return 'N/A';
+    return new Date(dateString).toLocaleString();
+  };
+
+  const formatStatus = (status) => {
+    if (!status) return 'Unknown';
+    return status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
+  };
 
   const getActionIcon = () => {
-    switch (report.status) {
-      case 'Resolved':
+    const status = report.status?.toLowerCase();
+    switch (status) {
+      case 'resolved':
         return <CheckCircle className="h-12 w-12 text-green-500" />;
-      case 'Dismissed':
+      case 'dismissed':
         return <XCircle className="h-12 w-12 text-gray-500" />;
       default:
         return <AlertCircle className="h-12 w-12 text-yellow-500" />;
@@ -16,13 +30,62 @@ const ActionViewModal = ({ report, onClose }) => {
   };
 
   const getStatusColor = () => {
-    switch (report.status) {
-      case 'Resolved':
+    const status = report.status?.toLowerCase();
+    switch (status) {
+      case 'resolved':
         return 'text-green-600';
-      case 'Dismissed':
+      case 'dismissed':
         return 'text-gray-600';
       default:
         return 'text-yellow-600';
+    }
+  };
+
+  const handleCancelAction = async () => {
+    setIsCancelling(true);
+    setError(null);
+
+    try {
+      const payload = {
+        report_id: report.report_id,
+        status: 'pending',
+        action: null,
+        restriction_duration: 0,
+        action_reason: null,
+        mod_note: null
+      };
+
+      const response = await fetch(`/api/reports/${report.report_id}`, {
+        method: 'PUT',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      if (data.success) {
+        // Call the callback to update parent component
+        if (onActionCancelled) {
+          onActionCancelled(report.report_id);
+        }
+        // Close the modal
+        onClose();
+      } else {
+        throw new Error(data.message || 'Failed to cancel action');
+      }
+    } catch (err) {
+      console.error('Error cancelling action:', err);
+      setError(err.message);
+    } finally {
+      setIsCancelling(false);
     }
   };
 
@@ -34,20 +97,27 @@ const ActionViewModal = ({ report, onClose }) => {
           <button 
             onClick={onClose}
             className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+            disabled={isCancelling}
           >
             <X className="h-5 w-5 text-gray-500" />
           </button>
         </div>
 
         <div className="p-6">
+          {error && (
+            <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-sm text-red-600">{error}</p>
+            </div>
+          )}
+
           {/* Status Header */}
           <div className="flex flex-col items-center mb-8 pb-6 border-b border-gray-200">
             {getActionIcon()}
             <h3 className={`text-2xl font-bold mt-4 ${getStatusColor()}`}>
-              {report.status}
+              {formatStatus(report.status)}
             </h3>
             <p className="text-sm text-gray-500 mt-2">
-              Resolved on {report.action.resolvedDate} by {report.action.resolvedBy}
+              Resolved on {formatDateTime(report.resolve_date)}
             </p>
           </div>
 
@@ -57,12 +127,22 @@ const ActionViewModal = ({ report, onClose }) => {
             <div className="bg-gray-50 rounded-lg p-4 space-y-3">
               <div className="grid grid-cols-2 gap-4">
                 <div>
+                  <p className="text-sm font-medium text-gray-500">Report ID</p>
+                  <p className="text-sm text-gray-900 font-semibold">#{report.report_id}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-500">Status</p>
+                  <p className="text-sm font-bold text-gray-900">{report.action || 'No action specified'}</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
                   <p className="text-sm font-medium text-gray-500">Reported User</p>
-                  <p className="text-sm text-gray-900 font-semibold">{report.reportedUser}</p>
+                  <p className="text-sm text-gray-900 font-semibold">{report.reported_user_username}</p>
                 </div>
                 <div>
                   <p className="text-sm font-medium text-gray-500">Reporting User</p>
-                  <p className="text-sm text-gray-900 font-semibold">{report.reportingUser}</p>
+                  <p className="text-sm text-gray-900 font-semibold">{report.reporting_user_username}</p>
                 </div>
               </div>
               <div>
@@ -71,7 +151,7 @@ const ActionViewModal = ({ report, onClose }) => {
               </div>
               <div>
                 <p className="text-sm font-medium text-gray-500">Date Filed</p>
-                <p className="text-sm text-gray-900">{report.dateFiled}</p>
+                <p className="text-sm text-gray-900">{formatDateTime(report.report_date)}</p>
               </div>
             </div>
           </div>
@@ -82,52 +162,60 @@ const ActionViewModal = ({ report, onClose }) => {
             <div className="bg-gray-50 rounded-lg p-4 space-y-4">
               <div>
                 <p className="text-sm font-medium text-gray-500 mb-1">Action Type</p>
-                <span className={`inline-block px-3 py-1 rounded-full text-sm font-semibold ${
-                  report.status === 'Resolved' 
-                    ? 'bg-green-100 text-green-700' 
-                    : 'bg-gray-100 text-gray-700'
-                }`}>
-                  {report.action.type}
-                </span>
+                <p className="text-sm font-semibold text-gray-900">{report.action || 'No action specified'}</p>
               </div>
 
-              {report.action.trustScoreDeduction && (
+              {report.rating_deduction > 0 && (
                 <div>
                   <p className="text-sm font-medium text-gray-500 mb-1">Trust Score Deduction</p>
-                  <p className="text-lg font-bold text-red-600">-{report.action.trustScoreDeduction} points</p>
+                  <p className="text-lg font-bold text-red-600">-{report.rating_deduction} points</p>
                 </div>
               )}
 
-              {report.action.restrictionDuration && (
+              {report.restriction_duration > 0 && (
                 <div>
                   <p className="text-sm font-medium text-gray-500 mb-1">Restriction Duration</p>
-                  <p className="text-lg font-bold text-orange-600">{report.action.restrictionDuration} days</p>
+                  <p className="text-lg font-bold text-orange-600">{report.restriction_duration} days</p>
                 </div>
               )}
 
-              <div>
-                <p className="text-sm font-medium text-gray-500 mb-1">Reason for Action (User-facing)</p>
-                <div className="bg-white border border-gray-200 rounded-lg p-3">
-                  <p className="text-sm text-gray-900">{report.action.reasonForAction}</p>
+              {report.action_reason && (
+                <div>
+                  <p className="text-sm font-medium text-gray-500 mb-1">Reason for Action (User-facing)</p>
+                  <div className="bg-white border border-gray-200 rounded-lg p-3">
+                    <p className="text-sm text-gray-900">{report.action_reason}</p>
+                  </div>
                 </div>
-              </div>
+              )}
 
-              <div>
-                <p className="text-sm font-medium text-gray-500 mb-1">Internal Moderator Notes</p>
-                <div className="bg-white border border-gray-200 rounded-lg p-3">
-                  <p className="text-sm text-gray-600 italic">{report.action.moderatorNotes}</p>
+              {report.mod_note && (
+                <div>
+                  <p className="text-sm font-medium text-gray-500 mb-1">Internal Moderator Notes</p>
+                  <div className="bg-white border border-gray-200 rounded-lg p-3">
+                    <p className="text-sm text-gray-600 italic">{report.mod_note}</p>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
 
-          {/* Close Button */}
-          <button
-            onClick={onClose}
-            className="w-full bg-gray-900 hover:bg-gray-800 text-white font-medium py-3 rounded-lg transition-colors"
-          >
-            Close
-          </button>
+          {/* Action Buttons */}
+          <div className="flex gap-3">
+            <button
+              onClick={handleCancelAction}
+              disabled={isCancelling}
+              className="flex-1 bg-red-500 hover:bg-red-600 text-white font-medium py-3 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isCancelling ? 'Cancelling...' : 'Cancel Action'}
+            </button>
+            <button
+              onClick={onClose}
+              disabled={isCancelling}
+              className="flex-1 bg-gray-900 hover:bg-gray-800 text-white font-medium py-3 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Close
+            </button>
+          </div>
         </div>
       </div>
     </div>

@@ -3,22 +3,69 @@ import { X } from 'lucide-react';
 
 const AdminActionForm = ({ report, onClose }) => {
   const [selectedAction, setSelectedAction] = useState('');
-  const [trustScoreDeduction, setTrustScoreDeduction] = useState('');
   const [restrictionDuration, setRestrictionDuration] = useState('');
   const [reasonForAction, setReasonForAction] = useState('');
   const [moderatorNotes, setModeratorNotes] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState(null);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Handle form submission
-    console.log({
-      selectedAction,
-      trustScoreDeduction,
-      restrictionDuration,
-      reasonForAction,
-      moderatorNotes
-    });
-    onClose();
+    setIsSubmitting(true);
+    setError(null);
+
+    try {
+      // Map action types to API values
+      const actionMap = {
+        'warning': 'Official Warning',
+        'restriction': 'Account Restriction',
+        'nothing': 'Dismiss Report'
+      };
+
+      // Map action types to status
+      const statusMap = {
+        'warning': 'resolved',
+        'restriction': 'resolved',
+        'nothing': 'dismissed'
+      };
+
+      const payload = {
+        report_id: report.report_id,
+        status: statusMap[selectedAction],
+        action: actionMap[selectedAction],
+        restriction_duration: selectedAction === 'restriction' ? parseInt(restrictionDuration) || 0 : 0,
+        action_reason: reasonForAction,
+        mod_note: moderatorNotes
+      };
+
+      const response = await fetch(`/api/reports/${report.report_id}/`, {
+        method: 'PUT',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      if (data.success) {
+        // Close modal and refresh parent
+        onClose();
+      } else {
+        throw new Error(data.message || 'Failed to resolve report');
+      }
+    } catch (err) {
+      console.error('Error resolving report:', err);
+      setError(err.message);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -29,12 +76,32 @@ const AdminActionForm = ({ report, onClose }) => {
           <button 
             onClick={onClose}
             className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+            disabled={isSubmitting}
           >
             <X className="h-5 w-5 text-gray-500" />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="p-6">
+          {error && (
+            <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-sm text-red-600">{error}</p>
+            </div>
+          )}
+
+          {/* Report Info */}
+          <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+            <p className="text-sm text-gray-600">
+              <span className="font-semibold">Report ID:</span> #{report.report_id}
+            </p>
+            <p className="text-sm text-gray-600">
+              <span className="font-semibold">Reported User:</span> {report.reported_user_username}
+            </p>
+            <p className="text-sm text-gray-600">
+              <span className="font-semibold">Reason:</span> {report.reason}
+            </p>
+          </div>
+
           {/* Select Action */}
           <div className="mb-6">
             <label className="block text-sm font-semibold text-gray-900 mb-3">
@@ -49,6 +116,7 @@ const AdminActionForm = ({ report, onClose }) => {
                   checked={selectedAction === 'warning'}
                   onChange={(e) => setSelectedAction(e.target.value)}
                   className="w-4 h-4 text-blue-600 focus:ring-blue-500"
+                  disabled={isSubmitting}
                 />
                 <span className="text-sm text-gray-900">Official Warning</span>
               </label>
@@ -61,6 +129,7 @@ const AdminActionForm = ({ report, onClose }) => {
                   checked={selectedAction === 'restriction'}
                   onChange={(e) => setSelectedAction(e.target.value)}
                   className="w-4 h-4 text-blue-600 focus:ring-blue-500"
+                  disabled={isSubmitting}
                 />
                 <span className="text-sm text-gray-900">Account Restriction (e.g., mute, temporary ban)</span>
               </label>
@@ -73,6 +142,7 @@ const AdminActionForm = ({ report, onClose }) => {
                   checked={selectedAction === 'nothing'}
                   onChange={(e) => setSelectedAction(e.target.value)}
                   className="w-4 h-4 text-blue-600 focus:ring-blue-500"
+                  disabled={isSubmitting}
                 />
                 <span className="text-sm text-gray-900">Dismiss Report</span>
               </label>
@@ -86,22 +156,6 @@ const AdminActionForm = ({ report, onClose }) => {
                 Action Details
               </label>
               <div className="space-y-4 bg-gray-50 border border-gray-200 rounded-lg p-4">
-                {/* Trust Score Deduction - Hide if "nothing" is selected */}
-                {selectedAction !== 'nothing' && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-900 mb-2">
-                      Trust Score Deduction Amount (Points):
-                    </label>
-                    <input
-                      type="number"
-                      value={trustScoreDeduction}
-                      onChange={(e) => setTrustScoreDeduction(e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                      placeholder="Enter points"
-                    />
-                  </div>
-                )}
-
                 {/* Restriction Duration - Only show if "restriction" is selected */}
                 {selectedAction === 'restriction' && (
                   <div>
@@ -114,6 +168,9 @@ const AdminActionForm = ({ report, onClose }) => {
                       onChange={(e) => setRestrictionDuration(e.target.value)}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                       placeholder="Enter days"
+                      min="0"
+                      disabled={isSubmitting}
+                      required
                     />
                   </div>
                 )}
@@ -128,6 +185,8 @@ const AdminActionForm = ({ report, onClose }) => {
                     rows="3"
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none"
                     placeholder="Enter reason that will be shown to the user"
+                    disabled={isSubmitting}
+                    required
                   />
                 </div>
 
@@ -141,6 +200,7 @@ const AdminActionForm = ({ report, onClose }) => {
                     rows="3"
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none"
                     placeholder="Enter internal notes for moderation team"
+                    disabled={isSubmitting}
                   />
                 </div>
               </div>
@@ -150,9 +210,10 @@ const AdminActionForm = ({ report, onClose }) => {
           {/* Submit Button */}
           <button
             type="submit"
-            className="w-full bg-red-500 hover:bg-red-600 text-white font-medium py-3 rounded-lg transition-colors"
+            disabled={!selectedAction || isSubmitting}
+            className="w-full bg-red-500 hover:bg-red-600 text-white font-medium py-3 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Mark as resolved
+            {isSubmitting ? 'Resolving...' : 'Mark as resolved'}
           </button>
         </form>
       </div>

@@ -32,8 +32,9 @@ const Sidebar_Seller = ({ active }) => {
   const items = [
     { name: 'Dashboard', icon: LayoutDashboard, path: '/seller/dashboard' },
     { name: 'Products', icon: Package, path: '/seller/products' },
-    { name: 'Orders', icon: ShoppingCart, path: '/seller/orders' }
-  ]
+    { name: 'Orders', icon: ShoppingCart, path: '/seller/orders' },
+    { name: 'Log Out', icon: LogOut, action: 'logout' }
+  ];
 
   return (
     <aside className="w-[280px] min-h-screen bg-[#0a0a0a] text-white px-4 py-6 flex flex-col">
@@ -48,6 +49,23 @@ const Sidebar_Seller = ({ active }) => {
           {items.map(item => {
             const Icon = item.icon
             const isActive = item.name === active || location.pathname === item.path
+            
+            if (item.action === 'logout') {
+              return (
+                <li key={item.name}>
+                  <button
+                    onClick={handleLogout}
+                    className="flex items-center gap-3.5 px-4 py-3.5 rounded-lg
+                      transition-all duration-200 text-[15px] font-medium w-full text-left
+                      text-[#8e8e8e] hover:bg-[#1a1a1a] hover:text-white"
+                  >
+                    <Icon size={20} className="flex-shrink-0" />
+                    <span className="flex-1">{item.name}</span>
+                  </button>
+                </li>
+              )
+            }
+
             return (
               <li key={item.name}>
                 <Link
@@ -69,19 +87,6 @@ const Sidebar_Seller = ({ active }) => {
           })}
         </ul>
       </nav>
-      
-      {/* Logout Button */}
-      <div className="mt-auto pt-4 border-t border-gray-700">
-        <button
-          onClick={handleLogout}
-          className="flex items-center gap-3.5 px-4 py-3.5 rounded-lg w-full
-                     text-[#8e8e8e] hover:bg-[#1a1a1a] hover:text-white
-                     transition-all duration-200 text-[15px] font-medium"
-        >
-          <LogOut size={20} className="flex-shrink-0" />
-          <span className="flex-1 text-left">Logout</span>
-        </button>
-      </div>
     </aside>
   )
 }
