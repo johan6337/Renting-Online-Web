@@ -4,35 +4,11 @@ import StarRating from '../components/comments/StarRating';
 import CommentList from '../components/comments/CommentList';
 import ProductList from '../components/product_list/ProductList';
 import MessagePopup from '../components/common/MessagePopup';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 
+const GUEST_CART_KEY = "guestCart";
 const ProductDetails = () => {
-    const { productId } = useParams();
-    const navigate = useNavigate();
-    
-    // Sample product data - In real app, fetch from API using productId
-    const product = {
-        id: productId,
-        name: "Gradient Graphic T-shirt",
-        price: 145,
-        sale: 20,
-        image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop",
-        images: [
-            "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop",
-            "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=400&h=400&fit=crop",
-            "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=400&h=400&fit=crop",
-            "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop",
-            "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=400&h=400&fit=crop",
-            "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=400&h=400&fit=crop",
-            "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop",
-            "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=400&h=400&fit=crop",
-            "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=400&h=400&fit=crop",
-            "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop",
-            "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=400&h=400&fit=crop",
-            "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=400&h=400&fit=crop"
-        ]
-    };
     
     const details = {
         description: "This graphic t-shirt is perfect for any occasion. Crafted from a soft and breathable fabric, it offers superior comfort and style.",
@@ -95,7 +71,7 @@ const ProductDetails = () => {
                 name: "Polo with Tipping Details",
                 price: 180,
                 image: "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=400&h=400&fit=crop",
-                sale: 0
+                sale_percentage: 0
             },
             {
                 id: 22,
@@ -106,30 +82,195 @@ const ProductDetails = () => {
             }
         ]
     };
-    
-    let originalPrice = product.price.toFixed(2);
 
-    const finalPrice = useMemo(() => {
-        if (!product.sale || product.sale <= 0)
-            return originalPrice;
-        return (originalPrice * (1 - product.sale / 100)).toFixed(2);
-    }, [product.sale, originalPrice]);
 
-    // State để quản lý số lượng và popup
+    // const product = {
+    //     id: productId,
+    //     name: "Gradient Graphic T-shirt",
+    //     price: 145,
+    //     sale: 20,
+    //     image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop",
+    //     images: [
+    //         "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop",
+    //         "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=400&h=400&fit=crop",
+    //         "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=400&h=400&fit=crop",
+    //         "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop",
+    //         "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=400&h=400&fit=crop",
+    //         "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=400&h=400&fit=crop",
+    //         "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop",
+    //         "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=400&h=400&fit=crop",
+    //         "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=400&h=400&fit=crop",
+    //         "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop",
+    //         "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=400&h=400&fit=crop",
+    //         "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=400&h=400&fit=crop"
+    //     ]
+    // };
+    const { productId } = useParams();
+    const navigate = useNavigate();
+
+    const [product, setProduct] = useState(null);
+    const [isLoading, setIsLoading] = useState(true); 
+    const [error, setError] = useState(null);
     const [quantity, setQuantity] = useState(1);
     const [showPopup, setShowPopup] = useState(false);
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+
+    useEffect(() => {
+        // Define the async function to fetch data
+        const getProduct = async () => {
+            
+            if (!productId) {
+                setIsLoading(false);
+                setError("No product ID provided.");
+                return;
+            }
+
+            try {
+                setIsLoading(true);
+                setError(null);
+                const res = await fetch(`/api/products/${productId}`, {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include', // Important for session cookies
+                });
+                
+                if (!res.ok) {
+                    throw new Error(`HTTP error! Status: ${res.status}`);
+                }
+
+                const data = await res.json();
+                console.log(data)
+                setProduct(data.data);
+                setSelectedImageIndex(0); // Reset image index for new product
+
+            } catch (err) { 
+                console.error("Failed to fetch product:", err);
+                setError(err.message);
+            
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        getProduct();
+
+    }, [productId]); 
+
+    // --- Calculations ---
+    const originalPrice = (Number(product?.price_per_day) || 0).toFixed(2);
+
+    const finalPrice = useMemo(() => {
+        if (!product || !product.sale_percentage || product.sale_percentage <= 0)
+            return originalPrice;
+        return (originalPrice * (1 - product.sale_percentage / 100)).toFixed(2);
     
-    // Hàm xử lý tăng/giảm số lượng
+    }, [originalPrice, product]);
+    
+    // --- Handlers ---
+
     const handleQuantityChange = (amount) => {
         setQuantity(prev => Math.max(1, prev + amount)); 
     };
 
-    const updateProduct = (quantity) => {
-        product.quantity = quantity;
-        setShowPopup(true);
-    }
+    const updateProduct = async (productId, quantity, rentTime) => {
+        setIsLoading(true); 
+        setError(null);
+
+        try {
+            const sessionRes = await fetch('/api/users/me', {
+                credentials: 'include',
+                cache: 'no-cache'
+            });
+
+            if (sessionRes.ok) {
+                try {
+                    const res = await fetch('/api/cart', { 
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        credentials: 'include', 
+                        body: JSON.stringify({
+                            "productId": productId,
+                            "quantity": quantity,
+                            "rentTime": rentTime 
+                        })
+                    });
+
+                    if (!res.ok) {
+                        const errorData = await res.json().catch(() => ({ message: "Unknown server error" }));
+                        throw new Error(`Error: ${res.status}. ${errorData.message}`);
+                    }
+                    
+                    const data = await res.json(); 
+                    console.log("Cart updated successfully:", data);
+                    setShowPopup(true);
+
+                } catch (err) { 
+                    console.error("Failed to update cart:", err);
+                    setError(err.message);
+
+                } finally {
+                    setIsLoading(false);
+                }
+            } else {
+                const cartString = localStorage.getItem(GUEST_CART_KEY);
+                const cart = cartString ? JSON.parse(cartString) : { items: [] };
+
+                cart.items.push(product);
+                const priceToAdd = Number(finalPrice);
+                const currentTotal = cart.total_cost || 0;
+                cart.total_cost = currentTotal + priceToAdd;
+
+                localStorage.setItem(GUEST_CART_KEY, JSON.stringify(cart));
+            }
+        } catch (sessionError) {
+                // This catches errors from the session check itself
+                console.error("Failed to check session:", sessionError);
+                setError(sessionError.message);
+                setIsGuest(true); // Assume guest if session check fails
+        } finally {
+            setIsLoading(false);
+        }
+
+        
+    };
+
+    // --- Render Logic ---
+
     
+    if (isLoading && !product) { 
+        return (
+            <div className='h-screen flex items-center justify-center'>
+                Loading product details...
+            </div>
+        );
+    }
+
+    
+    if (error) {
+        return (
+            <div className='h-screen flex flex-col items-center justify-center gap-4'>
+                <h1 className='text-2xl font-bold'>Something went wrong</h1>
+                <p className='text-red-500'>{error}</p>
+                <button onClick={() => navigate('/')} className='bg-black text-white px-4 py-2 rounded-lg'>
+                    Go Home
+                </button>
+            </div>
+        );
+    }
+
+    
+    if (!product) {
+        return (
+            <div className='h-screen flex items-center justify-center'>
+                Product not found.
+            </div>
+        );
+    }
+
+
     return (
         <div className='h-screen'>
             <Header />
@@ -203,12 +344,12 @@ const ProductDetails = () => {
                     <h2 className="p-2 line-clamp-3 break-words text-3xl md:text-4xl font-bold overflow-hidden">{product.name}</h2>
                     <div className="px-2 py-2 pt-0 pb-0"><StarRating modeRate={false}/></div>
                     <div className="flex justify-start items-center p-2 text-3xl md:text-4xl font-bold">
-                        ${product.sale ? (
+                        ${product.sale_percentage ? (
                             <div className="flex justify-start items-center gap-3">
                                 {finalPrice} {' '}
                                 <span className='line-through text-gray-300'>${originalPrice}</span>
                                 <span>
-                                    <button className='rounded-3xl cursor-default pl-4 pr-4 pt-1 pb-1 text-base md:text-lg bg-red-100 text-red-400'>-{product.sale}%</button>
+                                    <button className='rounded-3xl cursor-default pl-4 pr-4 pt-1 pb-1 text-base md:text-lg bg-red-100 text-red-400'>-{product.sale_percentage}%</button>
                                 </span>
                             </div>
                         ) : originalPrice}
@@ -226,7 +367,7 @@ const ProductDetails = () => {
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
                             </svg>
                             <span className="font-semibold text-gray-800">Category:</span>
-                            <span className="text-gray-600">{details.category}</span>
+                            <span className="text-gray-600">{product.category}</span>
                         </div>
                         <div className="flex items-center gap-2">
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -234,7 +375,7 @@ const ProductDetails = () => {
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                             </svg>
                             <span className="font-semibold text-gray-800">Location:</span>
-                            <span className="text-gray-600">{details.location}</span>
+                            <span className="text-gray-600">{product.location}</span>
                         </div>
                     </div>
 
@@ -249,7 +390,7 @@ const ProductDetails = () => {
 
                         {/* Nút Add to Cart */}
                         <button className="flex-1 bg-black text-white font-bold py-3 rounded-full hover:bg-gray-800 transition-colors"
-                            onClick={() => updateProduct(quantity)}>
+                            onClick={() => updateProduct(productId, quantity, 1)}>
                             Add to Cart
                         </button>
                     </div>

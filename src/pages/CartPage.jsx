@@ -1,102 +1,239 @@
 import Header from '../components/header/Header';
 import Footer from '../components/footer/Footer';
-import { useState, Fragment } from 'react';
+import { useState, useEffect, Fragment } from 'react';
 import { useNavigate } from "react-router-dom";
 
 import { BsTag } from 'react-icons/bs';
 import { HiOutlineArrowRight } from 'react-icons/hi';
 
-const CartPage = ({ cartContent }) => {
-    const products = [
-        {
-            id: 1,
-            name: "Checkered Shirt",
-            price: 100,
-            image: "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=400&h=400&fit=crop",
-            sale: 20
-        },
-        {
-            id: 2,
-            name: "Denim Jacket",
-            price: 80,
-            image: "https://images.unsplash.com/photo-1503341455253-b2e723bb3dbb?auto=format&fit=crop&w=400&q=80",
-        },
-        {
-            id: 3,
-            name: "Wireless Headphones",
-            price: 120,
-            image: "https://images.unsplash.com/photo-1580894908361-967195033215?auto=format&fit=crop&w=400&q=80",
-        }
-    ]
+const GUEST_CART_KEY = "guestCart";
+const USER_CART_KEY = "userCart"
 
-    cartContent = {
-        items: products,
-        totalPrice: products.slice(0, 3).reduce((total, item) => total + item.price, 0)
-    }
-
-
-    const { items, totalPrice } = cartContent;
-
-    // Hard code quantity and rental days for items
-    items.forEach(item => {
-        if (!item.quantity) {
-            item.quantity = 1;
-        }
-        if (!item.rentalDays) {
-            item.rentalDays = 1;
-        }
-    })
-
-    const cols = items.properties ? Math.ceil(Object.keys(items.properties).length / 2) : 1;
-    const countItems = items.length;
-
-    const [itemList, setItemList] = useState(items);
-
-
+const CartPage = () => {
+    const navigate = useNavigate();
+    const [itemList, setItemList] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState(null);
     
+    const [isGuest, setIsGuest] = useState(false);
+
+    // const processCartItems = (items) => {
+    //     if (!items || !Array.isArray(items)) return [];
+    //     const keyToUpdate = items[0].hasOwnProperty('rentalDays') ? 'rentalDays' : 'rent_time'; 
+    //     return items.map(item => ({
+    //         ...item,
+    //         quantity: item.quantity ?? 1,
+    //         [keyToUpdate]: item.rent_time ?? item.rentalDays  ?? 1
+    //     }));
+    // };
+
+    const processCartItems = (items) => {
+        if (!items || !Array.isArray(items)) return [];
+        return items.map(item => {
+            // Pull 'rentalDays' (the old key) out of the item
+            const { rentalDays, ...restOfItem } = item;
+            
+            return {
+                ...restOfItem, // The item without 'rentalDays'
+                quantity: item.quantity ?? 1,
+                // Standardize the key to 'rent_time':
+                rent_time: item.rent_time ?? rentalDays ?? 1
+            };
+        });
+    };
+
+    // Main data fetching effect
+    useEffect(() => {
+        const fetchCartData = async () => {
+            setIsLoading(true); 
+            setError(null); 
+
+            try {
+                // 1. Check user session
+                const sessionRes = await fetch('/api/users/me', {
+                    credentials: 'include',
+                    cache: 'no-cache'
+                });
+
+                if (sessionRes.ok) {
+                    // --- USER IS LOGGED IN ---
+                    setIsGuest(false); // Set guest state
+                    console.log("User is logged in. Fetching cart from API...");
+                    try {
+                        const res = await fetch('api/cart/items', {
+                            credentials: 'include',
+                            cache: 'no-cache'
+                        });
+
+                        if (!res.ok) {
+                            throw new Error(`HTTP error! status: ${res.status}`);
+                        }
+
+                        const response = await res.json();
+                        const cartContent = response.data;
+                        console.log(cartContent)
+                        
+                        if (cartContent && cartContent.length === 0) {
+                            const cartString = localStorage.getItem(GUEST_CART_KEY);
+                            const cart = JSON.parse(cartString)
+                            setItemList(cart.items)
+                            const cartToSave = {
+                                "items" : itemList,
+                                "total_cost" : calculateTotalPrice() + deliveryFee 
+                            }
+                            localStorage.setItem(USER_CART_KEY, JSON.stringify(cartToSave))
+                        } else if (cartContent && cartContent.length > 0) {
+                            setItemList(processCartItems(cartContent));
+                        }
+
+                        // localStorage.removeItem(GUEST_CART_KEY);
+
+                    } catch (cartError) {
+                        console.error("Failed to fetch API cart:", cartError);
+                        setError(cartError.message);
+                    }
+                
+                } else {
+                    // --- USER IS A GUEST ---
+                    setIsGuest(true); // Set guest state
+                    console.log("User is a guest. Loading cart from localStorage...");
+                    
+                    const cartString = localStorage.getItem(GUEST_CART_KEY);
+                    if (cartString) {
+                        const cart = JSON.parse(cartString);
+                        if (cart.items) {
+                            // FIX: Process items *before* setting state
+                            setItemList(processCartItems(cart.items));
+                        }
+                    }
+                }
+
+            } catch (sessionError) {
+                // This catches errors from the session check itself
+                console.error("Failed to check session:", sessionError);
+                setError(sessionError.message);
+                setIsGuest(true); // Assume guest if session check fails
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchCartData();
+    }, []);
+    
+    const countItems = itemList.length;
+    const deliveryFee = itemList.length > 0 ? 10 : 0;
+
+    // Effect to *save* the cart to localStorage *only if* the user is a guest
+    useEffect(() => {
+        const saveTimer = setTimeout(() => {
+            if (isLoading) return; 
+
+            const cartKey = isGuest ? GUEST_CART_KEY : USER_CART_KEY;
+            try {
+                const cartToSave = {
+                    "items" : itemList,
+                    "total_cost" : calculateTotalPrice() + deliveryFee
+                }
+                localStorage.setItem(cartKey, JSON.stringify(cartToSave))
+            } catch (storageError) {
+                console.log("Failed to save cart to local storage: ", storageError)
+            }
+        }, 500); 
+
+        return () => clearTimeout(saveTimer);
+    }, [itemList, isGuest, isLoading]);
+
+
+    const handleRemoveItem = (itemID) => {
+        setItemList(currentList => {
+            const idKey = currentList.find(item => item.id) ? 'id' : 'product_id';
+            return currentList.filter(item => item[idKey] !== itemID);
+        });
+    };
+
     const handleChangeQuantity = (itemID, ammount) => {
         setItemList(currentList => {
+            const idKey = currentList.find(item => item.id) ? 'id' : 'product_id';
             return currentList.map(item => {
-                // Return original item if not the one to update
-                if (item.id !== itemID) return item;
-
-                // Update quantity for the matching item
+                if (item[idKey] !== itemID) return item;
                 const newQuantity = Math.max(1, item.quantity + ammount);
-                return {
-                    ...item,
-                    quantity: newQuantity
-                };
+                return { ...item, quantity: newQuantity };
             })
         })
     }
 
     const handleChangeRentalDays = (itemID, amount) => {
         setItemList(currentList => {
+            const idKey = currentList.find(item => item.id) ? 'id' : 'product_id';
             return currentList.map(item => {
-                // Return original item if not the one to update
-                if (item.id !== itemID) return item;
-
-                // Update rental days for the matching item
-                const newRentalDays = Math.max(1, item.rentalDays + amount);
-                return {
-                    ...item,
-                    rentalDays: newRentalDays
-                };
+                if (item[idKey] !== itemID) return item;
+                // 'item.rent_time' is guaranteed to exist now
+                const newRentTime = Math.max(1, item.rent_time + amount);
+                return { ...item, rent_time: newRentTime };
             })
         })
     }
 
+    const handleCheckout = async(e) => {
+        e.preventDefault();
+        console.log('CHECK OUT TRIGGERED');
+        
+        const totalAmount = calculatedTotal + deliveryFee;
+
+        try {
+            //Check session
+            const sessionRes = await fetch('/api/users/me', {
+                credentials: 'include',
+                cache: 'no-cache'
+            });
+
+            if (sessionRes.ok) {
+                console.log("Has session! Proceeding to checkout!");
+                // FIX: Navigate to payment with the correct total amount
+                navigate('/payment', { state: { totalAmount: totalAmount } });
+            } else {
+                console.log("No session, redirecting to login!");
+                
+                // FIX: Save the guest cart *before* redirecting to login
+                try {
+                    const cartToSave = {
+                        "items" : itemList,
+                        "total_cost" : totalAmount
+                    };
+                    localStorage.setItem(GUEST_CART_KEY, JSON.stringify(cartToSave));
+                } catch (storageError) {
+                    console.error("Failed to save cart before login redirect:", storageError);
+                }
+                
+                navigate("/login");
+            }
+        } catch (error) {
+            console.error('Error checking session status:', error);
+        }
+    }
+
     // Calculate total price based on quantity, rental days, and individual prices
     const calculateTotalPrice = () => {
-        return itemList.reduce((total, item) => {
-            return total + (item.price * item.quantity * item.rentalDays);
-        }, 0);
+        if (!itemList || itemList.length === 0) {
+            return 0;
+        }
+
+        const total = itemList.reduce((accumulator, item) => {
+            const price = Number(item.price_per_day || item.unit_price) || 0;
+            const sale = Number(item.sale_percentage) || 0;
+            const quantity = Number(item.quantity) || 1;
+            const rentTime = Number(item.rent_time) || 1; // Only use rent_time
+
+            const itemPrice = price * (1 - sale / 100.0);
+            return accumulator + (itemPrice * quantity * rentTime);
+        }, 0); 
+
+        return Number(total.toFixed(2));
     }
 
     const calculatedTotal = calculateTotalPrice();
     
-
-    const navigate = useNavigate();
     return (
         <div className=''>
             <Header onLoginClick={() => navigate("/")} onSignUpClick={() => navigate("/signup")} onProfileClick={() => navigate("/profile")} onAdminClick={() => navigate("/admin")} onCartClick={() => navigate("/cart")}/>
@@ -106,7 +243,7 @@ const CartPage = ({ cartContent }) => {
                     {/* Cart items will be displayed here */}
                     <div className='flex-[3] border-2 border-gray-200 rounded-xl'>
                         {itemList.map((item, index) => (
-                            <Fragment key={item.id ?? index}>
+                            <Fragment key={item.id ?? item.product_id}>
                                 <div className='flex flex-row gap-4 m-4 items-start'>
                                     {/* Item Image */}
                                     <div className='flex-shrink-0'>
@@ -127,15 +264,15 @@ const CartPage = ({ cartContent }) => {
                                             </div>
                                         )}
                                         <div className='mt-auto'>
-                                            <span className='text-sm text-gray-600 block'>${item.price}/day × {item.rentalDays} day{item.rentalDays > 1 ? 's' : ''}</span>
-                                            <span className='text-xl font-bold text-black'>${item.price * item.rentalDays}</span>
+                                            <span className='text-sm text-gray-600 block'>${item.price_per_day || item.total_price}/day × {item.rent_time || item.rentalDays} day{item.rent_time || item.rentalDays > 1 ? 's' : ''}</span>
+                                            <span className='text-xl font-bold text-black'>${(item.price_per_day || item.total_price) * (item.rent_time || item.rentalDays)}</span>
                                         </div>
                                     </div>
                                     
                                     {/* More Interactions */}
                                     <div className='flex-shrink-0 flex flex-col items-end gap-3'>
                                         {/* Remove Item From Cart */}
-                                        <button className='flex flex-row justify-end'>
+                                        <button className='flex flex-row justify-end' onClick={() => handleRemoveItem(item.id)}>
                                             <svg 
                                                 xmlns="http://www.w3.org/2000/svg" 
                                                 viewBox="0 0 24 24" 
@@ -154,9 +291,9 @@ const CartPage = ({ cartContent }) => {
                                         <div className="flex flex-col gap-1">
                                             <span className="text-xs text-gray-500 text-center">Rental Days</span>
                                             <div className="flex items-center bg-gray-100 rounded-full px-3 py-2">
-                                                <button className='text-lg font-bold px-2 disabled:opacity-50' onClick={() => handleChangeRentalDays(item.id, -1)} disabled={item.rentalDays === 1} >-</button>
-                                                <span className='font-bold text-base min-w-[2rem] text-center'>{item.rentalDays}</span>
-                                                <button className='text-lg font-bold px-2' onClick={() => handleChangeRentalDays(item.id, +1)}>+</button>
+                                                <button className='text-lg font-bold px-2 disabled:opacity-50' onClick={() => handleChangeRentalDays(item.id ?? item.product_id, -1)} disabled={item.rent_time === 1} >-</button>
+                                                <span className='font-bold text-base min-w-[2rem] text-center'>{item.rent_time}</span>
+                                                <button className='text-lg font-bold px-2' onClick={() => handleChangeRentalDays(item.id ?? item.product_id, +1)}>+</button>
                                             </div>
                                         </div>
 
@@ -164,9 +301,9 @@ const CartPage = ({ cartContent }) => {
                                         <div className="flex flex-col gap-1">
                                             <span className="text-xs text-gray-500 text-center">Quantity</span>
                                             <div className="flex items-center bg-gray-100 rounded-full px-3 py-2">
-                                                <button className='text-lg font-bold px-2 disabled:opacity-50' onClick={() => handleChangeQuantity(item.id, -1)} disabled={item.quantity === 1} >-</button>
+                                                <button className='text-lg font-bold px-2 disabled:opacity-50' onClick={() => handleChangeQuantity(item.id ?? item.product_id, -1)} disabled={item.quantity === 1} >-</button>
                                                 <span className='font-bold text-base min-w-[2rem] text-center'>{item.quantity}</span>
-                                                <button className='text-lg font-bold px-2' onClick={() => handleChangeQuantity(item.id, +1)}>+</button>
+                                                <button className='text-lg font-bold px-2' onClick={() => handleChangeQuantity(item.id ?? item.product_id, +1)}>+</button>
                                             </div>
                                         </div>
                                     </div>
@@ -192,13 +329,13 @@ const CartPage = ({ cartContent }) => {
                             </div>
                             <div className='flex flex-row relative w-full'>
                                 <div className='font-medium text-gray-500 '>Delivery Fee</div>
-                                <div className='absolute right-0 text-2xl'>$10</div>
+                                <div className='absolute right-0 text-2xl'>${deliveryFee}</div>
                             </div>
 
                             <hr className='border-t-2 border-gray-100' />
                             <div className='flex flex-row relative w-full'>
                                     <div className='font-medium text-black '>Total</div>
-                                    <div className='absolute right-0 text-2xl'>${calculatedTotal + 10}</div>
+                                    <div className='absolute right-0 text-2xl'>${Number(calculatedTotal) + Number(deliveryFee)}</div>
                             </div>
 
                             {/* Promo Code Section */}
@@ -218,7 +355,8 @@ const CartPage = ({ cartContent }) => {
 
                             {/* Checkout Button */}
                             <button 
-                                onClick={() => navigate('/payment', { state: { totalAmount: calculatedTotal + 10 } })}
+                                // onClick={() => navigate('/payment', { state: { totalAmount: calculatedTotal + 10 } })}
+                                onClick={(e) => handleCheckout(e)}
                                 className='group w-full border-2 border-black bg-black hover:bg-white text-white hover:text-black transition-all ease-in-out duration-300 rounded-full py-4 flex justify-center items-center font-bold text-lg gap-2'
                             >
                                 <span>Go to Checkout</span>
