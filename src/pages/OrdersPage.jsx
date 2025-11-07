@@ -5,7 +5,6 @@ import Footer from '../components/footer/Footer';
 import OrderList from '../components/orders/OrderList';
 import OrderDetail from '../components/orders/OrderDetail';
 import OrderScheduleModal from '../components/orders/OrderScheduleModal';
-import RatingModal from '../components/orders/RatingModal';
 
 const OrdersPage = () => {
   const navigate = useNavigate();
@@ -14,9 +13,6 @@ const OrdersPage = () => {
   const [scheduleModalType, setScheduleModalType] = useState(null);
   const [scheduleOrderNumber, setScheduleOrderNumber] = useState(null);
   const [scheduleByOrder, setScheduleByOrder] = useState({});
-  const [ratingModalOpen, setRatingModalOpen] = useState(false);
-  const [ratingOrderNumber, setRatingOrderNumber] = useState(null);
-  const [orderRatings, setOrderRatings] = useState({});
 
   const [orders, setOrders] = useState([
     {
@@ -442,26 +438,17 @@ const OrdersPage = () => {
 
   const isCompletedOrder = (order) => order.status?.toLowerCase() === 'completed';
 
-  const handleOpenRatingModal = (order) => {
-    setRatingOrderNumber(order.orderNumber);
-    setRatingModalOpen(true);
-  };
-
-  const handleSubmitRating = (ratingData) => {
-    setOrderRatings(prev => ({
-      ...prev,
-      [ratingOrderNumber]: ratingData
-    }));
-    setRatingModalOpen(false);
-    setRatingOrderNumber(null);
-  };
-
-  const hasStoredReview = () => {
+  const hasStoredReview = (orderNumber) => {
     if (typeof window === 'undefined') {
       return false;
     }
     try {
-      return Boolean(window.localStorage.getItem('postRentalReview'));
+      const stored = window.localStorage.getItem('postRentalReview');
+      if (!stored) return false;
+      const parsed = JSON.parse(stored);
+      if (!parsed) return false;
+      if (!orderNumber) return true;
+      return parsed.orderNumber === orderNumber;
     } catch (error) {
       console.warn('Unable to read stored review:', error);
       return false;
@@ -469,9 +456,19 @@ const OrdersPage = () => {
   };
 
   const handleReviewNavigation = (order) => {
-    const hasReview = hasStoredReview();
+    if (!order) return;
+    const hasReview = hasStoredReview(order.orderNumber);
     const targetPath = hasReview ? '/review/completed' : '/review';
-    navigate(targetPath, { state: { orderNumber: order.orderNumber } });
+    const primaryItem = order.items?.[0] || null;
+    const navigationState = {
+      orderNumber: order.orderNumber,
+    };
+    if (primaryItem) {
+      navigationState.productId = primaryItem.productId || primaryItem.id || null;
+      navigationState.productName = primaryItem.name || null;
+      navigationState.product = primaryItem;
+    }
+    navigate(targetPath, { state: navigationState });
   };
 
   const handleOpenScheduleModal = (order, type) => {
@@ -529,21 +526,20 @@ const OrdersPage = () => {
           <div className="max-w-5xl mx-auto px-4">
             <div className="bg-white border border-indigo-100 rounded-2xl shadow-sm p-6 mb-10">
               <h2 className="text-xl font-semibold text-gray-800">
-                {orderRatings[selectedOrder.orderNumber] ? 'Your Rating' : 'Rate This Order'}
+                {hasStoredReview(selectedOrder.orderNumber) ? 'Your Review' : 'Share Your Review'}
               </h2>
               <p className="text-gray-600 mt-2">
-                {orderRatings[selectedOrder.orderNumber] 
-                  ? `You rated this order ${orderRatings[selectedOrder.orderNumber].rating} stars.`
-                  : `Share your experience for order #${selectedOrder.orderNumber} to help fellow renters.`
-                }
+                {hasStoredReview(selectedOrder.orderNumber)
+                  ? `You already shared feedback for order #${selectedOrder.orderNumber}. View or update it anytime.`
+                  : `Share your experience for order #${selectedOrder.orderNumber} to help fellow renters.`}
               </p>
               <div className="mt-4">
                 <button
                   type="button"
-                  onClick={() => handleOpenRatingModal(selectedOrder)}
+                  onClick={() => handleReviewNavigation(selectedOrder)}
                   className="inline-flex items-center justify-center px-6 py-3 rounded-full bg-indigo-600 text-white font-semibold hover:bg-indigo-700 transition-colors"
                 >
-                  {orderRatings[selectedOrder.orderNumber] ? 'Edit Rating' : 'Rate Order'}
+                  {hasStoredReview(selectedOrder.orderNumber) ? 'View Review' : 'Write Review'}
                 </button>
               </div>
             </div>
@@ -555,16 +551,6 @@ const OrdersPage = () => {
           onSave={handleSaveSchedule}
           initialSchedule={modalInitialSchedule}
           type={scheduleModalType}
-        />
-        <RatingModal
-          isOpen={ratingModalOpen}
-          onClose={() => {
-            setRatingModalOpen(false);
-            setRatingOrderNumber(null);
-          }}
-          onSubmit={handleSubmitRating}
-          orderNumber={ratingOrderNumber}
-          existingRating={ratingOrderNumber ? orderRatings[ratingOrderNumber] : null}
         />
         <Footer />
       </div>

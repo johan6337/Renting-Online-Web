@@ -1,7 +1,8 @@
-import React from 'react';
 import { X } from 'lucide-react';
+import { useState } from 'react';
 
 const ReportDetailModal = ({ report, onClose }) => {
+  const [expandedImage, setExpandedImage] = useState(null);
   if (!report) return null;
 
   const reportDetails = {
@@ -13,6 +14,30 @@ const ReportDetailModal = ({ report, onClose }) => {
     'Other': 'This report involves a violation that doesn\'t fit into the standard categories but still breaches community guidelines or terms of service.'
   };
 
+  const formatDateTime = (dateString) => {
+    if (!dateString) return 'N/A';
+    return new Date(dateString).toLocaleString();
+  };
+
+  const formatStatus = (status) => {
+    if (!status) return 'Unknown';
+    return status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
+  };
+
+  const getStatusStyles = (status) => {
+    const normalizedStatus = status?.toLowerCase();
+    switch (normalizedStatus) {
+      case 'pending':
+        return 'bg-yellow-100 text-yellow-700';
+      case 'resolved':
+        return 'bg-green-100 text-green-700';
+      case 'dismissed':
+        return 'bg-gray-100 text-gray-700';
+      default:
+        return 'bg-gray-100 text-gray-700';
+    }
+  };
+
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
@@ -20,7 +45,7 @@ const ReportDetailModal = ({ report, onClose }) => {
           <div>
             <h2 className="text-xl font-bold text-gray-900">Report Details</h2>
             <p className="text-sm text-gray-600 mt-1">
-              Report ID: #{report.id}
+              Report ID: #{report.report_id}
             </p>
           </div>
           <button 
@@ -38,30 +63,26 @@ const ReportDetailModal = ({ report, onClose }) => {
               <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
                 Reported User
               </label>
-              <p className="text-gray-900 font-medium">{report.reportedUser}</p>
+              <p className="text-gray-900 font-medium">{report.reported_user_username}</p>
             </div>
             <div>
               <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
                 Reporting User
               </label>
-              <p className="text-gray-900 font-medium">{report.reportingUser}</p>
+              <p className="text-gray-900 font-medium">{report.reporting_user_username}</p>
             </div>
             <div>
               <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
                 Date Filed
               </label>
-              <p className="text-gray-900 font-medium">{report.dateFiled}</p>
+              <p className="text-gray-900 font-medium">{formatDateTime(report.report_date)}</p>
             </div>
             <div>
               <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
                 Status
               </label>
-              <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${
-                report.status === 'Pending' 
-                  ? 'bg-yellow-100 text-yellow-700' 
-                  : 'bg-green-100 text-green-700'
-              }`}>
-                {report.status}
+              <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${getStatusStyles(report.status)}`}>
+                {formatStatus(report.status)}
               </span>
             </div>
           </div>
@@ -86,12 +107,37 @@ const ReportDetailModal = ({ report, onClose }) => {
             </label>
             <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
               <p className="text-sm text-gray-700">
-                The reporting user has flagged this account for violating community guidelines. 
-                Please review the violation type above and take appropriate action based on the 
-                severity and context of the reported behavior.
+                {report.reason_extended || 'The reporting user has flagged this account for violating community guidelines. Please review the violation type above and take appropriate action based on the severity and context of the reported behavior.'}
               </p>
             </div>
           </div>
+
+          {/* Evidence Images */}
+          {report.image && report.image.length > 0 && (
+            <div>
+              <label className="block text-sm font-semibold text-gray-900 mb-2">
+                Evidence Images
+              </label>
+              <div className="grid grid-cols-2 gap-4">
+                {report.image.map((img, index) => (
+                  <div 
+                    key={index} 
+                    className="border border-gray-200 rounded-lg overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
+                    onClick={() => setExpandedImage(img)}
+                  >
+                    <img 
+                      src={img} 
+                      alt={`Evidence ${index + 1}`}
+                      className="w-full h-48 object-cover"
+                      onError={(e) => {
+                        e.target.src = 'https://via.placeholder.com/400x300?text=Image+Not+Available';
+                      }}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Action Buttons */}
@@ -104,6 +150,26 @@ const ReportDetailModal = ({ report, onClose }) => {
           </button>
         </div>
       </div>
+      {/* Expanded Image Modal */}
+      {expandedImage && (
+        <div 
+          className="fixed inset-0 bg-black/90 flex items-center justify-center z-[60] p-4"
+          onClick={() => setExpandedImage(null)}
+        >
+          <button 
+            onClick={() => setExpandedImage(null)}
+            className="absolute top-4 right-4 p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors"
+          >
+            <X className="h-6 w-6 text-white" />
+          </button>
+          <img 
+            src={expandedImage}
+            alt="Expanded evidence"
+            className="max-w-full max-h-full object-contain"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
     </div>
   );
 };

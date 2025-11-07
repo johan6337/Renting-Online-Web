@@ -1,77 +1,94 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Sidebar_Admin from '../components/sidebar/Sidebar_Admin';
 import { Search, Filter, Download, MoreHorizontal, Edit, Trash, Eye, Users, CheckCircle, XCircle, Clock, AlertTriangle } from 'lucide-react';
 
 const AdminPage = () => {
   const [activeFilter, setActiveFilter] = useState('All Users');
   const [searchTerm, setSearchTerm] = useState('');
+  const [users, setUsers] = useState([]);
+  const [stats, setStats] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 10,
+    total: 0,
+    totalPages: 0
+  });
 
-  const adminData = {
-    stats: [
-      { label: 'Total Users', value: '1,234', color: 'bg-blue-500' },
-      { label: 'Active Users', value: '1,189', color: 'bg-green-500' },
-      { label: 'Suspended', value: '32', color: 'bg-orange-500' },
-      { label: 'Pending Verification', value: '13', color: 'bg-purple-500' }
-    ],
-    users: [
-      {
-        id: '#10234',
-        name: 'John Anderson',
-        email: 'john.anderson@gmail.com',
-        phone: '+1 234-567-8901',
-        joinDate: 'Jan 15, 2025',
-        rentals: 12,
-        status: 'Active'
-      },
-      {
-        id: '#10233',
-        name: 'Sarah Mitchell',
-        email: 'sarah.mitchell@gmail.com',
-        phone: '+1 234-567-8902',
-        joinDate: 'Jan 14, 2025',
-        rentals: 8,
-        status: 'Active'
-      },
-      {
-        id: '#10232',
-        name: 'Michael Chen',
-        email: 'michael.chen@gmail.com',
-        phone: '+1 234-567-8903',
-        joinDate: 'Jan 13, 2025',
-        rentals: 5,
-        status: 'Suspended'
-      },
-      {
-        id: '#10231',
-        name: 'Emily Rodriguez',
-        email: 'emily.rodriguez@gmail.com',
-        phone: '+1 234-567-8904',
-        joinDate: 'Jan 12, 2025',
-        rentals: 15,
-        status: 'Active'
-      },
-      {
-        id: '#10230',
-        name: 'David Thompson',
-        email: 'david.thompson@gmail.com',
-        phone: '+1 234-567-8905',
-        joinDate: 'Jan 11, 2025',
-        rentals: 3,
-        status: 'Pending'
-      },
-      {
-        id: '#10229',
-        name: 'Lisa Parker',
-        email: 'lisa.parker@gmail.com',
-        phone: '+1 234-567-8906',
-        joinDate: 'Jan 10, 2025',
-        rentals: 20,
-        status: 'Active'
+  // Fetch users data from API
+  const fetchUsers = async (page = 1, status = '', search = '') => {
+    try {
+      setLoading(true);
+      const queryParams = new URLSearchParams();
+      
+      queryParams.append('page', page);
+      queryParams.append('limit', pagination.limit);
+      
+      if (status && status !== 'All Users') {
+        queryParams.append('status', status.toLowerCase());
       }
-    ]
+      
+      if (search) {
+        queryParams.append('search', search);
+      }
+
+      const response = await fetch(`/api/users?${queryParams.toString()}`, {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      if (data.success) {
+        setUsers(data.data.users);
+        setPagination(data.data.pagination);
+        
+        // Generate stats from users data
+        const totalUsers = data.data.pagination.total;
+        const activeUsers = data.data.users.filter(user => user.status === 'active').length;
+        const suspendedUsers = data.data.users.filter(user => user.status === 'suspended').length;
+        const pendingUsers = data.data.users.filter(user => user.status === 'pending').length;
+        
+        setStats([
+          { label: 'Total Users', value: totalUsers.toString(), color: 'bg-blue-500' },
+          { label: 'Active Users', value: activeUsers.toString(), color: 'bg-green-500' },
+          { label: 'Suspended', value: suspendedUsers.toString(), color: 'bg-red-500' },
+          { label: 'Pending', value: pendingUsers.toString(), color: 'bg-yellow-500' }
+        ]);
+      } else {
+        throw new Error(data.message || 'Failed to fetch users');
+      }
+    } catch (err) {
+      console.error('Error fetching users:', err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const statsWithIcons = adminData.stats.map((stat, index) => {
+  // useEffect để fetch data khi component mount
+  useEffect(() => {
+    fetchUsers(1, activeFilter, searchTerm);
+  }, []);
+
+  // useEffect để fetch data khi filter hoặc search thay đổi
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      fetchUsers(1, activeFilter, searchTerm);
+    }, 500); // Debounce search
+
+    return () => clearTimeout(timeoutId);
+  }, [activeFilter, searchTerm]);
+
+  const statsWithIcons = stats.map((stat, index) => {
     const icons = [Users, CheckCircle, XCircle, Clock];
     return {
       ...stat,
@@ -79,33 +96,79 @@ const AdminPage = () => {
     };
   });
 
-  const users = adminData.users;
-
   const getStatusColor = (status) => {
-    switch (status) {
-      case 'Active':
+    switch (status?.toLowerCase()) {
+      case 'active':
         return 'bg-green-100 text-green-800';
-      case 'Suspended':
+      case 'suspended':
         return 'bg-red-100 text-red-800';
-      case 'Pending':
+      case 'pending':
         return 'bg-yellow-100 text-yellow-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }
   };
 
-  const filteredUsers = users.filter(user => {
-    const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.phone.includes(searchTerm);
-    
-    if (activeFilter === 'All Users') return matchesSearch;
-    if (activeFilter === 'Active') return matchesSearch && user.status === 'Active';
-    if (activeFilter === 'Suspended') return matchesSearch && user.status === 'Suspended';
-    if (activeFilter === 'Pending') return matchesSearch && user.status === 'Pending';
-    
-    return matchesSearch;
-  });
+  // Handle page change
+  const handlePageChange = (newPage) => {
+    fetchUsers(newPage, activeFilter, searchTerm);
+  };
+
+  // Handle export
+  const handleExport = async () => {
+    try {
+      const response = await fetch('/api/users?format=csv', {
+        method: 'GET',
+        credentials: 'include',
+      });
+      
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'users.csv';
+        a.click();
+        window.URL.revokeObjectURL(url);
+      }
+    } catch (error) {
+      console.error('Export error:', error);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen bg-gray-50">
+        <Sidebar_Admin active="User Management" />
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Loading users...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex min-h-screen bg-gray-50">
+        <Sidebar_Admin active="User Management" />
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <div className="text-red-500 text-xl mb-4">Error loading users</div>
+            <p className="text-gray-600 mb-4">{error}</p>
+            <button 
+              onClick={() => fetchUsers(1, activeFilter, searchTerm)}
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            >
+              Retry
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen bg-gray-50">
@@ -176,7 +239,10 @@ const AdminPage = () => {
                   ))}
                 </div>
               </div>
-              <button className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors">
+              <button 
+                onClick={handleExport}
+                className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors"
+              >
                 <Download className="w-4 h-4" />
                 Export CSV
               </button>
@@ -202,32 +268,32 @@ const AdminPage = () => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {filteredUsers.map((user, index) => (
-                  <tr key={index} className="hover:bg-gray-50">
+                {users.map((user, index) => (
+                  <tr key={user.user_id || index} className="hover:bg-gray-50">
                     <td className="px-4 py-4 whitespace-nowrap">
                       <input type="checkbox" className="rounded border-gray-300" />
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {user.id}
+                      #{user.user_id}
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {user.name}
+                      {user.full_name || user.username || 'N/A'}
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
                       {user.email}
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {user.phone}
+                      {user.phone || 'N/A'}
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {user.joinDate}
+                      {user.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A'}
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {user.rentals}
+                      {user.total_orders || 0}
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap">
                       <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(user.status)}`}>
-                        {user.status}
+                        {user.status ? user.status.charAt(0).toUpperCase() + user.status.slice(1) : 'Unknown'}
                       </span>
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap text-sm font-medium">
@@ -254,24 +320,44 @@ const AdminPage = () => {
 
           {/* Pagination */}
           <div className="bg-white px-4 py-3 border-t border-gray-200">
-            <div className="flex items-center justify-center">
+            <div className="flex items-center justify-between">
+              <div className="text-sm text-gray-700">
+                Showing {((pagination.page - 1) * pagination.limit) + 1} to {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total} results
+              </div>
               <nav className="flex items-center gap-1">
-                <button className="px-3 py-2 text-sm font-medium text-white bg-red-500 rounded-md">
-                  1
+                <button 
+                  onClick={() => handlePageChange(pagination.page - 1)}
+                  disabled={pagination.page <= 1}
+                  className="px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Previous
                 </button>
-                <button className="px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md">
-                  2
-                </button>
-                <button className="px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md">
-                  3
-                </button>
-                <button className="px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md">
-                  4
-                </button>
-                <button className="px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md">
-                  5
-                </button>
-                <button className="px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md">
+                
+                {/* Page numbers */}
+                {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
+                  const pageNum = Math.max(1, pagination.page - 2) + i;
+                  if (pageNum > pagination.totalPages) return null;
+                  
+                  return (
+                    <button
+                      key={pageNum}
+                      onClick={() => handlePageChange(pageNum)}
+                      className={`px-3 py-2 text-sm font-medium rounded-md ${
+                        pageNum === pagination.page
+                          ? 'text-white bg-red-500'
+                          : 'text-gray-700 hover:bg-gray-100'
+                      }`}
+                    >
+                      {pageNum}
+                    </button>
+                  );
+                })}
+                
+                <button 
+                  onClick={() => handlePageChange(pagination.page + 1)}
+                  disabled={pagination.page >= pagination.totalPages}
+                  className="px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+                >
                   Next
                 </button>
               </nav>

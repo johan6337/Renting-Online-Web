@@ -1,5 +1,7 @@
 import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import ProtectedRoute from './components/ProtectedRoute';
+import PublicRoute from './components/PublicRoute';
 import ProductPage from './pages/ProductPage';
 import HomePage from './pages/HomePage';
 import OrdersPage from './pages/OrdersPage';
@@ -22,54 +24,149 @@ import AddProductPage from './pages/seller/AddProductPage';
 
 // Admin Pages
 import AdminDashboard from './pages/admin/AdminDashboard';
-import AdminUsers from './pages/admin/AdminUsers';
 import AdminReports from './pages/admin/AdminReports';
 import AdminViolations from './pages/admin/AdminViolations';
-
+import AdminPage from './pages/AdminPage';
 const App = () => {
   return (
     <Routes>
-      {/* Home Page - Has its own Header and Footer */}
-      <Route path="/" element={<HomePage />} />
+      {/* Public routes - Only accessible when NOT logged in */}
+      <Route path="/login" element={
+        <PublicRoute>
+          <LoginPage />
+        </PublicRoute>
+      } />
+      <Route path="/signup" element={
+        <PublicRoute>
+          <SignUpPage />
+        </PublicRoute>
+      } />
+      <Route path="/forgot-password" element={
+        <PublicRoute>
+          <ForgotPasswordPage />
+        </PublicRoute>
+      } />
       
-      {/* Auth Pages - No Header/Footer */}
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/signup" element={<SignUpPage />} />
-      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      {/* Protected routes - All routes wrapped with ProtectedRoute */}
+      <Route path="/" element={
+        <ProtectedRoute>
+          <HomePage />
+        </ProtectedRoute>
+      } />
       
-      {/* Profile - Has its own layout */}
-      <Route path="/profile" element={<ProfilePage />} />
+      <Route path="/profile" element={
+        <ProtectedRoute>
+          <ProfilePage />
+        </ProtectedRoute>
+      } />
       
       {/* Seller Dashboard Routes */}
-      <Route path="/seller/dashboard" element={<SellerDashboard />} />
-      <Route path="/seller/products" element={<SellerProducts />} />
-      <Route path="/seller/orders" element={<SellerOrders />} />
-      <Route path="/seller/add-product" element={<AddProductPage />} />
-      <Route path="/seller/edit-product" element={<AddProductPage />} />
+      <Route path="/seller" element={<Navigate to="/seller/dashboard" replace />} />
+      <Route path="/seller/dashboard" element={
+        <ProtectedRoute>
+          <SellerDashboard />
+        </ProtectedRoute>
+      } />
+      <Route path="/seller/products" element={
+        <ProtectedRoute>
+          <SellerProducts />
+        </ProtectedRoute>
+      } />
+      <Route path="/seller/orders" element={
+        <ProtectedRoute>
+          <SellerOrders />
+        </ProtectedRoute>
+      } />
+      <Route path="/seller/add-product" element={
+        <ProtectedRoute>
+          <AddProductPage />
+        </ProtectedRoute>
+      } />
+      <Route path="/seller/edit-product" element={
+        <ProtectedRoute>
+          <AddProductPage />
+        </ProtectedRoute>
+      } />
       
       {/* Admin Dashboard Routes */}
-      <Route path="/admin/dashboard" element={<AdminDashboard />} />
-      <Route path="/admin/users" element={<AdminUsers />} />
-      <Route path="/admin/reports" element={<AdminReports />} />
-      <Route path="/admin/resolve-violations" element={<AdminViolations />} />
+      <Route path="/admin/dashboard" element={
+        <ProtectedRoute>
+          <AdminDashboard />
+        </ProtectedRoute>
+      } />
+      <Route path="/admin/users" element={
+        <ProtectedRoute>
+          <AdminPage />
+        </ProtectedRoute>
+      } />
+      <Route path="/admin/reports" element={
+        <ProtectedRoute>
+          <AdminReports />
+        </ProtectedRoute>
+      } />
+      <Route path="/admin/resolve-violations" element={
+        <ProtectedRoute>
+          <AdminViolations />
+        </ProtectedRoute>
+      } />
 
       {/* Legacy admin route - redirect to new dashboard */}
-      <Route path="/admin" element={<AdminDashboard />} />
-      <Route path="/seller-dashboard" element={<SellerDashboard />} />
+      <Route path="/admin" element={
+        <ProtectedRoute>
+          <AdminDashboard />
+        </ProtectedRoute>
+      } />
+      <Route path="/seller-dashboard" element={
+        <ProtectedRoute>
+          <SellerDashboard />
+        </ProtectedRoute>
+      } />
       
       {/* Cart - Has Header and Footer */}
-      <Route path="/cart" element={<CartPage />} />
-      <Route path="/payment" element={<PaymentPage />} />
+      <Route path="/cart" element={
+        <ProtectedRoute>
+          <CartPage />
+        </ProtectedRoute>
+      } />
+      <Route path="/payment" element={
+        <ProtectedRoute>
+          <PaymentPage />
+        </ProtectedRoute>
+      } />
       
       {/* Product & Orders Pages - Has Header and Footer */}
-      <Route path="/product" element={<ProductPage />} />
-      <Route path="/product/:productId" element={<ProductDetails />} />
-      <Route path="/orders" element={<OrdersPage />} />
-      <Route path="/review" element={<ReviewPage />} />
-      <Route path="/review/completed" element={<ReviewSummary />} />
+      <Route path="/product" element={
+        <ProtectedRoute>
+          <ProductPage />
+        </ProtectedRoute>
+      } />
+      <Route path="/product/:productId" element={
+        <ProtectedRoute>
+          <ProductDetails />
+        </ProtectedRoute>
+      } />
+      <Route path="/orders" element={
+        <ProtectedRoute>
+          <OrdersPage />
+        </ProtectedRoute>
+      } />
+      <Route path="/review" element={
+        <ProtectedRoute>
+          <ReviewPage />
+        </ProtectedRoute>
+      } />
+      <Route path="/review/completed" element={
+        <ProtectedRoute>
+          <ReviewSummary />
+        </ProtectedRoute>
+      } />
       
       {/* 404 Page - Catch all unmatched routes */}
-      <Route path="*" element={<NotFoundPage />} />
+      <Route path="*" element={
+        <ProtectedRoute>
+          <NotFoundPage />
+        </ProtectedRoute>
+      } />
     </Routes>
   );
 };
