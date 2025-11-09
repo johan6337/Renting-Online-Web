@@ -1,10 +1,58 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { FaFacebookF, FaTwitter, FaInstagram, FaLinkedinIn, FaPaperPlane } from 'react-icons/fa';
 import { FaGooglePlay, FaApple } from 'react-icons/fa';
 
 export default function Footer() {
   const [email, setEmail] = useState('');
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  // Check session status on component mount
+  useEffect(() => {
+    checkSessionStatus();
+  }, []);
+
+  // Listen for login events to refresh session
+  useEffect(() => {
+    const handleLoginSuccess = () => {
+      checkSessionStatus();
+    };
+
+    window.addEventListener('loginSuccess', handleLoginSuccess);
+    
+    return () => {
+      window.removeEventListener('loginSuccess', handleLoginSuccess);
+    };
+  }, []);
+
+  const checkSessionStatus = async () => {
+    try {
+      const sessionRes = await fetch('/api/users/me', {
+        credentials: 'include',
+        cache: 'no-cache'
+      });
+      
+      if (!sessionRes.ok && sessionRes.status !== 304) {
+        setIsAuthenticated(false);
+        setLoading(false);
+        return;
+      }
+      
+      const userData = await sessionRes.json().catch(() => null);
+
+      if (userData && userData.success && userData.sessionValid) {
+        setIsAuthenticated(true);
+      } else {
+        setIsAuthenticated(false);
+      }
+    } catch (error) {
+      console.error('Error checking session status:', error);
+      setIsAuthenticated(false);
+    } finally {
+      setLoading(false);
+    }
+  };
   
   const handleSubscribe = (e) => {
     e.preventDefault();
@@ -68,11 +116,13 @@ export default function Footer() {
                     My Account
                   </Link>
                 </li>
-                <li>
-                  <Link to="/login" className="hover:underline">
-                    Login / Register
-                  </Link>
-                </li>
+                {!loading && !isAuthenticated && (
+                  <li>
+                    <Link to="/login" className="hover:underline">
+                      Login / Register
+                    </Link>
+                  </li>
+                )}
                 <li>
                   <Link to="/cart" className="hover:underline">
                     Cart

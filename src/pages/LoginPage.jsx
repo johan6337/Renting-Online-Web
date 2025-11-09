@@ -6,7 +6,7 @@ import Footer from '../components/footer/Footer';
 const LoginPage = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    email: '',
+    identifier: '',
     password: ''
   });
   const [loading, setLoading] = useState(false);
@@ -36,7 +36,7 @@ const LoginPage = () => {
         },
         credentials: 'include', // Important for session cookies
         body: JSON.stringify({
-          email: formData.email,
+          identifier: formData.identifier,
           password: formData.password
         })
       });
@@ -52,7 +52,7 @@ const LoginPage = () => {
         } else if (res.status === 409 || (data && typeof data.message === 'string' && /already.*exist/i.test(data.message))) {
           setError('User already exists');
         } else if (res.status === 401) {
-          setError('Invalid email or password');
+          setError('Invalid email/username or password');
         } else {
           setError(data.message || `Request failed with status ${res.status}`);
         }
@@ -168,10 +168,10 @@ const LoginPage = () => {
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
                 <input
-                  type="email"
-                  name="email"
-                  placeholder="Email or Phone Number"
-                  value={formData.email}
+                  type="text"
+                  name="identifier"
+                  placeholder="Email or Username"
+                  value={formData.identifier}
                   onChange={handleInputChange}
                   className="w-full px-0 py-3 border-0 border-b-2 border-gray-200 bg-transparent text-gray-900 placeholder-gray-500 focus:outline-none focus:border-gray-900 transition-colors"
                   required
