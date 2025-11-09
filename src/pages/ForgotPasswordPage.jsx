@@ -2,17 +2,61 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Header from '../components/header/Header';
 import Footer from '../components/footer/Footer';
+import MessagePopup from '../components/common/MessagePopup';
 
 const ForgotPasswordPage = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [popupOpen, setPopupOpen] = useState(false);
+  const [popupData, setPopupData] = useState({ title: '', message: '', icon: 'error' });
 
-  const handleSubmit = (e) => {
+  const validateEmail = (value) => {
+    // simple email regex
+    return /\S+@\S+\.\S+/.test(value);
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Reset password for:', email);
-    setIsSubmitted(true);
-    // Handle forgot password logic here
+    setError('');
+
+    if (!email || !validateEmail(email)) {
+      setError('Please enter a valid email address');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const res = await fetch('/api/users/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        // show generic message to user, but keep useful debug in console
+        const message = data && data.message ? data.message : 'Failed to send reset link';
+        console.error('Forgot password error:', data);
+        setPopupData({ title: 'Error', message, icon: 'error' });
+        setPopupOpen(true);
+        setLoading(false);
+        return;
+      }
+
+      // success - show submitted view (generic message to avoid enumeration)
+      setIsSubmitted(true);
+    } catch (err) {
+      console.error('Forgot password request failed:', err);
+      setPopupData({ title: 'Network error', message: 'Unable to send reset email. Please try again later.', icon: 'error' });
+      setPopupOpen(true);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -48,13 +92,13 @@ const ForgotPasswordPage = () => {
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <div>
                     <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                      Email or Phone Number
+                      Email Address
                     </label>
                     <input
                       type="email"
                       name="email"
                       id="email"
-                      placeholder="Enter your email or phone number"
+                      placeholder="Enter your email address"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       className="w-full px-4 py-3 border border-gray-300 rounded-md text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-colors"

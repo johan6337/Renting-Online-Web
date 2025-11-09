@@ -81,11 +81,6 @@ const SignUpPage = () => {
     }
   };
 
-  const handleGoogleSignUp = () => {
-    console.log('Google Sign Up clicked');
-    // Handle Google signup logic here
-  };
-
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
@@ -175,15 +170,6 @@ const SignUpPage = () => {
                   disabled={loading}
                 >
                   {loading ? 'Creating Account...' : 'Create Account'}
-                </button>
-
-                <button
-                  type="button"
-                  onClick={handleGoogleSignUp}
-                  className="w-full flex items-center justify-center gap-3 border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium py-3 px-12 rounded-md transition-colors"
-                >
-                  <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google" className="w-5 h-5" />
-                  Sign up with Google
                 </button>
               </div>
             </form>

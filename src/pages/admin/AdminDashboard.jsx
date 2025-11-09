@@ -10,6 +10,7 @@ const AdminDashboard = () => {
     { label: 'Revenue', value: 'Loading...' }
   ]);
   const [users, setUsers] = useState([]);
+  const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
   // Fetch users data from API
@@ -27,24 +28,80 @@ const AdminDashboard = () => {
         const data = await response.json();
         if (data.success) {
           setUsers(data.data.users);
-          // Update stats with real data
-          setStats([
-            { label: 'Total Users', value: data.data.pagination.total },
-            { label: 'Total Products', value: 'hardcore' }, 
-            { label: 'Total Orders', value: 'hardcore' },  
-            { label: 'Revenue', value: 'hardcore' }
-          ]);
+          return data.data.pagination.total;
         }
       }
     } catch (error) {
       console.error('Error fetching users:', error);
+    }
+    return 0;
+  };
+
+  // Fetch products data from API
+  const fetchProducts = async () => {
+    try {
+      const response = await fetch('/api/products', {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          setProducts(data.data.products);
+          return data.data.pagination.total;
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching products:', error);
+    }
+    return 0;
+  };
+
+  // Fetch all data
+  const fetchAllData = async () => {
+    setLoading(true);
+    try {
+      const [totalUsers, totalProducts] = await Promise.all([
+        fetchUsers(),
+        fetchProducts()
+      ]);
+
+      setStats([
+        { label: 'Total Users', value: totalUsers },
+        { label: 'Total Products', value: totalProducts },
+        { label: 'Total Orders', value: 'Hardcore' }, // Keep hardcoded for now
+        { label: 'Revenue', value: 'Hardcore' }
+      ]);
+    } catch (error) {
+      console.error('Error fetching data:', error);
     } finally {
       setLoading(false);
     }
   };
 
+  // Update revenue when products change
   useEffect(() => {
-    fetchUsers();
+    if (products.length > 0) {
+      const totalRevenue = products.reduce((sum, product) => {
+        return sum + (product.price_per_day * (product.total_rentals || 0));
+      }, 0);
+
+      setStats(prevStats => 
+        prevStats.map(stat => 
+          stat.label === 'Revenue' 
+            ? { ...stat, value: `$${totalRevenue.toLocaleString()}` }
+            : stat
+        )
+      );
+    }
+  }, [products]);
+
+  useEffect(() => {
+    fetchAllData();
   }, []);
 
   return (
@@ -52,22 +109,6 @@ const AdminDashboard = () => {
       <Sidebar_Admin active="Dashboard" />
       
       <div className="flex-1">
-        {/* Top Header */}
-        {/* <header className="bg-white border-b border-gray-200 px-8 py-4">
-          <div className="flex justify-end items-center">
-            <div className="flex items-center gap-4">
-              <button className="p-2 hover:bg-gray-100 rounded-full transition-colors">
-                <Bell className="h-6 w-6 text-gray-600" />
-              </button>
-              <div className="flex items-center gap-3 pl-4 border-l border-gray-200">
-                <span className="text-sm font-medium text-gray-700">Admin account</span>
-                <div className="w-10 h-10 bg-gradient-to-br from-purple-400 to-blue-400 rounded-full"></div>
-              </div>
-            </div>
-          </div>
-        </header> */}
-
-        {/* Main Content */}
         <main className="p-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-8">Dashboard</h1>
           
@@ -80,14 +121,14 @@ const AdminDashboard = () => {
             ))}
           </div>
           
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
               <h2 className="text-xl font-bold text-gray-900 mb-4">Recent Users</h2>
               <div className="space-y-4">
                 {loading ? (
                   <div className="text-gray-500">Loading users...</div>
                 ) : users.length > 0 ? (
-                  users.slice(0, 5).map((user) => (
+                  users.slice(0, 4).map((user) => (
                     <div key={user.user_id} className="pb-4 border-b border-gray-200 last:border-0">
                       <div className="flex justify-between items-center">
                         <div>
@@ -114,9 +155,43 @@ const AdminDashboard = () => {
                 )}
               </div>
             </div>
+
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <h2 className="text-xl font-bold text-gray-900 mb-4">Recent Products</h2>
+              <div className="space-y-4">
+                {loading ? (
+                  <div className="text-gray-500">Loading products...</div>
+                ) : products.length > 0 ? (
+                  products.slice(0, 4).map((product) => (
+                    <div key={product.product_id} className="pb-4 border-b border-gray-200 last:border-0">
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <p className="text-sm font-medium text-gray-900">{product.name}</p>
+                          <p className="text-xs text-gray-500">{product.category}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm font-semibold text-gray-900">
+                            ${product.price_per_day}/day
+                          </p>
+                          <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                            product.status === 'available' ? 'bg-green-100 text-green-800' :
+                            product.status === 'rented' ? 'bg-yellow-100 text-yellow-800' :
+                            'bg-red-100 text-red-800'
+                          }`}>
+                            {product.status}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-gray-500">No products found</div>
+                )}
+              </div>
+            </div>
             
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">User Statistics</h2>
+              <h2 className="text-xl font-bold text-gray-900 mb-4">Statistics</h2>
               <div className="space-y-4">
                 {loading ? (
                   <div className="text-gray-500">Loading statistics...</div>
@@ -127,15 +202,25 @@ const AdminDashboard = () => {
                       return acc;
                     }, {});
                     
-                    const statusStats = users.reduce((acc, user) => {
+                    const userStatusStats = users.reduce((acc, user) => {
                       acc[user.status] = (acc[user.status] || 0) + 1;
+                      return acc;
+                    }, {});
+
+                    const categoryStats = products.reduce((acc, product) => {
+                      acc[product.category] = (acc[product.category] || 0) + 1;
+                      return acc;
+                    }, {});
+
+                    const productStatusStats = products.reduce((acc, product) => {
+                      acc[product.status] = (acc[product.status] || 0) + 1;
                       return acc;
                     }, {});
 
                     return (
                       <>
                         <div>
-                          <h3 className="text-sm font-medium text-gray-700 mb-2">By Role</h3>
+                          <h3 className="text-sm font-medium text-gray-700 mb-2">Users by Role</h3>
                           {Object.entries(roleStats).map(([role, count]) => (
                             <div key={role} className="flex justify-between items-center mb-1">
                               <span className="text-gray-600 capitalize">{role}</span>
@@ -143,15 +228,42 @@ const AdminDashboard = () => {
                             </div>
                           ))}
                         </div>
+                        
                         <div className="pt-4 border-t border-gray-200">
-                          <h3 className="text-sm font-medium text-gray-700 mb-2">By Status</h3>
-                          {Object.entries(statusStats).map(([status, count]) => (
+                          <h3 className="text-sm font-medium text-gray-700 mb-2">User Status</h3>
+                          {Object.entries(userStatusStats).map(([status, count]) => (
                             <div key={status} className="flex justify-between items-center mb-1">
                               <span className="text-gray-600 capitalize">{status}</span>
                               <span className={`font-semibold ${
                                 status === 'active' ? 'text-green-600' :
                                 status === 'banned' ? 'text-red-600' :
                                 'text-gray-900'
+                              }`}>
+                                {count}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+
+                        <div className="pt-4 border-t border-gray-200">
+                          <h3 className="text-sm font-medium text-gray-700 mb-2">Products by Category</h3>
+                          {Object.entries(categoryStats).slice(0, 5).map(([category, count]) => (
+                            <div key={category} className="flex justify-between items-center mb-1">
+                              <span className="text-gray-600 capitalize">{category}</span>
+                              <span className="font-semibold text-gray-900">{count}</span>
+                            </div>
+                          ))}
+                        </div>
+
+                        <div className="pt-4 border-t border-gray-200">
+                          <h3 className="text-sm font-medium text-gray-700 mb-2">Product Status</h3>
+                          {Object.entries(productStatusStats).map(([status, count]) => (
+                            <div key={status} className="flex justify-between items-center mb-1">
+                              <span className="text-gray-600 capitalize">{status}</span>
+                              <span className={`font-semibold ${
+                                status === 'available' ? 'text-green-600' :
+                                status === 'rented' ? 'text-yellow-600' :
+                                'text-red-600'
                               }`}>
                                 {count}
                               </span>
