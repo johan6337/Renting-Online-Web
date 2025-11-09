@@ -72,6 +72,17 @@ const ActionViewModal = ({ report, onClose, onActionCancelled }) => {
       const data = await response.json();
       
       if (data.success) {
+        try {
+          await fetch(`/api/users/${report.reported_user_id}`, {
+            method: 'PUT',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: 'pending' })
+          });
+        } catch (userErr) {
+          console.error('Failed reverting user status:', userErr);
+          // continue even if user update fails
+        }
         // Call the callback to update parent component
         if (onActionCancelled) {
           onActionCancelled(report.report_id);

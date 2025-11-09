@@ -30,7 +30,6 @@ const AdminActionForm = ({ report, onClose }) => {
       };
 
       const payload = {
-        report_id: report.report_id,
         status: statusMap[selectedAction],
         action: actionMap[selectedAction],
         restriction_duration: selectedAction === 'restriction' ? parseInt(restrictionDuration) || 0 : 0,
@@ -55,6 +54,30 @@ const AdminActionForm = ({ report, onClose }) => {
       const data = await response.json();
       
       if (data.success) {
+        // update reported user's status when needed
+        try {
+          // suspend when applying account restriction
+          if (selectedAction === 'restriction') {
+            await fetch(`/api/users/${report.reported_user_id}`, {
+              method: 'PUT',
+              credentials: 'include',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ status: 'suspended' })
+            });
+          } else {
+            // reactivate user if action is not restriction
+              await fetch(`/api/users/${report.reported_user_id}`, {
+                method: 'PUT',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: 'active' })
+              });
+          }
+        } catch (userErr) {
+          console.error('Failed updating user status:', userErr);
+          // don't block closing the modal on user update failure
+        }
+
         // Close modal and refresh parent
         onClose();
       } else {
@@ -131,7 +154,7 @@ const AdminActionForm = ({ report, onClose }) => {
                   className="w-4 h-4 text-blue-600 focus:ring-blue-500"
                   disabled={isSubmitting}
                 />
-                <span className="text-sm text-gray-900">Account Restriction (e.g., mute, temporary ban)</span>
+                <span className="text-sm text-gray-900">Account Restriction</span>
               </label>
               
               <label className="flex items-center gap-3 cursor-pointer">
