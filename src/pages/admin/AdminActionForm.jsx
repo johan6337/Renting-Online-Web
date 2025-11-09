@@ -3,7 +3,7 @@ import { X } from 'lucide-react';
 
 const AdminActionForm = ({ report, onClose }) => {
   const [selectedAction, setSelectedAction] = useState('');
-  const [restrictionDuration, setRestrictionDuration] = useState('');
+  const [unsuspendDate, setUnsuspendDate] = useState('');
   const [reasonForAction, setReasonForAction] = useState('');
   const [moderatorNotes, setModeratorNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -18,21 +18,21 @@ const AdminActionForm = ({ report, onClose }) => {
       // Map action types to API values
       const actionMap = {
         'warning': 'Official Warning',
-        'restriction': 'Account Restriction',
+        'suspension': 'Account Suspension',
         'nothing': 'Dismiss Report'
       };
 
       // Map action types to status
       const statusMap = {
         'warning': 'resolved',
-        'restriction': 'resolved',
+        'suspension': 'resolved',
         'nothing': 'dismissed'
       };
 
       const payload = {
         status: statusMap[selectedAction],
         action: actionMap[selectedAction],
-        restriction_duration: selectedAction === 'restriction' ? parseInt(restrictionDuration) || 0 : 0,
+        unsuspend_date: selectedAction === 'suspension' ? (unsuspendDate || null) : null,
         action_reason: reasonForAction,
         mod_note: moderatorNotes
       };
@@ -56,8 +56,8 @@ const AdminActionForm = ({ report, onClose }) => {
       if (data.success) {
         // update reported user's status when needed
         try {
-          // suspend when applying account restriction
-          if (selectedAction === 'restriction') {
+          // suspend when applying account suspension
+          if (selectedAction === 'suspension') {
             await fetch(`/api/users/${report.reported_user_id}`, {
               method: 'PUT',
               credentials: 'include',
@@ -65,7 +65,7 @@ const AdminActionForm = ({ report, onClose }) => {
               body: JSON.stringify({ status: 'suspended' })
             });
           } else {
-            // reactivate user if action is not restriction
+            // reactivate user if action is not suspension
               await fetch(`/api/users/${report.reported_user_id}`, {
                 method: 'PUT',
                 credentials: 'include',
@@ -148,13 +148,13 @@ const AdminActionForm = ({ report, onClose }) => {
                 <input
                   type="radio"
                   name="action"
-                  value="restriction"
-                  checked={selectedAction === 'restriction'}
+                  value="suspension"
+                  checked={selectedAction === 'suspension'}
                   onChange={(e) => setSelectedAction(e.target.value)}
                   className="w-4 h-4 text-blue-600 focus:ring-blue-500"
                   disabled={isSubmitting}
                 />
-                <span className="text-sm text-gray-900">Account Restriction</span>
+                <span className="text-sm text-gray-900">Account Suspension</span>
               </label>
               
               <label className="flex items-center gap-3 cursor-pointer">
@@ -179,19 +179,17 @@ const AdminActionForm = ({ report, onClose }) => {
                 Action Details
               </label>
               <div className="space-y-4 bg-gray-50 border border-gray-200 rounded-lg p-4">
-                {/* Restriction Duration - Only show if "restriction" is selected */}
-                {selectedAction === 'restriction' && (
+                {/* Unsuspend Date - Only show if "suspension" is selected */}
+                {selectedAction === 'suspension' && (
                   <div>
                     <label className="block text-sm font-medium text-gray-900 mb-2">
-                      Restriction Duration (Days):
+                      Unsuspend Date:
                     </label>
                     <input
-                      type="number"
-                      value={restrictionDuration}
-                      onChange={(e) => setRestrictionDuration(e.target.value)}
+                      type="date"
+                      value={unsuspendDate}
+                      onChange={(e) => setUnsuspendDate(e.target.value)}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                      placeholder="Enter days"
-                      min="0"
                       disabled={isSubmitting}
                       required
                     />

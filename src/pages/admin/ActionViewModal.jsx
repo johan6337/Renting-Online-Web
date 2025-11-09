@@ -9,7 +9,7 @@ const ActionViewModal = ({ report, onClose, onActionCancelled }) => {
 
   const formatDateTime = (dateString) => {
     if (!dateString) return 'N/A';
-    return new Date(dateString).toLocaleString();
+    return new Date(dateString).toLocaleDateString();
   };
 
   const formatStatus = (status) => {
@@ -50,7 +50,7 @@ const ActionViewModal = ({ report, onClose, onActionCancelled }) => {
         report_id: report.report_id,
         status: 'pending',
         action: null,
-        restriction_duration: 0,
+        unsuspend_date: null,
         action_reason: null,
         mod_note: null
       };
@@ -77,7 +77,7 @@ const ActionViewModal = ({ report, onClose, onActionCancelled }) => {
             method: 'PUT',
             credentials: 'include',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ status: 'pending' })
+            body: JSON.stringify({ status: 'active' })
           });
         } catch (userErr) {
           console.error('Failed reverting user status:', userErr);
@@ -142,9 +142,9 @@ const ActionViewModal = ({ report, onClose, onActionCancelled }) => {
                   <p className="text-sm text-gray-900 font-semibold">#{report.report_id}</p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-500">Status</p>
-                  <p className="text-sm font-bold text-gray-900">{report.action || 'No action specified'}</p>
-                </div>
+                <p className="text-sm font-medium text-gray-500">Reason</p>
+                <p className="text-sm text-gray-900 font-semibold">{report.reason}</p>
+              </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -155,10 +155,6 @@ const ActionViewModal = ({ report, onClose, onActionCancelled }) => {
                   <p className="text-sm font-medium text-gray-500">Reporting User</p>
                   <p className="text-sm text-gray-900 font-semibold">{report.reporting_user_username}</p>
                 </div>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-500">Reason</p>
-                <p className="text-sm text-gray-900">{report.reason}</p>
               </div>
               <div>
                 <p className="text-sm font-medium text-gray-500">Date Filed</p>
@@ -176,17 +172,10 @@ const ActionViewModal = ({ report, onClose, onActionCancelled }) => {
                 <p className="text-sm font-semibold text-gray-900">{report.action || 'No action specified'}</p>
               </div>
 
-              {report.rating_deduction > 0 && (
+              {report.unsuspend_date && (
                 <div>
-                  <p className="text-sm font-medium text-gray-500 mb-1">Trust Score Deduction</p>
-                  <p className="text-lg font-bold text-red-600">-{report.rating_deduction} points</p>
-                </div>
-              )}
-
-              {report.restriction_duration > 0 && (
-                <div>
-                  <p className="text-sm font-medium text-gray-500 mb-1">Restriction Duration</p>
-                  <p className="text-lg font-bold text-orange-600">{report.restriction_duration} days</p>
+                  <p className="text-sm font-medium text-gray-500 mb-1">Unsuspend Date</p>
+                  <p className="text-lg font-bold text-orange-600">{formatDateTime(report.unsuspend_date)}</p>
                 </div>
               )}
 
