@@ -16,7 +16,18 @@ const ReportDetailModal = ({ report, onClose }) => {
 
   const formatDateTime = (dateString) => {
     if (!dateString) return 'N/A';
-    return new Date(dateString).toLocaleString();
+    const dt = new Date(dateString);
+
+    const date = new Intl.DateTimeFormat('en-GB', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    }).format(dt);
+
+    return date;
   };
 
   const formatStatus = (status) => {
@@ -63,13 +74,19 @@ const ReportDetailModal = ({ report, onClose }) => {
               <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
                 Reported User
               </label>
-              <p className="text-gray-900 font-medium">{report.reported_user_username}</p>
+              <p className="text-gray-900 font-medium">
+                {report.reported_user_username}
+                <span className="ml-2 text-xs text-gray-500">(ID:{report.reported_user_id})</span>
+              </p>
             </div>
             <div>
               <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
                 Reporting User
               </label>
-              <p className="text-gray-900 font-medium">{report.reporting_user_username}</p>
+              <p className="text-gray-900 font-medium">
+                {report.reporting_user_username}
+                <span className="ml-2 text-xs text-gray-500">(ID:{report.reporting_user_id})</span>
+              </p>
             </div>
             <div>
               <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">

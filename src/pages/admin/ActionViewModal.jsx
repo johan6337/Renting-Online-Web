@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { X, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 
 const ActionViewModal = ({ report, onClose, onActionCancelled }) => {
@@ -9,7 +9,18 @@ const ActionViewModal = ({ report, onClose, onActionCancelled }) => {
 
   const formatDateTime = (dateString) => {
     if (!dateString) return 'N/A';
-    return new Date(dateString).toLocaleDateString();
+    const dt = new Date(dateString);
+
+    const date = new Intl.DateTimeFormat('en-GB', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    }).format(dt);
+
+    return date;
   };
 
   const formatStatus = (status) => {
@@ -133,37 +144,43 @@ const ActionViewModal = ({ report, onClose, onActionCancelled }) => {
           </div>
 
           {/* Report Information */}
-          <div className="mb-6">
-            <h4 className="text-lg font-semibold text-gray-900 mb-4">Report Information</h4>
-            <div className="bg-gray-50 rounded-lg p-4 space-y-3">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm font-medium text-gray-500">Report ID</p>
-                  <p className="text-sm text-gray-900 font-semibold">#{report.report_id}</p>
+                <div className="mb-6">
+                <h4 className="text-lg font-semibold text-gray-900 mb-4">Report Information</h4>
+                <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+                  <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">Report ID</p>
+                    <p className="text-sm text-gray-900 font-semibold">#{report.report_id}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">Reason</p>
+                    <p className="text-sm text-gray-900 font-semibold">{report.reason}</p>
+                  </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">Reported User</p>
+                    <p className="text-sm text-gray-900 font-semibold">
+                    {report.reported_user_username}
+                    <span className="ml-2 text-xs text-gray-500"> (ID:{report.reported_user_id})</span>
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">Reporting User</p>
+                    <p className="text-sm text-gray-900 font-semibold">
+                    {report.reporting_user_username}
+                    <span className="ml-2 text-xs text-gray-500"> (ID:{report.reporting_user_id})</span>
+                    </p>
+                  </div>
+                  </div>
+                  <div>
+                  <p className="text-sm font-medium text-gray-500">Date Filed</p>
+                  <p className="text-sm text-gray-900">{formatDateTime(report.report_date)}</p>
+                  </div>
                 </div>
-                <div>
-                <p className="text-sm font-medium text-gray-500">Reason</p>
-                <p className="text-sm text-gray-900 font-semibold">{report.reason}</p>
-              </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm font-medium text-gray-500">Reported User</p>
-                  <p className="text-sm text-gray-900 font-semibold">{report.reported_user_username}</p>
                 </div>
-                <div>
-                  <p className="text-sm font-medium text-gray-500">Reporting User</p>
-                  <p className="text-sm text-gray-900 font-semibold">{report.reporting_user_username}</p>
-                </div>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-500">Date Filed</p>
-                <p className="text-sm text-gray-900">{formatDateTime(report.report_date)}</p>
-              </div>
-            </div>
-          </div>
 
-          {/* Action Taken */}
+                {/* Action Taken */}
           <div className="mb-6">
             <h4 className="text-lg font-semibold text-gray-900 mb-4">Action Taken</h4>
             <div className="bg-gray-50 rounded-lg p-4 space-y-4">
