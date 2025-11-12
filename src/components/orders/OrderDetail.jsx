@@ -37,6 +37,22 @@ const OrderDetail = ({
     }
   };
 
+  const resolvedItems =
+    Array.isArray(order.items) && order.items.length > 0
+      ? order.items
+      : [
+          {
+            productId: order.productId,
+            name: order.productName,
+            size: order.productSize,
+            color: order.productColor,
+            rentalPeriod: order.rentalPeriod,
+            quantity: order.quantity,
+            price: order.unitPrice,
+            imageUrl: order.productImage,
+          },
+        ];
+
   return (
     <div className="max-w-5xl mx-auto px-4 py-8">
       {/* Back Button */}
@@ -54,7 +70,7 @@ const OrderDetail = ({
       <div className="bg-white rounded-2xl border border-gray-200 p-8 shadow-sm mb-6">
         <div className="flex items-start justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Order #{order.orderNumber}</h1>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Order #{order.orderId}</h1>
             <p className="text-gray-600">Placed on {order.placedDate}</p>
           </div>
           <span className={`px-4 py-2 rounded-full text-sm font-semibold border ${getStatusStyles(order.status)}`}>
@@ -95,7 +111,7 @@ const OrderDetail = ({
       <div className="bg-white rounded-2xl border border-gray-200 p-8 shadow-sm mb-6">
         <h2 className="text-2xl font-bold text-gray-900 mb-6">Order Items</h2>
         <div className="space-y-6">
-          {order.items.map((item, index) => (
+          {resolvedItems.map((item, index) => (
             <div key={item.productId || index} className="flex items-center gap-6 pb-6 border-b border-gray-100 last:border-0">
               <div className="w-24 h-24 bg-gray-100 rounded-xl overflow-hidden flex-shrink-0">
                 <img 

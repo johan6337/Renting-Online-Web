@@ -58,7 +58,7 @@ const OrderList = ({ orders = [], onViewDetails, onTrackOrder, isSeller = false,
       {filteredOrders.length > 0 ? (
         filteredOrders.map((order) => (
           <OrderCard 
-            key={order.orderNumber || order.id} 
+            key={order.orderId || order.id} 
             order={order} 
             onViewDetails={onViewDetails}
             onTrackOrder={onTrackOrder}
@@ -79,7 +79,7 @@ const OrderList = ({ orders = [], onViewDetails, onTrackOrder, isSeller = false,
       {/* Report User Form */}
       {showReportForm && selectedOrder && (
         <ReportUserForm 
-          userName={isSeller ? selectedOrder.buyerName : selectedOrder.sellerName}
+          userName={selectedOrder.buyerName}
           onClose={() => {
             setShowReportForm(false);
             setSelectedOrder(null);

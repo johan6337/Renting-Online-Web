@@ -1,42 +1,4 @@
-const normalizeBase = (value = "") => {
-  if (!value) return "";
-  return value.endsWith("/") ? value.slice(0, -1) : value;
-};
-
-const API_BASE = normalizeBase(import.meta.env.VITE_API_URL || "");
-
-const ensureApiPrefix = (path) => {
-  if (!path || path.startsWith('/api')) {
-    return path;
-  }
-  return path.startsWith('/')
-    ? `/api${path}`
-    : `/api/${path}`;
-};
-
-const withBase = (path) => {
-  const normalizedPath = ensureApiPrefix(path || '/api');
-
-  if (!API_BASE) {
-    return normalizedPath;
-  }
-
-  const isAbsolute = /^https?:\/\//i.test(normalizedPath);
-  if (isAbsolute) {
-    return normalizedPath;
-  }
-
-  return `${API_BASE}${normalizedPath}`;
-};
-
-class ApiError extends Error {
-  constructor(message, status, details) {
-    super(message);
-    this.name = "ApiError";
-    this.status = status;
-    this.details = details;
-  }
-}
+import { ApiError, request } from './client';
 
 const normalizeReview = (review = {}) => ({
   id: review.review_id ?? review.id ?? null,
@@ -62,43 +24,9 @@ const normalizeReview = (review = {}) => ({
   updatedAt: review.updated_at ?? review.updatedAt ?? null,
 });
 
-const request = async (path, { method = "GET", body, headers, ...rest } = {}) => {
-  const response = await fetch(withBase(path), {
-    method,
-    credentials: "include",
-    headers: {
-      Accept: "application/json",
-      ...(body ? { "Content-Type": "application/json" } : {}),
-      ...headers,
-    },
-    body,
-    ...rest,
-  });
-
-  const text = await response.text();
-  let data = null;
-
-  if (text) {
-    try {
-      data = JSON.parse(text);
-    } catch {
-      data = null;
-    }
-  }
-
-  if (!response.ok) {
-    const message =
-      (data && (data.message || data.error)) ||
-      `Request failed with status ${response.status}`;
-    throw new ApiError(message, response.status, data);
-  }
-
-  return data;
-};
-
 export const createReview = async (payload) => {
   const body = JSON.stringify(payload);
-  const result = await request("/api/reviews", {
+  const result = await request("/reviews", {
     method: "POST",
     body,
   });
@@ -109,7 +37,7 @@ export const getReviewByOrder = async (orderNumber) => {
   if (!orderNumber) {
     throw new Error("orderNumber is required");
   }
-  const result = await request(`/api/reviews/order/${encodeURIComponent(orderNumber)}`, {
+  const result = await request(`/reviews/order/${encodeURIComponent(orderNumber)}`, {
     method: "GET",
   });
   return normalizeReview(result?.data ?? result);
@@ -124,7 +52,7 @@ export const getProductReviews = async (productId, { page = 1, limit = 10, sort 
     limit: String(limit),
     sort,
   });
-  const result = await request(`/api/reviews/product/${encodeURIComponent(productId)}?${params.toString()}`);
+  const result = await request(`/reviews/product/${encodeURIComponent(productId)}?${params.toString()}`);
   const reviews = Array.isArray(result?.data) ? result.data.map(normalizeReview) : [];
   return {
     reviews,
@@ -138,7 +66,7 @@ export const updateReview = async (reviewId, payload) => {
     throw new Error("reviewId is required");
   }
   const body = JSON.stringify(payload);
-  const result = await request(`/api/reviews/${reviewId}`, {
+  const result = await request(`/reviews/${reviewId}`, {
     method: "PUT",
     body,
   });

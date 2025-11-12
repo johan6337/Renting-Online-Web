@@ -12,7 +12,8 @@ import ProfilePage from './pages/ProfilePage';
 import CartPage from './pages/CartPage';
 import ProductDetails from './pages/ProductDetails';
 import ReviewPage from './pages/Review';
-import ReviewSummary from './pages/ReviewSummary';
+import OrderDetailPage from './pages/OrderDetailPage';
+// import ReviewSummary from './pages/ReviewSummary';
 import PaymentPage from './pages/PaymentPage';
 import NotFoundPage from './pages/NotFoundPage';
 
@@ -150,16 +151,21 @@ const App = () => {
           <OrdersPage />
         </ProtectedRoute>
       } />
-      <Route path="/review" element={
+      <Route path="/orders/:orderId" element={
+        <ProtectedRoute>
+          <OrderDetailPage />
+        </ProtectedRoute>
+      } />
+      <Route path="/review/:productId" element={
         <ProtectedRoute>
           <ReviewPage />
         </ProtectedRoute>
       } />
-      <Route path="/review/completed" element={
+      {/* <Route path="/review/completed" element={
         <ProtectedRoute>
           <ReviewSummary />
         </ProtectedRoute>
-      } />
+      } /> */}
       
       {/* 404 Page - Catch all unmatched routes */}
       <Route path="*" element={
