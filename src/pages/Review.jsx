@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import Header from '../components/header/Header';
 import Footer from '../components/footer/Footer';
 import { createReview, getReviewByOrder, updateReview } from '../api/reviews';
@@ -30,9 +30,11 @@ const EXPERIENCE_HIGHLIGHTS = [
 export default function Review() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { productId: productIdFromRoute } = useParams();
 
   const orderNumber = location.state?.orderNumber || null;
   const derivedProductId =
+    productIdFromRoute ||
     location.state?.productId ||
     location.state?.product?.productId ||
     location.state?.product?.product_id ||
@@ -55,6 +57,7 @@ export default function Review() {
   const [submitError, setSubmitError] = useState(null);
   const [loadError, setLoadError] = useState(null);
   const [isLoadingExisting, setIsLoadingExisting] = useState(false);
+  const effectiveProductId = productIdFromRoute || productId || derivedProductId || null;
 
   const applyReviewToForm = useCallback(
     (data) => {
@@ -189,6 +192,7 @@ export default function Review() {
         savedReview = await createReview({
           ...payload,
           productId,
+          orderId: orderNumber,
           orderNumber,
         });
       }
@@ -252,8 +256,13 @@ export default function Review() {
               <div className="mt-4 flex justify-end">
                 <button
                   type="button"
-                  onClick={() => orderNumber && navigate('/review/completed', { state: { orderNumber } })}
-                  disabled={!orderNumber}
+                  onClick={() => {
+                    if (!orderNumber || !effectiveProductId) {
+                      return;
+                    }
+                    navigate(`/review/${effectiveProductId}`, { state: { orderNumber } });
+                  }}
+                  disabled={!orderNumber || !effectiveProductId}
                   className="inline-flex items-center justify-center px-4 py-2 bg-indigo-600 text-white rounded-full font-medium hover:bg-indigo-700 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                   View My Review
@@ -433,8 +442,13 @@ export default function Review() {
             </button>
             <button
               type="button"
-              onClick={() => orderNumber && navigate('/review/completed', { state: { orderNumber } })}
-              disabled={!orderNumber}
+              onClick={() => {
+                if (!orderNumber || !effectiveProductId) {
+                  return;
+                }
+                navigate(`/review/${effectiveProductId}`, { state: { orderNumber } });
+              }}
+              disabled={!orderNumber || !effectiveProductId}
               className="px-8 py-3 bg-indigo-500 text-white rounded-lg font-medium hover:bg-indigo-600 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
             >
               View My Review

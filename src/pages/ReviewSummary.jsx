@@ -1,3 +1,4 @@
+/* ReviewSummary route temporarily disabled; keeping implementation commented for reference.
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Header from '../components/header/Header';
@@ -264,3 +265,4 @@ const ReviewSummary = () => {
 };
 
 export default ReviewSummary;
+*/
