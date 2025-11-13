@@ -2,10 +2,24 @@ import React, { useState } from 'react';
 import OrderCard from './OrderCard';
 import ReportUserForm from '../../pages/ReportUserForm';
 
-const OrderList = ({ orders = [], onViewDetails, onTrackOrder, isSeller = false, onConfirmPayment, onCompleteOrder, onConfirmReceived, onInitiateReturn }) => {
+const OrderList = ({
+  orders = [],
+  onViewDetails,
+  onTrackOrder,
+  isSeller = false,
+  onConfirmPayment,
+  onCompleteOrder,
+  onLeaveReview,
+  onChangeStatus,
+  statusUpdateOrderKey = null,
+}) => {
   const [activeTab, setActiveTab] = useState('all');
   const [showReportForm, setShowReportForm] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const heading = isSeller ? 'Seller Orders' : 'My Orders';
+  const subheading = isSeller
+    ? 'Monitor and progress rentals for your listings'
+    : 'Track and manage your rental orders';
 
   const tabs = [
     { id: 'all', label: 'All Orders' },
@@ -13,12 +27,13 @@ const OrderList = ({ orders = [], onViewDetails, onTrackOrder, isSeller = false,
     { id: 'shipping', label: 'Shipping' },
     { id: 'using', label: 'Using' },
     { id: 'return', label: 'Return' },
+    { id: 'checking', label: 'Checking' },
     { id: 'completed', label: 'Completed' },
   ];
 
   const filteredOrders = orders.filter(order => {
     if (activeTab === 'all') return true;
-    return order.status.toLowerCase() === activeTab;
+    return (order.status || '').toLowerCase() === activeTab;
   });
 
   const handleReportUser = (order) => {
@@ -30,8 +45,8 @@ const OrderList = ({ orders = [], onViewDetails, onTrackOrder, isSeller = false,
     <div className="max-w-6xl mx-auto px-4 py-8">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-4xl font-bold text-gray-900 mb-2">My Orders</h1>
-        <p className="text-gray-600">Track and manage your rental orders</p>
+        <h1 className="text-4xl font-bold text-gray-900 mb-2">{heading}</h1>
+        <p className="text-gray-600">{subheading}</p>
       </div>
 
       {/* Tabs */}
@@ -66,8 +81,12 @@ const OrderList = ({ orders = [], onViewDetails, onTrackOrder, isSeller = false,
             isSeller={isSeller}
             onConfirmPayment={onConfirmPayment}
             onCompleteOrder={onCompleteOrder}
-            onConfirmReceived={onConfirmReceived}
-            onInitiateReturn={onInitiateReturn}
+            onLeaveReview={onLeaveReview}
+            onChangeStatus={onChangeStatus}
+            statusUpdating={Boolean(
+              statusUpdateOrderKey &&
+              (order.orderId || order.id || order.orderNumber) === statusUpdateOrderKey
+            )}
           />
         ))
       ) : (

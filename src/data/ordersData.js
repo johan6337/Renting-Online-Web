@@ -4,6 +4,7 @@ const ordersData = [
     orderNumber: "ORD-3002",
     customerId: 2,
     buyerName: "John Doe",
+    sellerName: "Fashion Store Co.",
     productId: 2,
     productName: "Skinny Jeans",
     productImage: "https://example.com/jeans.jpg",
@@ -27,10 +28,11 @@ const ordersData = [
       { title: "Order Placed", date: "2025-07-08 00:00:00", completed: true },
       { title: "Shipping", date: "2025-07-09 00:00:00", completed: true },
       { title: "Received", date: "2025-07-10 00:00:00", completed: true },
-      { title: "Returned", date: "2025-07-13 00:00:00", completed: false }
+      { title: "Return", date: "2025-07-13 00:00:00", completed: false },
+      { title: "Checking", date: null, completed: false }
     ],
     receivingInfo: { date: "2025-07-10 00:00:00", title: "Received", completed: true },
-    returnInfo: { date: "2025-07-13 00:00:00", title: "Returned", completed: false },
+    returnInfo: { date: "2025-07-13 00:00:00", title: "Return", completed: false },
     notes: null
   },
   {
@@ -38,6 +40,7 @@ const ordersData = [
     orderNumber: "ORD-3003",
     customerId: 5,
     buyerName: "Michael Johnson",
+    sellerName: "Fashion Store Co.",
     productId: 2,
     productName: "Skinny Jeans",
     productImage: "https://example.com/jeans.jpg",
@@ -46,7 +49,7 @@ const ordersData = [
     rentalPeriod: "7 days",
     quantity: 1,
     unitPrice: 240,
-    status: "Returned",
+    status: "Checking",
     placedDate: "2025-04-18T00:00:00Z",
     subtotal: 240,
     tax: 24,
@@ -61,10 +64,11 @@ const ordersData = [
       { title: "Order Placed", date: "2025-04-18 00:00:00", completed: true },
       { title: "Shipping", date: "2025-04-19 00:00:00", completed: true },
       { title: "Received", date: "2025-04-20 00:00:00", completed: true },
-      { title: "Returned", date: "2025-04-23 00:00:00", completed: false }
+      { title: "Return", date: "2025-04-23 00:00:00", completed: true },
+      { title: "Checking", date: "2025-04-24 00:00:00", completed: false }
     ],
     receivingInfo: { date: "2025-04-20 00:00:00", title: "Received", completed: true },
-    returnInfo: { date: "2025-04-23 00:00:00", title: "Returned", completed: false },
+    returnInfo: { date: "2025-04-23 00:00:00", title: "Return", completed: true },
     notes: null
   },
   {
@@ -72,6 +76,7 @@ const ordersData = [
     orderNumber: "ORD-3004",
     customerId: 6,
     buyerName: "Emma Davis",
+    sellerName: "Premium Fashion",
     productId: 3,
     productName: "Designer Coat",
     productImage: "https://example.com/coat.jpg",
@@ -95,10 +100,11 @@ const ordersData = [
       { title: "Order Placed", date: "2025-10-17 00:00:00", completed: true },
       { title: "Shipping", date: "2025-10-18 00:00:00", completed: true },
       { title: "Received", date: "2025-10-19 00:00:00", completed: true },
-      { title: "Returned", date: "2025-10-22 00:00:00", completed: false }
+      { title: "Return", date: "2025-10-22 00:00:00", completed: false },
+      { title: "Checking", date: null, completed: false }
     ],
     receivingInfo: { date: "2025-10-19 00:00:00", title: "Received", completed: true },
-    returnInfo: { date: "2025-10-22 00:00:00", title: "Returned", completed: false },
+    returnInfo: { date: "2025-10-22 00:00:00", title: "Return", completed: false },
     notes: null
   },
   {
@@ -106,6 +112,7 @@ const ordersData = [
     orderNumber: "ORD-3001",
     customerId: 28,
     buyerName: "Michael Johnson",
+    sellerName: "Urban Threads Collective",
     productId: 3,
     productName: "Leather Jacket",
     productImage: "https://example.com/jacket.jpg",
@@ -129,10 +136,11 @@ const ordersData = [
       { title: "Order Placed", date: "2025-04-04 00:00:00", completed: true },
       { title: "Shipping", date: "2025-04-05 00:00:00", completed: true },
       { title: "Received", date: "2025-04-06 00:00:00", completed: true },
-      { title: "Returned", date: "2025-04-09 00:00:00", completed: false }
+      { title: "Return", date: "2025-04-09 00:00:00", completed: false },
+      { title: "Checking", date: null, completed: false }
     ],
     receivingInfo: { date: "2025-04-06 00:00:00", title: "Received", completed: true },
-    returnInfo: { date: "2025-04-09 00:00:00", title: "Returned", completed: false },
+    returnInfo: { date: "2025-04-09 00:00:00", title: "Return", completed: false },
     notes: null
   }
 ];

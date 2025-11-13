@@ -85,69 +85,48 @@ const OrdersPage = () => {
     };
   }, []);
 
-  const handleConfirmReceived = (order) => {
-    const targetId = resolveOrderId(order);
-    if (!targetId) {
-      return;
-    }
-    setOrders(prevOrders =>
-      prevOrders.map(o => {
-        if (resolveOrderId(o) === targetId) {
-          // Update timeline to mark "Received" and "Using" as completed
-          const timeline = Array.isArray(o.timeline) ? o.timeline : [];
-          const updatedTimeline = timeline.map(event => {
-            if (event.title.toLowerCase() === 'received' || event.title.toLowerCase() === 'using') {
-              return {
-                ...event,
-                completed: true,
-                date: event.title.toLowerCase() === 'received' 
-                  ? new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) + ' - ' + new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
-                  : event.date
-              };
-            }
-            return event;
-          });
-          return { ...o, status: 'Using', timeline: updatedTimeline };
-        }
-        return o;
-      })
-    );
-  };
-
-  const handleInitiateReturn = (order) => {
-    const targetId = resolveOrderId(order);
-    if (!targetId) {
-      return;
-    }
-    setOrders(prevOrders =>
-      prevOrders.map(o => {
-        if (resolveOrderId(o) === targetId) {
-          // Update timeline to mark "Returned" as completed
-          const timeline = Array.isArray(o.timeline) ? o.timeline : [];
-          const updatedTimeline = timeline.map(event => {
-            if (event.title.toLowerCase() === 'returned') {
-              return {
-                ...event,
-                completed: true,
-                date: new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) + ' - ' + new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }),
-                description: 'Return initiated by customer.'
-              };
-            }
-            return event;
-          });
-          return { ...o, status: 'Return', timeline: updatedTimeline };
-        }
-        return o;
-      })
-    );
-  };
-
   const handleViewDetails = (order) => {
     const normalized = normalizeOrderIdentity(order);
     if (!normalized?.orderId) {
       return;
     }
     navigate(`/orders/${normalized.orderId}`, { state: { order: normalized } });
+  };
+
+  const handleLeaveReview = (order) => {
+    const normalized = normalizeOrderIdentity(order);
+    if (!normalized) {
+      return;
+    }
+
+    const primaryItem = normalized?.items?.[0] || null;
+    const fallbackProduct = primaryItem || {
+      productId: normalized.productId ?? normalized.product_id ?? null,
+      id: normalized.productId ?? normalized.product_id ?? null,
+      name: normalized.productName ?? null,
+      image: normalized.productImage ?? null,
+      size: normalized.productSize ?? null,
+      color: normalized.productColor ?? null,
+    };
+    const targetProductId =
+      fallbackProduct?.productId ||
+      fallbackProduct?.id ||
+      null;
+
+    if (!targetProductId) {
+      console.warn('Unable to determine product for review navigation.', normalized);
+      return;
+    }
+
+    const navigationState = {
+      orderId: normalized?.orderId,
+      orderNumber: normalized?.orderNumber || normalized?.orderId || null,
+      productId: fallbackProduct.productId || fallbackProduct.id || null,
+      productName: fallbackProduct.name || normalized.productName || null,
+      product: fallbackProduct,
+    };
+
+    navigate(`/review/${targetProductId}`, { state: navigationState });
   };
 
   return (
@@ -167,11 +146,10 @@ const OrdersPage = () => {
           </div>
         </div>
       ) : (
-        <OrderList 
-          orders={orders} 
+        <OrderList
+          orders={orders}
           onViewDetails={handleViewDetails}
-          onConfirmReceived={handleConfirmReceived}
-          onInitiateReturn={handleInitiateReturn}
+          onLeaveReview={handleLeaveReview}
         />
       )}
       <Footer />

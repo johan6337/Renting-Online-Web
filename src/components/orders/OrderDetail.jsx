@@ -1,5 +1,10 @@
 import React from 'react';
 
+const formatStatusLabel = (value) => {
+  if (!value) return 'Ordered';
+  return value.charAt(0).toUpperCase() + value.slice(1);
+};
+
 const OrderDetail = ({
   order,
   onBack,
@@ -19,7 +24,7 @@ const OrderDetail = ({
   }
 
   const getStatusStyles = (status) => {
-    switch (status.toLowerCase()) {
+    switch ((status || '').toLowerCase()) {
       case 'ordered':
         return 'bg-yellow-50 text-yellow-600 border-yellow-200';
       case 'shipping':
@@ -52,6 +57,26 @@ const OrderDetail = ({
             imageUrl: order.productImage,
           },
         ];
+  const buyerName =
+    order.buyerName ||
+    order.customerName ||
+    order.customer?.fullName ||
+    order.user?.fullName ||
+    order.shippingAddress?.name ||
+    'Customer not provided';
+  const sellerName =
+    order.sellerName ||
+    order.seller?.name ||
+    order.seller?.fullName ||
+    order.storeName ||
+    (isSellerView ? 'You' : 'Seller not provided');
+  const sellerContact = [
+    order.sellerPhone ? `Phone: ${order.sellerPhone}` : null,
+    order.sellerEmail ? `Email: ${order.sellerEmail}` : null,
+    order.sellerAddress ? `Address: ${order.sellerAddress}` : null,
+  ].filter(Boolean);
+
+  const statusLabel = formatStatusLabel(order.status);
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8">
@@ -74,9 +99,29 @@ const OrderDetail = ({
             <p className="text-gray-600">Placed on {order.placedDate}</p>
           </div>
           <span className={`px-4 py-2 rounded-full text-sm font-semibold border ${getStatusStyles(order.status)}`}>
-            {order.status}
+            {statusLabel}
           </span>
         </div>
+        <div className="grid gap-4 sm:grid-cols-2 mb-2">
+          <div className="rounded-2xl border border-gray-100 p-4 bg-gray-50">
+            <p className="text-xs uppercase tracking-wide text-gray-500">Seller</p>
+            <p className="text-lg font-semibold text-gray-900 mt-1">{sellerName}</p>
+          </div>
+          <div className="rounded-2xl border border-gray-100 p-4 bg-gray-50">
+            <p className="text-xs uppercase tracking-wide text-gray-500">Customer</p>
+            <p className="text-lg font-semibold text-gray-900 mt-1">{buyerName}</p>
+          </div>
+        </div>
+        {!isSellerView && sellerContact.length > 0 && (
+          <div className="rounded-2xl border border-gray-100 p-4 bg-white shadow-sm">
+            <p className="text-xs uppercase tracking-wide text-gray-500">Seller Contact</p>
+            <ul className="mt-2 space-y-1 text-sm text-gray-700">
+              {sellerContact.map((line, index) => (
+                <li key={index}>{line}</li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         {/* Order Timeline */}
         {order.timeline && (
