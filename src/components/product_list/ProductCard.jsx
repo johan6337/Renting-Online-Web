@@ -4,18 +4,23 @@ import { useNavigate } from "react-router-dom"
 
 function ProductCard({ product, modeRate=true, view }) {
     const navigate = useNavigate();
+    const priceAsNumber = parseFloat(product.price_per_day);
 
-    let originalPrice = product.price.toFixed(2);
+    const finalPriceAsNumber = useMemo(() => {
+        if (!product.sale_percentage || product.sale_percentage <= 0)
+            return priceAsNumber; 
+        return priceAsNumber * (1 - product.sale_percentage / 100);
+    }, [product.sale_percentage, priceAsNumber]);
 
-        const finalPrice = useMemo(() => {
-            if (!product.sale || product.sale <= 0)
-                return originalPrice;
-            return (originalPrice * (1 - product.sale / 100)).toFixed(2);
-        }, [product.sale, originalPrice]);
+    
+    const originalPriceDisplay = priceAsNumber.toFixed(2);
+    const finalPriceDisplay = finalPriceAsNumber.toFixed(2);
+
 
     const handleClick = () => {
-        navigate(`/product/${product.id || 1}`);
+        navigate(`/product/${product.product_id || 1}`);
     };
+    console.log("Product: "+ product)
 
     return (
         <>
@@ -26,7 +31,7 @@ function ProductCard({ product, modeRate=true, view }) {
             >
                 <div className="w-full h-48 flex items-center justify-center bg-gradient-to-b from-gray-300 to-gray-200 rounded-lg overflow-hidden">
                     <img
-                        src={product.image}
+                        src={product.images[0]}
                         alt="Product Image"
                         className="w-full h-full object-cover"
                     />
@@ -34,16 +39,16 @@ function ProductCard({ product, modeRate=true, view }) {
                 <h2 className="p-2 line-clamp-2 break-words text-[1.2rem] font-bold">{product.name}</h2>
                 <div className="px-2 py-1"><StarRating modeRate={modeRate}/></div>
                 <div className="flex justify-start items-center p-2 pt-0 text-lg md:text-2xl font-bold flex-wrap">
-                    {product.sale ? (
+                    {product.sale_percentage ? (
                         <div className="flex justify-start items-center gap-2 flex-wrap">
-                            <span>${finalPrice}</span>
+                            <span>${finalPriceDisplay}</span>
                             {view === 'horizontal' && (
-                                <span className='line-through text-gray-300 text-base md:text-xl'>${originalPrice}</span>
+                                <span className='line-through text-gray-300 text-base md:text-xl'>${originalPriceDisplay}</span>
                             )}
-                            <button className='rounded-3xl cursor-default px-3 py-1 text-sm md:text-base bg-red-100 text-red-400'>-{product.sale}%</button>
+                            <button className='rounded-3xl cursor-default px-3 py-1 text-sm md:text-base bg-red-100 text-red-400'>-{product.sale_percentage}%</button>
                         </div>
                     ) : (
-                        <span>${originalPrice}</span>
+                        <span>${originalPriceDisplay}</span>
                     )}
                 </div>
             </div>

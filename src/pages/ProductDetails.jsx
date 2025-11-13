@@ -69,42 +69,20 @@ const ProductDetails = () => {
             {
                 id: 21,
                 name: "Polo with Tipping Details",
-                price: 180,
-                image: "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=400&h=400&fit=crop",
+                price_per_day: 180,
+                images: ["https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=400&h=400&fit=crop"],
                 sale_percentage: 0
             },
             {
                 id: 22,
                 name: "Black Striped T-shirt",
-                price: 150,
-                image: "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=400&h=400&fit=crop",
+                price_per_day: 150,
+                images: ["https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=400&h=400&fit=crop"],
                 sale: 30
             }
         ]
     };
 
-
-    // const product = {
-    //     id: productId,
-    //     name: "Gradient Graphic T-shirt",
-    //     price: 145,
-    //     sale: 20,
-    //     image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop",
-    //     images: [
-    //         "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop",
-    //         "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=400&h=400&fit=crop",
-    //         "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=400&h=400&fit=crop",
-    //         "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop",
-    //         "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=400&h=400&fit=crop",
-    //         "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=400&h=400&fit=crop",
-    //         "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop",
-    //         "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=400&h=400&fit=crop",
-    //         "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=400&h=400&fit=crop",
-    //         "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop",
-    //         "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=400&h=400&fit=crop",
-    //         "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=400&h=400&fit=crop"
-    //     ]
-    // };
     const { productId } = useParams();
     const navigate = useNavigate();
 
@@ -236,6 +214,8 @@ const ProductDetails = () => {
 
         
     };
+
+    console.log("Product Data: ", product);
 
     // --- Render Logic ---
 

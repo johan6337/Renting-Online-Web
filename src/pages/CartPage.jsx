@@ -14,18 +14,7 @@ const CartPage = () => {
     const [itemList, setItemList] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
-    
     const [isGuest, setIsGuest] = useState(false);
-
-    // const processCartItems = (items) => {
-    //     if (!items || !Array.isArray(items)) return [];
-    //     const keyToUpdate = items[0].hasOwnProperty('rentalDays') ? 'rentalDays' : 'rent_time'; 
-    //     return items.map(item => ({
-    //         ...item,
-    //         quantity: item.quantity ?? 1,
-    //         [keyToUpdate]: item.rent_time ?? item.rentalDays  ?? 1
-    //     }));
-    // };
 
     const processCartItems = (items) => {
         if (!items || !Array.isArray(items)) return [];
@@ -40,6 +29,29 @@ const CartPage = () => {
                 rent_time: item.rent_time ?? rentalDays ?? 1
             };
         });
+    };
+
+    const syncCartToDb = async (items) => {
+        console.log("Updating cart items list...");
+        try {
+            const res = await fetch('/api/cart/items', { 
+                method: 'PUT', 
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ newList: items }) 
+            });
+
+            if (!res.ok) {
+                throw new Error("Server failed to update cart items.");
+            }
+            
+            console.log("Updated cart items successfully in the database.");
+
+        } catch (err) {
+            console.error(err);
+            
+            setError("Cannot save cart. Please try again later.");
+        }
     };
 
     // Main data fetching effect
@@ -129,15 +141,25 @@ const CartPage = () => {
         const saveTimer = setTimeout(() => {
             if (isLoading) return; 
 
-            const cartKey = isGuest ? GUEST_CART_KEY : USER_CART_KEY;
-            try {
-                const cartToSave = {
-                    "items" : itemList,
-                    "total_cost" : calculateTotalPrice() + deliveryFee
+            const cartToSave = {
+                "items" : itemList,
+                "total_cost" : calculateTotalPrice() + deliveryFee
+            };
+
+            if (isGuest) {
+                try {
+                    localStorage.setItem(GUEST_CART_KEY, JSON.stringify(cartToSave));
+                } catch (storageError) {
+                    console.log("Failed to save GUEST cart to local storage: ", storageError);
                 }
-                localStorage.setItem(cartKey, JSON.stringify(cartToSave))
-            } catch (storageError) {
-                console.log("Failed to save cart to local storage: ", storageError)
+            } else {
+                try {
+                    localStorage.setItem(USER_CART_KEY, JSON.stringify(cartToSave));
+                } catch (storageError) {
+                    console.log("Failed to save USER cart to local storage: ", storageError);
+                }
+
+                syncCartToDb(itemList); 
             }
         }, 500); 
 
@@ -190,12 +212,11 @@ const CartPage = () => {
 
             if (sessionRes.ok) {
                 console.log("Has session! Proceeding to checkout!");
-                // FIX: Navigate to payment with the correct total amount
+                
                 navigate('/payment', { state: { totalAmount: totalAmount } });
             } else {
                 console.log("No session, redirecting to login!");
                 
-                // FIX: Save the guest cart *before* redirecting to login
                 try {
                     const cartToSave = {
                         "items" : itemList,
@@ -233,6 +254,8 @@ const CartPage = () => {
     }
 
     const calculatedTotal = calculateTotalPrice();
+
+    console.log("Cart Items: ", itemList);
     
     return (
         <div className=''>
@@ -247,7 +270,7 @@ const CartPage = () => {
                                 <div className='flex flex-row gap-4 m-4 items-start'>
                                     {/* Item Image */}
                                     <div className='flex-shrink-0'>
-                                        <img src={item.image} alt={item.name} className='w-24 h-24 md:w-28 md:h-28 rounded-xl object-cover'/>
+                                        <img src={item.metadata.images[0]} alt={item.name} className='w-24 h-24 md:w-28 md:h-28 rounded-xl object-cover'/>
                                     </div>
 
                                     {/* Item Info */}

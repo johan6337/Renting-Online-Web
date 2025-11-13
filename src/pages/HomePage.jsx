@@ -2,7 +2,7 @@ import Header from '../components/header/Header';
 import Footer from '../components/footer/Footer';
 import ProductList from '../components/product_list/ProductList';
 import CommentList from '../components/comments/CommentList';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const HomePage = () => {
@@ -57,84 +57,30 @@ const HomePage = () => {
         }
     ];
 
-    const products = [
-        {
-            id: 1,
-            name: "Checkered Shirt",
-            price: 100,
-            image: "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=400&h=400&fit=crop",
-            sale: 20,
-        },
-        {
-            id: 2,
-            name: "Denim Jacket",
-            price: 80,
-            image: "https://images.unsplash.com/photo-1503341455253-b2e723bb3dbb?auto=format&fit=crop&w=400&q=80",
-        },
-        {
-            id: 3,
-            name: "Wireless Headphones",
-            price: 120,
-            image: "https://images.unsplash.com/photo-1580894908361-967195033215?auto=format&fit=crop&w=400&q=80",
-        },
-        {
-            id: 4,
-            name: "Running Shoes",
-            price: 95,
-            image: "https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?auto=format&fit=crop&w=400&q=80",
-        },
-        {
-            id: 5,
-            name: "Leather Wallet",
-            price: 40,
-            image: "https://images.unsplash.com/photo-1657603644005-67891fcc1577?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1470"
-        },
-        {
-            id: 6,
-            name: "Smart Watch",
-            price: 199,
-            image: "https://images.unsplash.com/photo-1664730021931-9abb25cb0852?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1470"
-        },
-        {
-            id: 7,
-            name: "Backpack",
-            price: 60,
-            image: "https://images.unsplash.com/photo-1622560480654-d96214fdc887?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTB8fGJhY2twYWNrfGVufDB8fDB8fHww&auto=format&fit=crop&q=60&w=700"
-        },
-        {
-            id: 8,
-            name: "Sunglasses",
-            price: 75,
-            image: "https://images.unsplash.com/photo-1572635196237-14b3f281503f?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8c3VuZ2xhc3Nlc3xlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&q=60&w=700"
-        },
-        {
-            id: 9,
-            name: "Gaming Mouse",
-            price: 49,
-            image: "https://images.unsplash.com/photo-1628832306751-ec751454119c?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1545"
-        },
-        {
-            id: 10,
-            name: "Bluetooth Speaker",
-            price: 89,
-            image: "https://images.unsplash.com/photo-1754142927775-8f1e97ebd030?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1374"
+    const [productList, setProductList] = useState([]);
+    useEffect(() => {
+        const fetchProducts = async () => {
+            try {
+                const response = await fetch('api/products/', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('PRODUCT DATA LIST:', data);
+                    setProductList(data.data.products);
+                } else {
+                    console.error('Failed to fetch products. Status:', response.status);
+                }
+            } catch (error) {
+                console.error('Error fetching products:', error);
+            }
         }
-    ]
 
-    // const recommendRef = useRef(null);
-    // const recentRef = useRef(null);
-
-    // useEffect(() => {
-    //     if (recommendRef.current) {
-    //         recommendRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    //     }
-    // }, [viewMode.recommend])
-
-    // useEffect(() => {
-    //     if (recentRef.current) {
-    //         recentRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    //     }
-    // }, [viewMode.recent])
+        fetchProducts();
+    }, []);
 
     const changeMode = (viewName) => {
         setViewMode(prev => ({
@@ -180,7 +126,7 @@ const HomePage = () => {
             <div className='w-full flex flex-col content-center my-10'>
                 <h1 className='font-black text-2xl md:text-4xl mb-10 text-center'>Newest Product</h1>
                 <div className='ml-10 mr-10'>
-                    <ProductList View={viewMode.recommend} Products={products} modeRate={false}/>
+                    <ProductList View={viewMode.recommend} Products={productList} modeRate={false}/>
                 </div>
                 <div className='flex justify-center content-center mt-10'>
                     <button className='w-36 p-2 flex justify-center content-center
@@ -198,7 +144,7 @@ const HomePage = () => {
             <div className='w-full flex flex-col content-center my-10'>
                 <h1 className='font-black text-2xl md:text-4xl mb-10 text-center'>Top-Selling Product</h1>
                 <div className='ml-10 mr-10'>
-                    <ProductList View={viewMode.recent} Products={products} modeRate={false}/>
+                    <ProductList View={viewMode.recent} Products={productList} modeRate={false}/>
                 </div>
                 <div className='flex justify-center content-center mt-10'>
                     <button className='w-36 p-2 flex justify-center content-center
