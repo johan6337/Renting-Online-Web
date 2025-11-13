@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import Sidebar_Admin from '../../components/sidebar/Sidebar_Admin';
-import { Bell, Search, Filter, Download, Trash2 } from 'lucide-react';
+import { Download, Trash2 } from 'lucide-react';
 import AdminActionForm from './AdminActionForm';
 import ReportDetailModal from './ReportDetailModal';
 import ActionViewModal from './ActionViewModal';
@@ -234,13 +234,28 @@ const AdminReportedUsers = () => {
     return status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
   };
 
-  const formatDateTime = (dateString) => {
+const formatDateTime = (dateString) => {
     if (!dateString) return { short: 'N/A', full: 'N/A' };
-    const date = new Date(dateString);
-    return {
-      short: date.toLocaleDateString(),
-      full: date.toLocaleString()
-    };
+    const dt = new Date(dateString);
+
+    // Short: dd/mm/yyyy (UTC+7)
+    const short = new Intl.DateTimeFormat('en-GB', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    }).format(dt);
+
+    // Full: dd/mm/yyyy, HH:MM:SS (UTC+7)
+    const full = new Intl.DateTimeFormat('en-GB', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    }).format(dt);
+
+    return { short, full };
   };
 
   if (loading) {
@@ -401,9 +416,11 @@ const AdminReportedUsers = () => {
                         </td>
                         <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
                           {report.reported_user_username}
+                          <span className="ml-2 text-xs text-gray-500">(ID:{report.reported_user_id})</span>
                         </td>
                         <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
                           {report.reporting_user_username}
+                          <span className="ml-2 text-xs text-gray-500">(ID:{report.reporting_user_id})</span>
                         </td>
                         <td className="px-4 py-4 whitespace-nowrap text-sm">
                           <button 
