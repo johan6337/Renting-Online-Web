@@ -87,6 +87,9 @@ const ProductDetails = () => {
     const navigate = useNavigate();
 
     const [product, setProduct] = useState(null);
+    const [reviewStats, setReviewStats] = useState(null); // <-- ADD THIS
+    const [reviews, setReviews] = useState([]);           // <-- ADD THIS
+    const [pagination, setPagination] = useState(null);
     const [isLoading, setIsLoading] = useState(true); 
     const [error, setError] = useState(null);
     const [quantity, setQuantity] = useState(1);
@@ -106,21 +109,37 @@ const ProductDetails = () => {
             try {
                 setIsLoading(true);
                 setError(null);
-                const res = await fetch(`/api/products/${productId}`, {
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    credentials: 'include', // Important for session cookies
-                });
+
+                const [productRes, reviewsRes] = await Promise.all([
+                    fetch(`/api/products/${productId}`, {
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        credentials: 'include',
+                    }),
+                    fetch(`/api/reviews/product/${productId}`) // <-- This fetches reviews, stats, and pagination
+                ]);
                 
-                if (!res.ok) {
-                    throw new Error(`HTTP error! Status: ${res.status}`);
+                // Check both responses
+                if (!productRes.ok) {
+                    throw new Error(`Product fetch error! Status: ${productRes.status}`);
+                }
+                if (!reviewsRes.ok) {
+                    throw new Error(`Review fetch error! Status: ${reviewsRes.status}`);
                 }
 
-                const data = await res.json();
-                console.log(data)
-                setProduct(data.data);
-                setSelectedImageIndex(0); // Reset image index for new product
+                // Parse both JSON responses
+                const productData = await productRes.json();
+                const reviewData = await reviewsRes.json();
+                
+                console.log("Product Data:", productData);
+                console.log("Review Data:", reviewData);
+
+                setProduct(productData.data);
+                setReviewStats(reviewData.stats);      // <-- Set review stats
+                setReviews(reviewData.data);         // <-- Set review list
+                setPagination(reviewData.pagination); // <-- Set pagination info
+                setSelectedImageIndex(0);            // Reset image index
 
             } catch (err) { 
                 console.error("Failed to fetch product:", err);
@@ -214,8 +233,6 @@ const ProductDetails = () => {
 
         
     };
-
-    console.log("Product Data: ", product);
 
     // --- Render Logic ---
 
@@ -335,7 +352,7 @@ const ProductDetails = () => {
                         ) : originalPrice}
                     </div>
                     <div className='p-2 text-sm md:text-base text-gray-500'>
-                        {details ? details.description : "No details provided for this product."}
+                        {product ? product.description : "No details provided for this product."}
                     </div>
                     
                     <div className='border-t-2 border-t-gray-200 w-full h-0'></div>
@@ -383,18 +400,18 @@ const ProductDetails = () => {
                 <div className='bg-gray-50 p-6 rounded-lg'>
                     <div className='flex items-center gap-4'>
                         <img 
-                            src={details.seller.avatar} 
-                            alt={details.seller.name}
+                            src={product.seller_avatar} 
+                            alt={product.seller_name}
                             className='w-20 h-20 rounded-full object-cover border-2 border-gray-300'
                         />
                         <div className='flex-1'>
-                            <h3 className='text-xl font-semibold text-gray-900'>{details.seller.name}</h3>
+                            <h3 className='text-xl font-semibold text-gray-900'>{product.seller_name}</h3>
                             <div className='flex items-center gap-4 mt-2'>
                                 <div className='flex items-center gap-1'>
-                                    <StarRating modeRate={false} displayRate={details.seller.rating} showRatingText={true} />
+                                    <StarRating modeRate={false} displayRate={product.seller_rating} showRatingText={true} />
                                 </div>
                                 <div className='text-gray-600'>
-                                    <span className='font-semibold'>{details.seller.totalOrders}</span> orders completed
+                                    <span className='font-semibold'>{product.seller_total_orders}</span> orders completed
                                 </div>
                             </div>
                         </div>
@@ -404,8 +421,8 @@ const ProductDetails = () => {
             
             {/* Rating & Reviews Section */}
             <div className='mx-5 md:mx-10 mb-10'>
-                <h2 className='text-2xl md:text-3xl font-bold mb-5'>Rating & Reviews</h2>
-                <CommentList comments={details.comments}/>
+                {/* We pass the 'reviews' list and 'reviewStats' object directly */}
+                <CommentList reviews={reviews} stats={reviewStats} />
             </div>
             
             {/* More Products */}
