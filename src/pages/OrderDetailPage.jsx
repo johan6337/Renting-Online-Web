@@ -186,8 +186,11 @@ const OrderDetailPage = () => {
     navigate(`/review/${targetProductId}`, { state: navigationState });
   };
 
- const completedStates = ['completed', 'complete'];
-const isCompletedOrder = completedStates.includes(order?.status?.toLowerCase?.() ?? '');
+  const completedStates = ['completed', 'complete'];
+  const isCompletedOrder =
+    typeof order?.canReview === 'boolean'
+      ? order.canReview
+      : completedStates.includes(order?.status?.toLowerCase?.() ?? '');
 
 
   if (isLoading) {

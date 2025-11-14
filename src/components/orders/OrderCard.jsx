@@ -5,9 +5,17 @@ const STATUS_STYLES = {
   shipping: 'bg-blue-50 text-blue-600 border-blue-200',
   using: 'bg-green-50 text-green-600 border-green-200',
   return: 'bg-orange-50 text-orange-600 border-orange-200',
+  checking: 'bg-teal-50 text-teal-600 border-teal-200',
   completed: 'bg-purple-50 text-purple-600 border-purple-200',
   returned: 'bg-gray-50 text-gray-600 border-gray-200',
   cancelled: 'bg-red-50 text-red-600 border-red-200',
+};
+
+const SELLER_STATUS_OPTIONS = ['shipping', 'using', 'return', 'checking', 'completed'];
+
+const formatStatusLabel = (value) => {
+  if (!value) return 'Ordered';
+  return value.charAt(0).toUpperCase() + value.slice(1);
 };
 
 const OrderCard = ({
@@ -17,14 +25,16 @@ const OrderCard = ({
   onReportUser,
   isSeller = false,
   onConfirmPayment,
-  onConfirmReceived,
-  onInitiateReturn,
   onCompleteOrder,
+  onLeaveReview,
+  onChangeStatus,
+  statusUpdating = false,
 }) => {
   const orderId = order.orderId || order.id;
   const orderNumber = order.orderNumber || orderId;
   const statusKey = (order.status || 'ordered').toLowerCase();
   const statusClass = STATUS_STYLES[statusKey] || STATUS_STYLES.ordered;
+  const statusLabel = formatStatusLabel(statusKey);
   const placedDate = order.placedDate
     ? new Date(order.placedDate).toLocaleDateString(undefined, {
         month: 'short',
@@ -32,7 +42,21 @@ const OrderCard = ({
         year: 'numeric',
       })
     : 'Pending';
-  const buyerName = order.buyerName || 'You';
+  const buyerName =
+    order.buyerName ||
+    order.customerName ||
+    order.customer?.fullName ||
+    order.user?.fullName ||
+    order.shippingAddress?.name ||
+    (isSeller ? '' : 'You');
+  const sellerName =
+    order.sellerName ||
+    order.seller?.name ||
+    order.seller?.fullName ||
+    order.storeName ||
+    (isSeller ? 'You' : '');
+  const sellerLabel = sellerName || (isSeller ? 'You' : 'Seller not provided');
+  const buyerLabel = buyerName || (isSeller ? 'Customer not provided' : 'You');
   const primaryItem = {
     productId: order.productId,
     name: order.productName,
@@ -44,6 +68,7 @@ const OrderCard = ({
     imageUrl: order.productImage,
   };
   const shippingAddress = order.shippingAddress;
+  const isReviewable = Boolean(order.canReview);
 
   const shippingStep = order.timeline?.find(
     (step) => step.title?.toLowerCase() === 'shipping'
@@ -72,14 +97,15 @@ const OrderCard = ({
           </button>
         );
       }
-      if (statusKey === 'return') {
+      if (statusKey === 'return' || statusKey === 'checking') {
+        const isChecking = statusKey === 'checking';
         buttons.push(
           <button
             key="complete-order"
             onClick={() => onCompleteOrder?.(order)}
             className="px-5 py-2 rounded-full bg-purple-500 text-white font-semibold hover:bg-purple-600 transition-colors"
           >
-            Mark as Completed
+            {isChecking ? 'Complete Order' : 'Start Checking'}
           </button>
         );
       }
@@ -93,40 +119,29 @@ const OrderCard = ({
         </button>
       );
     } else {
-      if (statusKey === 'shipping' && !order.receivingInfo) {
-        buttons.push(
-          <button
-            key="confirm-received"
-            onClick={() => onConfirmReceived?.(order)}
-            className="px-5 py-2 rounded-full bg-blue-500 text-white font-semibold hover:bg-blue-600 transition-colors"
-          >
-            Confirm Received
-          </button>
-        );
-      }
-      if (statusKey === 'using') {
-        buttons.push(
-          <button
-            key="initiate-return"
-            onClick={() => onInitiateReturn?.(order)}
-            className="px-5 py-2 rounded-full bg-orange-500 text-white font-semibold hover:bg-orange-600 transition-colors"
-          >
-            Initiate Return
-          </button>
-        );
-      }
       buttons.push(
         <button
           key="view-details"
           onClick={() => onViewDetails?.(order)}
           className="px-5 py-2 rounded-full bg-black text-white font-semibold hover:bg-gray-800 transition-colors"
         >
-          {['shipping', 'using', 'return'].includes(statusKey) ? 'Track Order' : 'View Details'}
+          View Details
         </button>
       );
+      if (isReviewable) {
+        buttons.push(
+          <button
+            key="leave-review"
+            onClick={() => onLeaveReview?.(order)}
+            className="px-5 py-2 rounded-full bg-indigo-600 text-white font-semibold hover:bg-indigo-700 transition-colors"
+          >
+            Review Product
+          </button>
+        );
+      }
     }
 
-    if (['completed', 'returned'].includes(statusKey)) {
+    if (['completed', 'return', 'checking'].includes(statusKey)) {
       buttons.push(
         <button
           key="report"
@@ -150,10 +165,20 @@ const OrderCard = ({
           <p className="text-sm text-gray-500 mt-1">
             Placed on <span className="font-medium text-gray-800">{placedDate}</span>
           </p>
+          <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-gray-600 mt-2">
+            <span>
+              Seller:{' '}
+              <span className="font-semibold text-gray-900">{sellerLabel}</span>
+            </span>
+            <span>
+              Customer:{' '}
+              <span className="font-semibold text-gray-900">{buyerLabel}</span>
+            </span>
+          </div>
         </div>
         <div className="text-right">
           <span className={`px-4 py-1.5 rounded-full text-sm font-semibold border ${statusClass}`}>
-            {order.status}
+            {statusLabel}
           </span>
           <p className="text-sm text-gray-500 mt-1">Total</p>
           <p className="text-xl font-bold text-gray-900">${order.totalAmount}</p>
@@ -202,11 +227,12 @@ const OrderCard = ({
           <p className="text-sm font-medium text-gray-800">{shippingStatus}</p>
           {shippingAddress ? (
             <p className="text-xs text-gray-500 mt-2 leading-relaxed">
-              {shippingAddress.name}
+              {shippingAddress.name || buyerLabel}
               <br />
               {shippingAddress.address}
               <br />
-              {shippingAddress.city}, {shippingAddress.state} {shippingAddress.zipCode}
+              {shippingAddress.city}, {shippingAddress.state}{' '}
+              {shippingAddress.zipCode || shippingAddress.zip}
             </p>
           ) : (
             <p className="text-xs text-gray-500 mt-2">Shipping details not set</p>
@@ -220,11 +246,57 @@ const OrderCard = ({
       </div>
 
       <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-100 flex-wrap gap-3">
-        <p className="text-xs text-gray-500">Contact: {buyerName}</p>
+        <div className="text-xs text-gray-500 leading-5">
+          <p>
+            Seller:{' '}
+            <span className="text-gray-800 font-medium">{sellerLabel}</span>
+          </p>
+          <p>
+            Customer:{' '}
+            <span className="text-gray-800 font-medium">{buyerLabel}</span>
+          </p>
+        </div>
         <div className="flex gap-3 flex-wrap justify-end">
           {renderActionButtons()}
         </div>
       </div>
+      {isSeller && typeof onChangeStatus === 'function' && (
+        <div className="mt-6 border-t border-gray-100 pt-4">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
+            <div className="flex-1">
+              <label className="text-xs uppercase tracking-wide text-gray-500">
+                Quick status update
+              </label>
+              <select
+                className="mt-1 w-full rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm text-gray-700 focus:border-black focus:outline-none focus:ring-0"
+                defaultValue=""
+                disabled={statusUpdating}
+                onChange={(event) => {
+                  const nextStatus = event.target.value;
+                  if (!nextStatus) {
+                    return;
+                  }
+                  onChangeStatus(order, nextStatus);
+                  event.target.value = '';
+                }}
+              >
+                <option value="">
+                  {statusUpdating ? 'Updating status…' : 'Select next status'}
+                </option>
+                {SELLER_STATUS_OPTIONS.map((option) => (
+                  <option key={option} value={option} disabled={option === statusKey}>
+                    {formatStatusLabel(option)}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <p className="text-xs text-gray-500">
+              Current:{' '}
+              <span className="font-semibold text-gray-800">{statusLabel}</span>
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

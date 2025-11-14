@@ -21,6 +21,7 @@ import NotFoundPage from './pages/NotFoundPage';
 import SellerDashboard from './pages/seller/SellerDashboard';
 import SellerProducts from './pages/seller/SellerProducts';
 import SellerOrders from './pages/seller/SellerOrders';
+import SellerOrderDetail from './pages/seller/SellerOrderDetail';
 import AddProductPage from './pages/seller/AddProductPage';
 
 // Admin Pages
@@ -76,6 +77,11 @@ const App = () => {
       <Route path="/seller/orders" element={
         <ProtectedRoute>
           <SellerOrders />
+        </ProtectedRoute>
+      } />
+      <Route path="/seller/orders/:orderNumber" element={
+        <ProtectedRoute>
+          <SellerOrderDetail />
         </ProtectedRoute>
       } />
       <Route path="/seller/add-product" element={
