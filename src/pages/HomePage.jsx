@@ -134,7 +134,11 @@ const HomePage = () => {
             <div className='w-full flex flex-col content-center my-10'>
                 <h1 className='font-black text-2xl md:text-4xl mb-10 text-center'>Newest Product</h1>
                 <div className='ml-10 mr-10'>
-                    <ProductList View={viewMode.recommend} Products={filteredProducts} modeRate={false}/>
+                    {filteredProducts.length === 0 ? (
+                        <p className='text-center text-gray-500'>No available products found.</p>
+                    ) : 
+                        <ProductList View={viewMode.recommend} Products={filteredProducts} modeRate={false}/>
+                    }
                 </div>
                 <div className='flex justify-center content-center mt-10'>
                     <button className='w-36 p-2 flex justify-center content-center
@@ -152,7 +156,11 @@ const HomePage = () => {
             <div className='w-full flex flex-col content-center my-10'>
                 <h1 className='font-black text-2xl md:text-4xl mb-10 text-center'>Top-Selling Product</h1>
                 <div className='ml-10 mr-10'>
-                    <ProductList View={viewMode.recent} Products={filteredProducts} modeRate={false}/>
+                    {filteredProducts.length === 0 ? (
+                        <p className='text-center text-gray-500'>No available products found.</p>
+                    ) : 
+                        <ProductList View={viewMode.recent} Products={filteredProducts} modeRate={false}/>
+                    }
                 </div>
                 <div className='flex justify-center content-center mt-10'>
                     <button className='w-36 p-2 flex justify-center content-center
