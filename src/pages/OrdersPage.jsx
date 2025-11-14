@@ -4,6 +4,7 @@ import Header from '../components/header/Header';
 import Footer from '../components/footer/Footer';
 import OrderList from '../components/orders/OrderList';
 import ordersData from '../data/ordersData';
+import ReportUserForm from './ReportUserForm';
 import { getOrders } from '../api/orders';
 
 const resolveOrderId = (order, fallback = '') => {
@@ -43,6 +44,8 @@ const OrdersPage = () => {
   const [orders, setOrders] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState(null);
+  const [showReportForm, setShowReportForm] = useState(false);
+  const [reportTarget, setReportTarget] = useState(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -129,6 +132,33 @@ const OrdersPage = () => {
     navigate(`/review/${targetProductId}`, { state: navigationState });
   };
 
+  const handleReportUser = (order) => {
+    const normalized = normalizeOrderIdentity(order);
+    if (!normalized) {
+      return;
+    }
+
+    // Extract seller information from the order
+    const sellerId = normalized.sellerId || normalized.seller.id || null;
+    const sellerUsername = normalized.sellerUsername || normalized.seller.username || 'Unknown Seller';
+
+    if (!sellerId) {
+      console.warn('Unable to determine seller for report.', normalized);
+      return;
+    }
+
+    setReportTarget({
+      userId: sellerId,
+      userName: sellerUsername
+    });
+    setShowReportForm(true);
+  };
+
+  const handleCloseReportForm = () => {
+    setShowReportForm(false);
+    setReportTarget(null);
+  };
+
   return (
     <div className="bg-gray-50 min-h-screen">
       <Header />
@@ -150,6 +180,15 @@ const OrdersPage = () => {
           orders={orders}
           onViewDetails={handleViewDetails}
           onLeaveReview={handleLeaveReview}
+          onReportUser={handleReportUser}
+        />
+      )}
+      
+      {showReportForm && reportTarget && (
+        <ReportUserForm
+          userName={reportTarget.userName}
+          userId={reportTarget.userId}
+          onClose={handleCloseReportForm}
         />
       )}
       <Footer />
