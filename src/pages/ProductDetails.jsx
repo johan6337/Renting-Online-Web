@@ -87,8 +87,8 @@ const ProductDetails = () => {
     const navigate = useNavigate();
 
     const [product, setProduct] = useState(null);
-    const [reviewStats, setReviewStats] = useState(null); // <-- ADD THIS
-    const [reviews, setReviews] = useState([]);           // <-- ADD THIS
+    const [reviewStats, setReviewStats] = useState(null); 
+    const [reviews, setReviews] = useState([]);           
     const [pagination, setPagination] = useState(null);
     const [isLoading, setIsLoading] = useState(true); 
     const [error, setError] = useState(null);
@@ -192,7 +192,7 @@ const ProductDetails = () => {
                 }
                 
                 console.log("Cart OK. Fetching cart items...");
-                
+
                 try {
                     const res = await fetch('/api/cart', { 
                         method: 'POST',
