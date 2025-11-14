@@ -3,7 +3,7 @@ import Footer from '../components/footer/Footer';
 import ProductList from '../components/product_list/ProductList';
 import CommentList from '../components/comments/CommentList';
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 const HomePage = () => {
     const navigate = useNavigate();
@@ -58,6 +58,10 @@ const HomePage = () => {
     ];
 
     const [productList, setProductList] = useState([]);
+    // Get search params from URL
+    const [searchParams] = useSearchParams();
+    const searchQuery = searchParams.get('search') || '';
+
     useEffect(() => {
         const fetchProducts = async () => {
             try {
@@ -81,6 +85,10 @@ const HomePage = () => {
 
         fetchProducts();
     }, []);
+
+    const filteredProducts = productList.filter(product => 
+        product.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
     const changeMode = (viewName) => {
         setViewMode(prev => ({
@@ -126,7 +134,7 @@ const HomePage = () => {
             <div className='w-full flex flex-col content-center my-10'>
                 <h1 className='font-black text-2xl md:text-4xl mb-10 text-center'>Newest Product</h1>
                 <div className='ml-10 mr-10'>
-                    <ProductList View={viewMode.recommend} Products={productList} modeRate={false}/>
+                    <ProductList View={viewMode.recommend} Products={filteredProducts} modeRate={false}/>
                 </div>
                 <div className='flex justify-center content-center mt-10'>
                     <button className='w-36 p-2 flex justify-center content-center
@@ -144,7 +152,7 @@ const HomePage = () => {
             <div className='w-full flex flex-col content-center my-10'>
                 <h1 className='font-black text-2xl md:text-4xl mb-10 text-center'>Top-Selling Product</h1>
                 <div className='ml-10 mr-10'>
-                    <ProductList View={viewMode.recent} Products={productList} modeRate={false}/>
+                    <ProductList View={viewMode.recent} Products={filteredProducts} modeRate={false}/>
                 </div>
                 <div className='flex justify-center content-center mt-10'>
                     <button className='w-36 p-2 flex justify-center content-center

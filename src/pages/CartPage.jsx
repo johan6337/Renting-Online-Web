@@ -100,6 +100,10 @@ const CartPage = () => {
                         if (cartContent && cartContent.length === 0) {
                             const cartString = localStorage.getItem(GUEST_CART_KEY);
                             const cart = JSON.parse(cartString)
+                            if (cart == null) {
+                                setItemList([]);
+                                return;
+                            }
                             setItemList(cart.items)
                             const cartToSave = {
                                 "items" : itemList,
@@ -273,7 +277,7 @@ const CartPage = () => {
         <div className=''>
             <Header onLoginClick={() => navigate("/")} onSignUpClick={() => navigate("/signup")} onProfileClick={() => navigate("/profile")} onAdminClick={() => navigate("/admin")} onCartClick={() => navigate("/cart")}/>
             <div className='flex flex-col gap-4 ml-4 md:ml-16 mr-4 md:mr-16 my-8'>
-                <h1 className='text-4xl font-black'>Your Cart</h1>
+                <h1 className='text-4xl font-black'>Your Cart {itemList.length <=0 ? " is Empty" : ""}</h1>
                 <div className='flex flex-row gap-4'>
                     {/* Cart items will be displayed here */}
                     <div className='flex-[3] border-2 border-gray-200 rounded-xl'>

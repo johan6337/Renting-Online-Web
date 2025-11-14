@@ -17,6 +17,7 @@ export default function Header() {
   const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
   const userMenuRef = useRef(null);
   const navigate = useNavigate();
 
@@ -113,6 +114,18 @@ export default function Header() {
     return null;
   }
 
+  const handleSearchSubmit = (e) => {
+    e.preventDefault(); // Prevent full page reload
+    if (searchTerm.trim()) {
+      // Navigate to home page with the search query
+
+      navigate(`/?search=${encodeURIComponent(searchTerm.trim())}`);
+    } else {
+      // If search is empty, navigate to home without query
+      navigate('/');
+    }
+  };
+
   return (
     <header className="w-full bg-white relative">
       <div className="mx-auto max-w-7xl px-3 sm:px-4 md:px-6">
@@ -125,16 +138,20 @@ export default function Header() {
           {/* Middle: Search */}
           <div className="flex-1 flex justify-center">
             <div className="w-full max-w-2xl">
-              <label htmlFor="site-search" className="sr-only">Search for products</label>
-              <div className="relative">
-                <Search className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                <input
-                  id="site-search"
-                  type="text"
-                  placeholder="Search for products..."
-                  className="w-full rounded-full bg-gray-100 pl-11 pr-4 h-10 text-sm placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-black/10"
-                />
-              </div>
+              <form onSubmit={handleSearchSubmit}>
+                <label htmlFor="site-search" className="sr-only">Search for products</label>
+                <div className="relative">
+                  <Search className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                  <input
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    id="site-search"
+                    type="text"
+                    placeholder="Search for products..."
+                    className="w-full rounded-full bg-gray-100 pl-11 pr-4 h-10 text-sm placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-black/10"
+                  />
+                </div>
+              </form>
             </div>
           </div>
 
