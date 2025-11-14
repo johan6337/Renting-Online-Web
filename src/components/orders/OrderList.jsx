@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import OrderCard from './OrderCard';
-import ReportUserForm from '../../pages/ReportUserForm';
 
 const OrderList = ({
   orders = [],
   onViewDetails,
   onTrackOrder,
+  onReportUser,
   isSeller = false,
   onConfirmPayment,
   onConfirmShipping,
@@ -15,8 +15,6 @@ const OrderList = ({
   statusUpdateOrderKey = null,
 }) => {
   const [activeTab, setActiveTab] = useState('all');
-  const [showReportForm, setShowReportForm] = useState(false);
-  const [selectedOrder, setSelectedOrder] = useState(null);
   const heading = isSeller ? 'Seller Orders' : 'My Orders';
   const subheading = isSeller
     ? 'Monitor and progress rentals for your listings'
@@ -36,11 +34,6 @@ const OrderList = ({
     if (activeTab === 'all') return true;
     return (order.status || '').toLowerCase() === activeTab;
   });
-
-  const handleReportUser = (order) => {
-    setSelectedOrder(order);
-    setShowReportForm(true);
-  };
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
@@ -78,7 +71,7 @@ const OrderList = ({
             order={order} 
             onViewDetails={onViewDetails}
             onTrackOrder={onTrackOrder}
-            onReportUser={handleReportUser}
+            onReportUser={onReportUser}
             isSeller={isSeller}
             onConfirmPayment={onConfirmPayment}
             onConfirmShipping={onConfirmShipping}
@@ -97,16 +90,6 @@ const OrderList = ({
         </div>
       )}
 
-      {/* Report User Form */}
-      {showReportForm && selectedOrder && (
-        <ReportUserForm 
-          userName={selectedOrder.buyerName}
-          onClose={() => {
-            setShowReportForm(false);
-            setSelectedOrder(null);
-          }}
-        />
-      )}
     </div>
   );
 };

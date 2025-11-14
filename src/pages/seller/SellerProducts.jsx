@@ -1,75 +1,113 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar_Seller from '../../components/sidebar/Sidebar_Seller';
 import { Search, Plus, ChevronDown, Bell } from 'lucide-react';
+import calCulateSalePrice from '../../utils/calculateSalePrice';
 
 const SellerProducts = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('Most Popular');
+  const [products, setProducts] = useState([]);
 
-  const products = [
-    {
-      id: 1,
-      name: "Gradient Graphic T-shirt",
-      image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop",
-      rating: 3.5,
-      reviews: 5,
-      price: 145,
-      originalPrice: null,
-      discount: null
-    },
-    {
-      id: 2,
-      name: "Polo with Tipping Details",
-      image: "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=400&h=400&fit=crop",
-      rating: 4.5,
-      reviews: 5,
-      price: 180,
-      originalPrice: null,
-      discount: null
-    },
-    {
-      id: 3,
-      name: "Black Striped T-shirt",
-      image: "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=400&h=400&fit=crop",
-      rating: 5.0,
-      reviews: 5,
-      price: 120,
-      originalPrice: 150,
-      discount: 30
-    },
-    {
-      id: 4,
-      name: "Skinny Fit Jeans",
-      image: "https://images.unsplash.com/photo-1542272604-787c3835535d?w=400&h=400&fit=crop",
-      rating: 3.5,
-      reviews: 5,
-      price: 240,
-      originalPrice: 260,
-      discount: 20
-    },
-    {
-      id: 5,
-      name: "Checkered Shirt",
-      image: "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=400&h=400&fit=crop",
-      rating: 4.5,
-      reviews: 5,
-      price: 180,
-      originalPrice: null,
-      discount: null
-    },
-    {
-      id: 6,
-      name: "Sleeve Striped T-shirt",
-      image: "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=400&h=400&fit=crop",
-      rating: 4.5,
-      reviews: 5,
-      price: 130,
-      originalPrice: 160,
-      discount: 30
+  // const products = [
+  //   {
+  //     id: 1,
+  //     name: "Gradient Graphic T-shirt",
+  //     image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop",
+  //     rating: 3.5,
+  //     reviews: 5,
+  //     price: 145,
+  //     originalPrice: null,
+  //     discount: null
+  //   },
+  //   {
+  //     id: 2,
+  //     name: "Polo with Tipping Details",
+  //     image: "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=400&h=400&fit=crop",
+  //     rating: 4.5,
+  //     reviews: 5,
+  //     price: 180,
+  //     originalPrice: null,
+  //     discount: null
+  //   },
+  //   {
+  //     id: 3,
+  //     name: "Black Striped T-shirt",
+  //     image: "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=400&h=400&fit=crop",
+  //     rating: 5.0,
+  //     reviews: 5,
+  //     price: 120,
+  //     originalPrice: 150,
+  //     discount: 30
+  //   },
+  //   {
+  //     id: 4,
+  //     name: "Skinny Fit Jeans",
+  //     image: "https://images.unsplash.com/photo-1542272604-787c3835535d?w=400&h=400&fit=crop",
+  //     rating: 3.5,
+  //     reviews: 5,
+  //     price: 240,
+  //     originalPrice: 260,
+  //     discount: 20
+  //   },
+  //   {
+  //     id: 5,
+  //     name: "Checkered Shirt",
+  //     image: "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=400&h=400&fit=crop",
+  //     rating: 4.5,
+  //     reviews: 5,
+  //     price: 180,
+  //     originalPrice: null,
+  //     discount: null
+  //   },
+  //   {
+  //     id: 6,
+  //     name: "Sleeve Striped T-shirt",
+  //     image: "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=400&h=400&fit=crop",
+  //     rating: 4.5,
+  //     reviews: 5,
+  //     price: 130,
+  //     originalPrice: 160,
+  //     discount: 30
+  //   }
+  // ];
+
+  useEffect(() => {
+    const getProducts = async () => {
+      const sellerId = await fetch('/api/users/me', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+      .then(res => res.json())
+      .then(data => data.data.user_id)
+      .catch(err => console.error('Error fetching user ID:', err));
+
+      console.log('Seller ID:', sellerId);
+      
+      const responseProducts = await fetch(`/api/products/seller/${sellerId}`, {
+        method: 'GET',
+      })
+      .then(res => res.json())
+      .then(data => data.data.products)
+      .catch(err => console.error('Error fetching products:', err));
+
+      setProducts(responseProducts);
     }
-  ];
+    getProducts();
+  }, [])
+
+  products.forEach(product => {
+    if (product.sale_percentage && product.sale_percentage > 0) {
+      const finalPrice = calCulateSalePrice(parseFloat(product.price_per_day), product.sale_percentage);
+      product.originalPrice = parseFloat(product.price_per_day).toFixed(2);
+      product.price_per_day = finalPrice;
+    }
+  });
+
+  console.log('Fetched products:', products);
 
   const renderStars = (rating) => {
     const fullStars = Math.floor(rating);
@@ -161,13 +199,13 @@ const SellerProducts = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {products.map((product) => (
               <div 
-                key={product.id} 
+                key={product.product_id} 
                 onClick={() => navigate('/seller/edit-product', { state: { product } })}
                 className="bg-gray-100 rounded-2xl overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
               >
                 <div className="aspect-square bg-gray-200 overflow-hidden">
                   <img 
-                    src={product.image} 
+                    src={product.images[0]} 
                     alt={product.name}
                     className="w-full h-full object-cover"
                   />
@@ -178,12 +216,12 @@ const SellerProducts = () => {
                     {renderStars(product.rating)}
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-2xl font-bold text-gray-900">${product.price}</span>
+                    <span className="text-2xl font-bold text-gray-900">${product.price_per_day}</span>
                     {product.originalPrice && (
                       <>
                         <span className="text-lg text-gray-400 line-through">${product.originalPrice}</span>
                         <span className="bg-red-100 text-red-600 text-sm font-semibold px-2.5 py-0.5 rounded-full">
-                          -{product.discount}%
+                          -{product.sale_percentage}%
                         </span>
                       </>
                     )}
