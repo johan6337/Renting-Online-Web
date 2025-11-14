@@ -186,6 +186,38 @@ export const getOrderByNumber = async (orderId) => {
   return normalizeOrder(payload);
 };
 
+export const getSellerOrderByNumber = async (orderId) => {
+  if (!orderId) {
+    throw new Error('orderId is required');
+  }
+  const raw = await request(`/orders/seller/${encodeURIComponent(orderId)}`);
+  const payload = raw?.data ?? raw?.order ?? raw;
+  return normalizeOrder(payload);
+};
+
+export const createOrder = async (payload = {}) => {
+  const productId =
+    payload.productId ??
+    payload.product_id ??
+    payload.product?.productId ??
+    payload.product?.id;
+
+  if (!productId) {
+    throw new Error('productId is required to create an order');
+  }
+
+  const response = await request('/orders', {
+    method: 'POST',
+    body: JSON.stringify({
+      ...payload,
+      productId,
+    }),
+  });
+
+  const body = response?.data ?? response?.order ?? response;
+  return normalizeOrder(body);
+};
+
 export const updateSellerOrderStatus = async (orderNumber, payload = {}) => {
   if (!orderNumber) {
     throw new Error('orderNumber is required');

@@ -213,7 +213,7 @@ const CartPage = () => {
             if (sessionRes.ok) {
                 console.log("Has session! Proceeding to checkout!");
                 
-                navigate('/payment', { state: { totalAmount: totalAmount } });
+                navigate('/payment', { state: { totalAmount: totalAmount, cartItems: itemList } });
             } else {
                 console.log("No session, redirecting to login!");
                 

@@ -11,8 +11,6 @@ const STATUS_STYLES = {
   cancelled: 'bg-red-50 text-red-600 border-red-200',
 };
 
-const SELLER_STATUS_OPTIONS = ['shipping', 'using', 'return', 'checking', 'completed'];
-
 const formatStatusLabel = (value) => {
   if (!value) return 'Ordered';
   return value.charAt(0).toUpperCase() + value.slice(1);
@@ -25,9 +23,10 @@ const OrderCard = ({
   onReportUser,
   isSeller = false,
   onConfirmPayment,
+  onConfirmShipping,
+  onConfirmReturn,
   onCompleteOrder,
   onLeaveReview,
-  onChangeStatus,
   statusUpdating = false,
 }) => {
   const orderId = order.orderId || order.id;
@@ -91,9 +90,34 @@ const OrderCard = ({
           <button
             key="confirm-payment"
             onClick={() => onConfirmPayment?.(order)}
-            className="px-5 py-2 rounded-full bg-green-500 text-white font-semibold hover:bg-green-600 transition-colors"
+            disabled={statusUpdating}
+            className="px-5 py-2 rounded-full bg-green-500 text-white font-semibold hover:bg-green-600 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
           >
             Confirm Payment
+          </button>
+        );
+      }
+      if (statusKey === 'shipping') {
+        buttons.push(
+          <button
+            key="confirm-shipping"
+            onClick={() => onConfirmShipping?.(order)}
+            disabled={statusUpdating}
+            className="px-5 py-2 rounded-full bg-blue-500 text-white font-semibold hover:bg-blue-600 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            Confirm Shipping
+          </button>
+        );
+      }
+      if (statusKey === 'using') {
+        buttons.push(
+          <button
+            key="confirm-return"
+            onClick={() => onConfirmReturn?.(order)}
+            disabled={statusUpdating}
+            className="px-5 py-2 rounded-full bg-orange-500 text-white font-semibold hover:bg-orange-600 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            Confirm Return
           </button>
         );
       }
@@ -103,7 +127,8 @@ const OrderCard = ({
           <button
             key="complete-order"
             onClick={() => onCompleteOrder?.(order)}
-            className="px-5 py-2 rounded-full bg-purple-500 text-white font-semibold hover:bg-purple-600 transition-colors"
+            disabled={statusUpdating}
+            className="px-5 py-2 rounded-full bg-purple-500 text-white font-semibold hover:bg-purple-600 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {isChecking ? 'Complete Order' : 'Start Checking'}
           </button>
@@ -260,43 +285,7 @@ const OrderCard = ({
           {renderActionButtons()}
         </div>
       </div>
-      {isSeller && typeof onChangeStatus === 'function' && (
-        <div className="mt-6 border-t border-gray-100 pt-4">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
-            <div className="flex-1">
-              <label className="text-xs uppercase tracking-wide text-gray-500">
-                Quick status update
-              </label>
-              <select
-                className="mt-1 w-full rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm text-gray-700 focus:border-black focus:outline-none focus:ring-0"
-                defaultValue=""
-                disabled={statusUpdating}
-                onChange={(event) => {
-                  const nextStatus = event.target.value;
-                  if (!nextStatus) {
-                    return;
-                  }
-                  onChangeStatus(order, nextStatus);
-                  event.target.value = '';
-                }}
-              >
-                <option value="">
-                  {statusUpdating ? 'Updating status…' : 'Select next status'}
-                </option>
-                {SELLER_STATUS_OPTIONS.map((option) => (
-                  <option key={option} value={option} disabled={option === statusKey}>
-                    {formatStatusLabel(option)}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <p className="text-xs text-gray-500">
-              Current:{' '}
-              <span className="font-semibold text-gray-800">{statusLabel}</span>
-            </p>
-          </div>
-        </div>
-      )}
+      {/* Quick status dropdown removed; sellers now advance orders via contextual confirmation buttons */}
     </div>
   );
 };

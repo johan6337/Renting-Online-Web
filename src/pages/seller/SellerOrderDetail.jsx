@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import Sidebar_Seller from '../../components/sidebar/Sidebar_Seller';
 import OrderDetail from '../../components/orders/OrderDetail';
-import { getOrderByNumber } from '../../api/orders';
+import { getSellerOrderByNumber } from '../../api/orders';
 
 const SellerOrderDetail = () => {
   const { orderNumber } = useParams();
@@ -24,7 +24,7 @@ const SellerOrderDetail = () => {
       setIsLoading(true);
       setLoadError(null);
       try {
-        const fetched = await getOrderByNumber(orderNumber);
+        const fetched = await getSellerOrderByNumber(orderNumber);
         if (!isMounted) {
           return;
         }

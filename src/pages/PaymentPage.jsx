@@ -2,11 +2,53 @@ import React, { useState, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Header from '../components/header/Header';
 import Footer from '../components/footer/Footer';
+import { createOrder } from '../api/orders';
+
+const GUEST_CART_KEY = 'guestCart';
+const USER_CART_KEY = 'userCart';
+
+const buildOrderPayloadFromCartItem = (item) => {
+    if (!item) return null;
+
+    const productId = item.product_id ?? item.productId ?? item.id;
+    if (!productId) {
+        console.warn('Skipping cart item without product ID', item);
+        return null;
+    }
+
+    const quantity = Number(item.quantity) || 1;
+    const rentalPeriod = Number(item.rent_time ?? item.rentalDays ?? item.rental_period ?? 1);
+    const baseUnitPrice = Number(item.unit_price ?? item.price_per_day ?? item.price ?? 0);
+
+    const payload = {
+        productId,
+        quantity,
+        rentalPeriod,
+        unitPrice: baseUnitPrice,
+        subtotal: Number(item.total_price ?? baseUnitPrice * quantity),
+        totalAmount: Number(item.total_price ?? baseUnitPrice * quantity),
+    };
+
+    const size = item.properties?.size ?? item.size ?? item.product_size;
+    const color = item.properties?.color ?? item.color ?? item.product_color;
+
+    if (size) {
+        payload.productSize = size;
+    }
+    if (color) {
+        payload.productColor = color;
+    }
+
+    return payload;
+};
 
 const PaymentPage = () => {
     const navigate = useNavigate();
     const location = useLocation();
-    const { totalAmount = 100 } = location.state || {}; // Get total from cart page
+    const {
+        totalAmount: stateTotalAmount = 100,
+        cartItems: stateCartItems = []
+    } = location.state || {};
     
     // Sample seller payment information
     const sellerPaymentInfo = {
@@ -17,19 +59,86 @@ const PaymentPage = () => {
     };
 
     const [paymentConfirmed, setPaymentConfirmed] = useState(false);
+    const [isSubmittingOrder, setIsSubmittingOrder] = useState(false);
+    const [orderError, setOrderError] = useState(null);
+
+    const storedCart = useMemo(() => {
+        if (typeof window === 'undefined') return null;
+        try {
+            const stored =
+                localStorage.getItem(USER_CART_KEY) ??
+                localStorage.getItem(GUEST_CART_KEY);
+            return stored ? JSON.parse(stored) : null;
+        } catch (error) {
+            console.error('Failed to parse stored cart:', error);
+            return null;
+        }
+    }, []);
+
+    const cartItems = stateCartItems.length ? stateCartItems : storedCart?.items ?? [];
+    const paymentAmount = useMemo(() => {
+        if (typeof stateTotalAmount === 'number' && !Number.isNaN(stateTotalAmount)) {
+            return stateTotalAmount;
+        }
+        const storedTotal = Number(storedCart?.total_cost);
+        return Number.isNaN(storedTotal) ? 0 : storedTotal;
+    }, [stateTotalAmount, storedCart]);
+
+    const orderPayloads = useMemo(
+        () => cartItems.map(buildOrderPayloadFromCartItem).filter(Boolean),
+        [cartItems]
+    );
 
     // Generate VietQR URL
     const qrCodeUrl = useMemo(() => {
         const description = encodeURIComponent(`Payment for order`);
-        return `https://img.vietqr.io/image/${sellerPaymentInfo.bankId}-${sellerPaymentInfo.accountNo}-${sellerPaymentInfo.template}.png?amount=${totalAmount}&addInfo=${description}&accountName=${sellerPaymentInfo.accountName}`;
-    }, [totalAmount, sellerPaymentInfo]);
+        return `https://img.vietqr.io/image/${sellerPaymentInfo.bankId}-${sellerPaymentInfo.accountNo}-${sellerPaymentInfo.template}.png?amount=${paymentAmount}&addInfo=${description}&accountName=${sellerPaymentInfo.accountName}`;
+    }, [paymentAmount, sellerPaymentInfo]);
 
-    const handlePaymentComplete = () => {
-        setPaymentConfirmed(true);
-        // Navigate to orders page after a short delay
-        setTimeout(() => {
-            navigate('/orders');
-        }, 1500);
+    const handlePaymentComplete = async () => {
+        if (!orderPayloads.length) {
+            setOrderError('Your cart is empty.');
+            return;
+        }
+
+        setIsSubmittingOrder(true);
+        setOrderError(null);
+
+        try {
+            const orders = [];
+            for (const payload of orderPayloads) {
+                const order = await createOrder(payload);
+                orders.push(order);
+            }
+
+            setPaymentConfirmed(true);
+
+            try {
+                await fetch('/api/cart/items', {
+                    method: 'PUT',
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ newList: [] }),
+                });
+            } catch (cartError) {
+                console.warn('Failed to clear cart on checkout:', cartError);
+            }
+
+            if (typeof window !== 'undefined') {
+                localStorage.removeItem(USER_CART_KEY);
+                localStorage.removeItem(GUEST_CART_KEY);
+            }
+
+            // Navigate to orders page after a short delay
+            setTimeout(() => {
+                navigate('/orders', { state: { orders } });
+            }, 1500);
+        } catch (error) {
+            console.error('Failed to create order:', error);
+            setOrderError(error.message || 'Unable to create order right now.');
+        } finally {
+            setIsSubmittingOrder(false);
+        }
     };
 
     return (
@@ -51,7 +160,7 @@ const PaymentPage = () => {
                         <div className="space-y-4">
                             <div className="flex justify-between items-center pb-4 border-b">
                                 <span className="text-gray-600">Order Total</span>
-                                <span className="text-2xl font-bold text-gray-900">${totalAmount.toFixed(2)}</span>
+                                <span className="text-2xl font-bold text-gray-900">${paymentAmount.toFixed(2)}</span>
                             </div>
 
                             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
@@ -71,7 +180,7 @@ const PaymentPage = () => {
                                     </div>
                                     <div className="flex justify-between">
                                         <span className="text-blue-700">Amount:</span>
-                                        <span className="font-semibold text-blue-900">${totalAmount.toFixed(2)}</span>
+                                        <span className="font-semibold text-blue-900">${paymentAmount.toFixed(2)}</span>
                                     </div>
                                 </div>
                             </div>
@@ -126,10 +235,21 @@ const PaymentPage = () => {
                             ) : (
                                 <button
                                     onClick={handlePaymentComplete}
-                                    className="w-full bg-black hover:bg-gray-800 text-white font-bold py-4 rounded-lg transition-colors"
+                                    disabled={isSubmittingOrder || !orderPayloads.length}
+                                    className={`w-full font-bold py-4 rounded-lg transition-colors ${
+                                        isSubmittingOrder || !orderPayloads.length
+                                            ? 'bg-gray-400 text-white cursor-not-allowed'
+                                            : 'bg-black hover:bg-gray-800 text-white'
+                                    }`}
                                 >
-                                    Completed payment
+                                    {isSubmittingOrder ? 'Processing...' : 'Completed payment'}
                                 </button>
+                            )}
+
+                            {orderError && (
+                                <p className="w-full mt-3 text-sm text-red-600 text-center">
+                                    {orderError}
+                                </p>
                             )}
 
                             <button

@@ -8,9 +8,10 @@ const OrderList = ({
   onTrackOrder,
   isSeller = false,
   onConfirmPayment,
+  onConfirmShipping,
+  onConfirmReturn,
   onCompleteOrder,
   onLeaveReview,
-  onChangeStatus,
   statusUpdateOrderKey = null,
 }) => {
   const [activeTab, setActiveTab] = useState('all');
@@ -80,9 +81,10 @@ const OrderList = ({
             onReportUser={handleReportUser}
             isSeller={isSeller}
             onConfirmPayment={onConfirmPayment}
+            onConfirmShipping={onConfirmShipping}
+            onConfirmReturn={onConfirmReturn}
             onCompleteOrder={onCompleteOrder}
             onLeaveReview={onLeaveReview}
-            onChangeStatus={onChangeStatus}
             statusUpdating={Boolean(
               statusUpdateOrderKey &&
               (order.orderId || order.id || order.orderNumber) === statusUpdateOrderKey

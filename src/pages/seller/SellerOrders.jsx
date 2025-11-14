@@ -251,41 +251,22 @@ const SellerOrders = () => {
     setShowConfirmModal(true);
   };
 
+  const handleConfirmShipping = (order) => {
+    setSelectedOrder(order);
+    setConfirmAction('shipping');
+    setShowConfirmModal(true);
+  };
+
+  const handleConfirmReturn = (order) => {
+    setSelectedOrder(order);
+    setConfirmAction('return');
+    setShowConfirmModal(true);
+  };
+
   const handleCompleteOrder = (order) => {
     setSelectedOrder(order);
     setConfirmAction('complete');
     setShowConfirmModal(true);
-  };
-
-  const handleManualStatusChange = async (order, nextStatus) => {
-    if (!order || !nextStatus) {
-      return;
-    }
-    const normalizedNext = nextStatus.toLowerCase();
-    const currentStatus = (order.status || '').toLowerCase();
-    if (normalizedNext === currentStatus) {
-      return;
-    }
-    const orderNumber = order.orderNumber || order.orderId || order.id;
-    if (!orderNumber) {
-      return;
-    }
-
-    try {
-      setStatusUpdateError(null);
-      setIsUpdatingStatus(true);
-      setStatusUpdatingOrder(resolveOrderKey(order));
-      const updatedOrder = await updateSellerOrderStatus(orderNumber, {
-        status: normalizedNext,
-      });
-      applyOrderUpdate(updatedOrder);
-    } catch (error) {
-      console.error('Unable to update order status:', error);
-      setStatusUpdateError(error?.message || 'Unable to update order status.');
-    } finally {
-      setIsUpdatingStatus(false);
-      setStatusUpdatingOrder(null);
-    }
   };
 
   const handleTrackOrder = (order) => {
@@ -311,11 +292,27 @@ const SellerOrders = () => {
     }
 
     const currentStatus = (selectedOrder.status || '').toLowerCase();
-    let nextStatus = 'shipping';
-    if (confirmAction === 'complete') {
-      nextStatus = currentStatus === 'checking' ? 'completed' : 'checking';
-    } else if (confirmAction === 'payment') {
-      nextStatus = 'shipping';
+    let nextStatus = null;
+
+    switch (confirmAction) {
+      case 'payment':
+        nextStatus = 'shipping';
+        break;
+      case 'shipping':
+        nextStatus = 'using';
+        break;
+      case 'return':
+        nextStatus = 'return';
+        break;
+      case 'complete':
+        nextStatus = currentStatus === 'checking' ? 'completed' : 'checking';
+        break;
+      default:
+        nextStatus = null;
+    }
+
+    if (!nextStatus) {
+      return;
     }
 
     try {
@@ -344,6 +341,16 @@ const SellerOrders = () => {
       return {
         title: 'Confirm Payment',
         message: `Are you sure you want to confirm payment for order #${reference}? This will move the order to Shipping status.`
+      };
+    } else if (confirmAction === 'shipping') {
+      return {
+        title: 'Confirm Shipping',
+        message: `Have you shipped order #${reference}? Confirming will move the order to Using status.`
+      };
+    } else if (confirmAction === 'return') {
+      return {
+        title: 'Confirm Return',
+        message: `Has the customer returned order #${reference}? Confirming updates the order to Return status.`
       };
     } else if (confirmAction === 'complete') {
       const currentStatus = (selectedOrder?.status || '').toLowerCase();
@@ -411,8 +418,9 @@ const SellerOrders = () => {
               onTrackOrder={handleTrackOrder}
               onReportUser={handleReportUser}
               onConfirmPayment={handleConfirmPayment}
+              onConfirmShipping={handleConfirmShipping}
+              onConfirmReturn={handleConfirmReturn}
               onCompleteOrder={handleCompleteOrder}
-              onChangeStatus={handleManualStatusChange}
               statusUpdateOrderKey={statusUpdatingOrder}
             />
           )}
