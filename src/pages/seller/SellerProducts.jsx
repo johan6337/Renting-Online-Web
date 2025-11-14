@@ -9,69 +9,7 @@ const SellerProducts = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('Most Popular');
   const [products, setProducts] = useState([]);
-
-  // const products = [
-  //   {
-  //     id: 1,
-  //     name: "Gradient Graphic T-shirt",
-  //     image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop",
-  //     rating: 3.5,
-  //     reviews: 5,
-  //     price: 145,
-  //     originalPrice: null,
-  //     discount: null
-  //   },
-  //   {
-  //     id: 2,
-  //     name: "Polo with Tipping Details",
-  //     image: "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=400&h=400&fit=crop",
-  //     rating: 4.5,
-  //     reviews: 5,
-  //     price: 180,
-  //     originalPrice: null,
-  //     discount: null
-  //   },
-  //   {
-  //     id: 3,
-  //     name: "Black Striped T-shirt",
-  //     image: "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=400&h=400&fit=crop",
-  //     rating: 5.0,
-  //     reviews: 5,
-  //     price: 120,
-  //     originalPrice: 150,
-  //     discount: 30
-  //   },
-  //   {
-  //     id: 4,
-  //     name: "Skinny Fit Jeans",
-  //     image: "https://images.unsplash.com/photo-1542272604-787c3835535d?w=400&h=400&fit=crop",
-  //     rating: 3.5,
-  //     reviews: 5,
-  //     price: 240,
-  //     originalPrice: 260,
-  //     discount: 20
-  //   },
-  //   {
-  //     id: 5,
-  //     name: "Checkered Shirt",
-  //     image: "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=400&h=400&fit=crop",
-  //     rating: 4.5,
-  //     reviews: 5,
-  //     price: 180,
-  //     originalPrice: null,
-  //     discount: null
-  //   },
-  //   {
-  //     id: 6,
-  //     name: "Sleeve Striped T-shirt",
-  //     image: "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=400&h=400&fit=crop",
-  //     rating: 4.5,
-  //     reviews: 5,
-  //     price: 130,
-  //     originalPrice: 160,
-  //     discount: 30
-  //   }
-  // ];
+  const [filteredList, setFilteredList] = useState([]);
 
   useEffect(() => {
     const getProducts = async () => {
@@ -93,19 +31,31 @@ const SellerProducts = () => {
       .then(res => res.json())
       .then(data => data.data.products)
       .catch(err => console.error('Error fetching products:', err));
+      
+      const processedProducts = responseProducts.map(product => {
+        let newProduct = { ...product };
+        if (product.sale_percentage && product.sale_percentage > 0) {
+          const finalPrice = calCulateSalePrice(parseFloat(product.price_per_day), product.sale_percentage);
+          newProduct.originalPrice = parseFloat(product.price_per_day).toFixed(2);
+          newProduct.price_per_day = finalPrice;
+        }
+        return newProduct;
+      })
 
-      setProducts(responseProducts);
+      setProducts(processedProducts);
+      setFilteredList(processedProducts);
     }
     getProducts();
   }, [])
 
-  products.forEach(product => {
-    if (product.sale_percentage && product.sale_percentage > 0) {
-      const finalPrice = calCulateSalePrice(parseFloat(product.price_per_day), product.sale_percentage);
-      product.originalPrice = parseFloat(product.price_per_day).toFixed(2);
-      product.price_per_day = finalPrice;
-    }
-  });
+  useEffect(() => {
+    const filteredList = products.filter(product =>
+      product.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    setFilteredList(filteredList);
+  }, [searchQuery, sortBy]);
+
+  
 
   console.log('Fetched products:', products);
 
@@ -197,7 +147,7 @@ const SellerProducts = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {products.map((product) => (
+            {filteredList.map((product) => (
               <div 
                 key={product.product_id} 
                 onClick={() => navigate('/seller/edit-product', { state: { product } })}

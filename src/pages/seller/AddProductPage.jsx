@@ -43,9 +43,33 @@ const AddProductPage = () => {
     navigate('/seller/products');
   };
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
+    console.log("Edit product:", editProduct);
     if (!productName || !price) {
       alert('Please fill in required fields');
+      return;
+    }
+
+    try {
+      const updatedProduct = {
+        name : productName || null,
+        description: shortDescription || null,
+        category: category || null,
+        pricePerDay: parseFloat(price) || 0,
+        salePercentage: sale ? parseFloat(sale) : 0,
+        images: images.length > 0 ? images : null,
+      }
+
+      await fetch(`/api/products/${editProduct.product_id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedProduct),
+      });
+    } catch (error) {
+      console.error('Error saving product:', error);
+      alert('An error occurred while saving the product.');
       return;
     }
     if (isEditMode) {
@@ -194,14 +218,14 @@ const AddProductPage = () => {
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black/10 focus:border-black outline-none appearance-none bg-white"
                   >
                     <option value="">Select Category</option>
-                    <option value="clothes">Clothes</option>
-                    <option value="cars">Cars</option>
-                    <option value="electronics">Electronics</option>
-                    <option value="furniture">Furniture</option>
-                    <option value="books">Books</option>
-                    <option value="sports">Sports & Recreation</option>
-                    <option value="tools">Tools & Equipment</option>
-                    <option value="appliances">Appliances</option>
+                    <option value="Clothes">Clothes</option>
+                    <option value="Cars">Cars</option>
+                    <option value="Electronics">Electronics</option>
+                    <option value="Furniture">Furniture</option>
+                    <option value="Books">Books</option>
+                    <option value="Sports">Sports & Recreation</option>
+                    <option value="Tools">Tools & Equipment</option>
+                    <option value="Appliances">Appliances</option>
                   </select>
                   <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
                 </div>
