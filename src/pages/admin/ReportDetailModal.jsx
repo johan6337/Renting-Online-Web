@@ -30,25 +30,6 @@ const ReportDetailModal = ({ report, onClose }) => {
     return date;
   };
 
-  const formatStatus = (status) => {
-    if (!status) return 'Unknown';
-    return status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
-  };
-
-  const getStatusStyles = (status) => {
-    const normalizedStatus = status?.toLowerCase();
-    switch (normalizedStatus) {
-      case 'pending':
-        return 'bg-yellow-100 text-yellow-700';
-      case 'resolved':
-        return 'bg-green-100 text-green-700';
-      case 'dismissed':
-        return 'bg-gray-100 text-gray-700';
-      default:
-        return 'bg-gray-100 text-gray-700';
-    }
-  };
-
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
@@ -93,14 +74,6 @@ const ReportDetailModal = ({ report, onClose }) => {
                 Date Filed
               </label>
               <p className="text-gray-900 font-medium">{formatDateTime(report.report_date)}</p>
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
-                Status
-              </label>
-              <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${getStatusStyles(report.status)}`}>
-                {formatStatus(report.status)}
-              </span>
             </div>
           </div>
 

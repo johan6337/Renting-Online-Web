@@ -86,7 +86,7 @@ export default function Header() {
         setUser(null);
         setIsAuthenticated(false);
         setShowUserMenu(false);
-        navigate('/');
+        navigate('/login');
       }
     } catch (error) {
       console.error('Logout error:', error);

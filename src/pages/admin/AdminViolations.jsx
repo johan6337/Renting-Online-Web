@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Sidebar_Admin from '../../components/sidebar/Sidebar_Admin';
 import { Download, Trash2 } from 'lucide-react';
 import AdminActionForm from './AdminActionForm';
@@ -25,7 +25,7 @@ const AdminReportedUsers = () => {
   });
 
   // Fetch reports from API
-  const fetchReports = async (page = 1, status = '') => {
+  const fetchReports = useCallback(async (page = 1, status = '') => {
     try {
       setLoading(true);
       const queryParams = new URLSearchParams();
@@ -65,17 +65,13 @@ const AdminReportedUsers = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-  useEffect(() => {
-    fetchReports(1, statusFilter);
-  }, []);
+  }, [pagination.limit]);
 
   useEffect(() => {
     setSelectedReportIds([]);
     setSelectAll(false);
     fetchReports(1, statusFilter);
-  }, [statusFilter]);
+  }, [statusFilter, fetchReports]);
 
   const handleResolveClick = (report) => {
     setSelectedReport(report);
