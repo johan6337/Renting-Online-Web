@@ -181,6 +181,18 @@ const ProductDetails = () => {
             });
 
             if (sessionRes.ok) {
+                const cartCheckRes = await fetch('/api/cart/my-cart', {
+                        credentials: 'include',
+                        cache: 'no-cache'
+                    });
+
+                if (!cartCheckRes.ok) {
+                    // This error means the backend failed to find or create a cart
+                    throw new Error(`Failed to check/create cart: ${cartCheckRes.status}`);
+                }
+                
+                console.log("Cart OK. Fetching cart items...");
+                
                 try {
                     const res = await fetch('/api/cart', { 
                         method: 'POST',

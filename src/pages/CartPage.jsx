@@ -71,6 +71,18 @@ const CartPage = () => {
                     // --- USER IS LOGGED IN ---
                     setIsGuest(false); // Set guest state
                     console.log("User is logged in. Fetching cart from API...");
+
+                    const cartCheckRes = await fetch('/api/cart/my-cart', {
+                        credentials: 'include',
+                        cache: 'no-cache'
+                    });
+
+                    if (!cartCheckRes.ok) {
+                        // This error means the backend failed to find or create a cart
+                        throw new Error(`Failed to check/create cart: ${cartCheckRes.status}`);
+                    }
+                    
+                    console.log("Cart OK. Fetching cart items...");
                     try {
                         const res = await fetch('api/cart/items', {
                             credentials: 'include',
@@ -98,7 +110,7 @@ const CartPage = () => {
                             setItemList(processCartItems(cartContent));
                         }
 
-                        // localStorage.removeItem(GUEST_CART_KEY);
+                        localStorage.removeItem(GUEST_CART_KEY);
 
                     } catch (cartError) {
                         console.error("Failed to fetch API cart:", cartError);
