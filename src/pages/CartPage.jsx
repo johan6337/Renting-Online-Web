@@ -24,7 +24,7 @@ const CartPage = () => {
             
             return {
                 ...restOfItem, // The item without 'rentalDays'
-                quantity: item.quantity ?? 1,
+                quantity: 1, // Always 1 since each product is unique
                 // Standardize the key to 'rent_time':
                 rent_time: item.rent_time ?? rentalDays ?? 1
             };
@@ -107,7 +107,7 @@ const CartPage = () => {
                             setItemList(cart.items)
                             const cartToSave = {
                                 "items" : itemList,
-                                "total_cost" : calculateTotalPrice() + deliveryFee 
+                                "total_cost" : calculateTotalPrice()
                             }
                             localStorage.setItem(USER_CART_KEY, JSON.stringify(cartToSave))
                         } else if (cartContent && cartContent.length > 0) {
@@ -150,7 +150,6 @@ const CartPage = () => {
     }, []);
     
     const countItems = itemList.length;
-    const deliveryFee = itemList.length > 0 ? 10 : 0;
 
     // Effect to *save* the cart to localStorage *only if* the user is a guest
     useEffect(() => {
@@ -159,7 +158,7 @@ const CartPage = () => {
 
             const cartToSave = {
                 "items" : itemList,
-                "total_cost" : calculateTotalPrice() + deliveryFee
+                "total_cost" : calculateTotalPrice()
             };
 
             if (isGuest) {
@@ -190,17 +189,6 @@ const CartPage = () => {
         });
     };
 
-    const handleChangeQuantity = (itemID, ammount) => {
-        setItemList(currentList => {
-            const idKey = currentList.find(item => item.id) ? 'id' : 'product_id';
-            return currentList.map(item => {
-                if (item[idKey] !== itemID) return item;
-                const newQuantity = Math.max(1, item.quantity + ammount);
-                return { ...item, quantity: newQuantity };
-            })
-        })
-    }
-
     const handleChangeRentalDays = (itemID, amount) => {
         setItemList(currentList => {
             const idKey = currentList.find(item => item.id) ? 'id' : 'product_id';
@@ -217,7 +205,7 @@ const CartPage = () => {
         e.preventDefault();
         console.log('CHECK OUT TRIGGERED');
         
-        const totalAmount = calculatedTotal + deliveryFee;
+        const totalAmount = calculatedTotal;
 
         try {
             //Check session
@@ -259,11 +247,11 @@ const CartPage = () => {
         const total = itemList.reduce((accumulator, item) => {
             const price = Number(item.price_per_day || item.unit_price) || 0;
             const sale = Number(item.sale_percentage) || 0;
-            const quantity = Number(item.quantity) || 1;
-            const rentTime = Number(item.rent_time) || 1; // Only use rent_time
+            const rentTime = Number(item.rent_time) || 1;
 
             const itemPrice = price * (1 - sale / 100.0);
-            return accumulator + (itemPrice * quantity * rentTime);
+            // Each product is unique, so quantity is always 1
+            return accumulator + (itemPrice * rentTime);
         }, 0); 
 
         return Number(total.toFixed(2));
@@ -335,16 +323,6 @@ const CartPage = () => {
                                                 <button className='text-lg font-bold px-2' onClick={() => handleChangeRentalDays(item.id ?? item.product_id, +1)}>+</button>
                                             </div>
                                         </div>
-
-                                        {/* Quantity Selector */}
-                                        <div className="flex flex-col gap-1">
-                                            <span className="text-xs text-gray-500 text-center">Quantity</span>
-                                            <div className="flex items-center bg-gray-100 rounded-full px-3 py-2">
-                                                <button className='text-lg font-bold px-2 disabled:opacity-50' onClick={() => handleChangeQuantity(item.id ?? item.product_id, -1)} disabled={item.quantity === 1} >-</button>
-                                                <span className='font-bold text-base min-w-[2rem] text-center'>{item.quantity}</span>
-                                                <button className='text-lg font-bold px-2' onClick={() => handleChangeQuantity(item.id ?? item.product_id, +1)}>+</button>
-                                            </div>
-                                        </div>
                                     </div>
                                 </div>
                                 {index < countItems - 1 && (
@@ -358,27 +336,19 @@ const CartPage = () => {
                     <div className='flex-[2] flex flex-col border-2 border-gray-200 rounded-xl'>
                         <h2 className='text-xl md:text-2xl font-bold ml-4 mt-4'>Order Summary</h2>
                         <div className='flex flex-col gap-4 my-4 mx-4 text-lg font-bold'>
-                            <div className='flex flex-row relative w-full'>
+                            {/* <div className='flex flex-row relative w-full'>
                                 <div className='font-medium text-gray-500'>Subtotal</div>
                                 <div className='absolute right-0 text-2xl'>${calculatedTotal}</div>
-                            </div>
-                            <div className='flex flex-row relative w-full'>
-                                <div className='font-medium text-gray-500'>Discount</div>
-                                <div className='absolute right-0 text-red-500 text-2xl'>-$0</div>
-                            </div>
-                            <div className='flex flex-row relative w-full'>
-                                <div className='font-medium text-gray-500 '>Delivery Fee</div>
-                                <div className='absolute right-0 text-2xl'>${deliveryFee}</div>
-                            </div>
+                            </div> */}
 
                             <hr className='border-t-2 border-gray-100' />
                             <div className='flex flex-row relative w-full'>
                                     <div className='font-medium text-black '>Total</div>
-                                    <div className='absolute right-0 text-2xl'>${Number(calculatedTotal) + Number(deliveryFee)}</div>
+                                    <div className='absolute right-0 text-2xl'>${calculatedTotal}</div>
                             </div>
 
                             {/* Promo Code Section */}
-                            <div className='flex flex-row gap-3 items-center'>
+                            {/* <div className='flex flex-row gap-3 items-center'>
                                 <div className='flex-1 flex flex-row items-center gap-3 bg-gray-100 rounded-full px-4 py-3'>
                                     <BsTag className='text-gray-400 w-5 h-5' />
                                     <input 
@@ -390,7 +360,7 @@ const CartPage = () => {
                                 <button className='border-2 border-black bg-black hover:bg-white text-white hover:text-black ease-in-out duration-300 px-7 py-3 rounded-2xl font-semibold text-base'>
                                     Apply
                                 </button>
-                            </div>
+                            </div> */}
 
                             {/* Checkout Button */}
                             <button 

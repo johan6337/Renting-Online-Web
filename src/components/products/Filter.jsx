@@ -8,7 +8,6 @@ const Filter = ({ onFilterChange, filters = {} }) => {
     condition: true,
     price: true,
     rating: true,
-    availability: true,
   });
 
   const [filterState, setFilterState] = useState({
@@ -17,8 +16,6 @@ const Filter = ({ onFilterChange, filters = {} }) => {
     priceMin: filters.priceMin || "",
     priceMax: filters.priceMax || "",
     rating: filters.rating || "",
-    availableFrom: filters.availableFrom || "",
-    availableTo: filters.availableTo || "",
     ...filters,
   });
 
@@ -26,22 +23,22 @@ const Filter = ({ onFilterChange, filters = {} }) => {
   const priceMaxRef = useRef(null);
 
   const categories = [
-    { value: "clothes", label: "Clothes" },
-    { value: "cars", label: "Cars" },
-    { value: "electronics", label: "Electronics" },
-    { value: "furniture", label: "Furniture" },
-    { value: "books", label: "Books" },
-    { value: "sports", label: "Sports & Recreation" },
-    { value: "tools", label: "Tools & Equipment" },
-    { value: "appliances", label: "Appliances" },
+    { value: "Electronics", label: "Electronics" },
+    { value: "Clothes", label: "Clothes" },
+    { value: "Furniture", label: "Furniture" },
+    { value: "Sports", label: "Sports" },
+    { value: "Books", label: "Books" },
+    { value: "Tools", label: "Tools" },
+    { value: "Vehicles", label: "Vehicles" },
+    { value: "Other", label: "Other" },
   ];
 
   const conditions = [
-    { value: "new", label: "New" },
-    { value: "like-new", label: "Like New" },
-    { value: "good", label: "Good" },
-    { value: "fair", label: "Fair" },
-    { value: "poor", label: "Poor" },
+    { value: "New", label: "New" },
+    { value: "Like New", label: "Like New" },
+    { value: "Excellent", label: "Excellent" },
+    { value: "Good", label: "Good" },
+    { value: "Fair", label: "Fair" },
   ];
 
   const ratings = [
@@ -101,8 +98,6 @@ const Filter = ({ onFilterChange, filters = {} }) => {
       priceMin: "",
       priceMax: "",
       rating: "",
-      availableFrom: "",
-      availableTo: "",
     };
     setFilterState(clearedFilters);
     onFilterChange && onFilterChange(clearedFilters);
@@ -249,7 +244,7 @@ const Filter = ({ onFilterChange, filters = {} }) => {
         </FilterSection>
 
         {/* Rating Filter */}
-        <FilterSection
+        {/* <FilterSection
           title="Rating"
           isExpanded={expandedSections.rating}
           onToggle={() => toggleSection("rating")}
@@ -272,43 +267,7 @@ const Filter = ({ onFilterChange, filters = {} }) => {
               </label>
             ))}
           </div>
-        </FilterSection>
-
-        {/* Availability Filter */}
-        <FilterSection
-          title="Availability"
-          isExpanded={expandedSections.availability}
-          onToggle={() => toggleSection("availability")}
-        >
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Available From
-              </label>
-              <input
-                type="date"
-                value={filterState.availableFrom}
-                onChange={(e) =>
-                  handleFilterChange("availableFrom", e.target.value)
-                }
-                className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Available To
-              </label>
-              <input
-                type="date"
-                value={filterState.availableTo}
-                onChange={(e) =>
-                  handleFilterChange("availableTo", e.target.value)
-                }
-                className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
-          </div>
-        </FilterSection>
+        </FilterSection> */}
       </div>
 
       {/* Apply Button */}

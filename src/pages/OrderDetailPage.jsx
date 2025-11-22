@@ -7,14 +7,13 @@ import OrderScheduleModal from '../components/orders/OrderScheduleModal';
 import ordersData from '../data/ordersData';
 import { getOrderByNumber } from '../api/orders';
 
-const resolveOrderId = (order, fallback = '') => {
+const resolveOrderId = (order, fallback = null) => {
   if (!order) return fallback;
   return (
     order.orderId ||
-    order.orderNumber ||
+    order.order_id ||
     order.id ||
-    fallback ||
-    ''
+    fallback
   );
 };
 
@@ -27,7 +26,7 @@ const normalizeOrderIdentity = (order, fallback) => {
   return {
     ...order,
     orderId: resolvedId,
-    orderNumber: order.orderNumber || resolvedId,
+    orderNumber: order.orderNumber || order.order_number || '',
     productId,
     productName: order.productName ?? '',
     productImage: order.productImage ?? null,
@@ -178,7 +177,7 @@ const OrderDetailPage = () => {
     }
     const navigationState = {
       orderId: normalized?.orderId,
-      orderNumber: normalized?.orderNumber || normalized?.orderId || null,
+      orderNumber: normalized?.orderNumber || null,
       productId: fallbackProduct.productId || fallbackProduct.id || null,
       productName: fallbackProduct.name || normalized.productName || null,
       product: fallbackProduct,

@@ -64,23 +64,7 @@ const ProductDetails = () => {
             avatar: "https://ui-avatars.com/api/?name=Fashion+Store&background=random",
             rating: 4.8,
             totalOrders: 1250
-        },
-        other_products: [
-            {
-                id: 21,
-                name: "Polo with Tipping Details",
-                price_per_day: 180,
-                images: ["https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=400&h=400&fit=crop"],
-                sale_percentage: 0
-            },
-            {
-                id: 22,
-                name: "Black Striped T-shirt",
-                price_per_day: 150,
-                images: ["https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=400&h=400&fit=crop"],
-                sale: 30
-            }
-        ]
+        }
     };
 
     const { productId } = useParams();
@@ -92,7 +76,6 @@ const ProductDetails = () => {
     const [pagination, setPagination] = useState(null);
     const [isLoading, setIsLoading] = useState(true); 
     const [error, setError] = useState(null);
-    const [quantity, setQuantity] = useState(1);
     const [showPopup, setShowPopup] = useState(false);
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
@@ -166,11 +149,7 @@ const ProductDetails = () => {
     
     // --- Handlers ---
 
-    const handleQuantityChange = (amount) => {
-        setQuantity(prev => Math.max(1, prev + amount)); 
-    };
-
-    const updateProduct = async (productId, quantity, rentTime) => {
+    const updateProduct = async (productId, rentTime) => {
         setIsLoading(true); 
         setError(null);
 
@@ -202,7 +181,7 @@ const ProductDetails = () => {
                         credentials: 'include', 
                         body: JSON.stringify({
                             "productId": productId,
-                            "quantity": quantity,
+                            "quantity": 1, // Each product is unique
                             "rentTime": rentTime 
                         })
                     });
@@ -388,20 +367,15 @@ const ProductDetails = () => {
                         </div>
                     </div>
 
-                    {/* --- Phần chọn số lượng và nút Add to Cart --- */}
-                    <div className="p-2 flex items-center gap-4 mt-4">
-                        {/* Bộ đếm số lượng */}
-                        <div className="flex items-center justify-between gap-4 bg-gray-100 rounded-full px-4 py-3">
-                            <button onClick={() => handleQuantityChange(-1)} className="text-xl font-bold text-gray-600 disabled:opacity-50" disabled={quantity === 1}>-</button>
-                            <span className="w-8 text-center font-bold text-lg">{quantity}</span>
-                            <button onClick={() => handleQuantityChange(1)} className="text-xl font-bold text-gray-600">+</button>
-                        </div>
-
-                        {/* Nút Add to Cart */}
-                        <button className="flex-1 bg-black text-white font-bold py-3 rounded-full hover:bg-gray-800 transition-colors"
-                            onClick={() => updateProduct(productId, quantity, 1)}>
+                    {/* --- Add to Cart Button --- */}
+                    <div className="p-2 mt-4">
+                        <button className="w-full bg-black text-white font-bold py-4 rounded-full hover:bg-gray-800 transition-colors text-lg"
+                            onClick={() => updateProduct(productId, 1)}>
                             Add to Cart
                         </button>
+                        <p className="text-sm text-gray-500 mt-2 text-center">
+                            Each product is unique - only 1 available
+                        </p>
                     </div>
                 </div>
             </div>
@@ -412,18 +386,21 @@ const ProductDetails = () => {
                 <div className='bg-gray-50 p-6 rounded-lg'>
                     <div className='flex items-center gap-4'>
                         <img 
-                            src={product.seller_avatar} 
+                            src={product.seller_avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(product.seller_name || product.seller_username || 'Seller')}&background=random&size=200`} 
                             alt={product.seller_name}
                             className='w-20 h-20 rounded-full object-cover border-2 border-gray-300'
+                            onError={(e) => {
+                                e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(product.seller_name || product.seller_username || 'Seller')}&background=random&size=200`;
+                            }}
                         />
                         <div className='flex-1'>
-                            <h3 className='text-xl font-semibold text-gray-900'>{product.seller_name}</h3>
+                            <h3 className='text-xl font-semibold text-gray-900'>{product.seller_name || product.seller_username}</h3>
                             <div className='flex items-center gap-4 mt-2'>
                                 <div className='flex items-center gap-1'>
-                                    <StarRating modeRate={false} displayRate={product.seller_rating} showRatingText={true} />
+                                    <StarRating modeRate={false} displayRate={product.seller_rating || 0} showRatingText={true} />
                                 </div>
                                 <div className='text-gray-600'>
-                                    <span className='font-semibold'>{product.seller_total_orders}</span> orders completed
+                                    <span className='font-semibold'>{product.seller_total_orders || 0}</span> orders completed
                                 </div>
                             </div>
                         </div>
@@ -438,7 +415,7 @@ const ProductDetails = () => {
             </div>
             
             {/* More Products */}
-            <div className='mt-10 ml-5 md:ml-10 mr-5 md:mr-10'>
+            {/* <div className='mt-10 ml-5 md:ml-10 mr-5 md:mr-10'>
                 <div className='flex justify-center items-center mb-10'>
                     <h1 className='text-3xl md:text-4xl font-black'>You might also like</h1>
                 </div>
@@ -447,7 +424,7 @@ const ProductDetails = () => {
                     <ProductList View='horizontal' Products={details.other_products} modeRate={false}/>
                 </div>
 
-            </div>
+            </div> */}
 
             {/* Cart Confirmation Popup */}
             <MessagePopup

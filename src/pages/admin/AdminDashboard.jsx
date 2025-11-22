@@ -72,9 +72,9 @@ const AdminDashboard = () => {
 
       setStats([
         { label: 'Total Users', value: totalUsers },
-        { label: 'Total Products', value: totalProducts },
-        { label: 'Total Orders', value: 'Hardcore' }, // Keep hardcoded for now
-        { label: 'Revenue', value: 'Hardcore' }
+        { label: 'Total Products', value: totalProducts }
+        // { label: 'Total Orders', value: 'Hardcore' }, // Keep hardcoded for now
+        // { label: 'Revenue', value: 'Hardcore' }
       ]);
     } catch (error) {
       console.error('Error fetching data:', error);

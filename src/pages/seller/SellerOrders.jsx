@@ -181,7 +181,7 @@ const SellerOrders = () => {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [confirmAction, setConfirmAction] = useState(null);
 
-  const [orders, setOrders] = useState(FALLBACK_SELLER_ORDERS);
+  const [orders, setOrders] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState(null);
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
@@ -214,10 +214,10 @@ const SellerOrders = () => {
         if (!isMounted) {
           return;
         }
-        if (Array.isArray(fetched) && fetched.length > 0) {
-          setOrders(fetched);
+        if (Array.isArray(fetched)) {
+          setOrders(fetched); // Set orders even if empty array
         } else {
-          setOrders(FALLBACK_SELLER_ORDERS);
+          setOrders([]); // Don't show dummy data
         }
       } catch (error) {
         if (!isMounted) {
@@ -225,7 +225,7 @@ const SellerOrders = () => {
         }
         console.error('Failed to load seller orders:', error);
         setLoadError(error?.message || 'Unable to load seller orders right now.');
-        setOrders(FALLBACK_SELLER_ORDERS);
+        setOrders([]); // Don't show dummy data on error
       } finally {
         if (isMounted) {
           setIsLoading(false);
@@ -409,6 +409,16 @@ const SellerOrders = () => {
             <div className="p-8">
               <div className="rounded-2xl border border-gray-200 bg-white px-6 py-10 text-center text-gray-600">
                 Loading seller orders...
+              </div>
+            </div>
+          ) : orders.length === 0 ? (
+            <div className="p-8">
+              <div className="rounded-2xl border border-gray-200 bg-white px-6 py-10 text-center">
+                <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                </svg>
+                <h3 className="mt-2 text-lg font-semibold text-gray-900">No orders yet</h3>
+                <p className="mt-1 text-sm text-gray-500">Orders from customers will appear here.</p>
               </div>
             </div>
           ) : (

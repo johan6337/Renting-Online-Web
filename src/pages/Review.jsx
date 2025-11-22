@@ -5,10 +5,10 @@ import Footer from '../components/footer/Footer';
 import { createReview, getReviewByOrder, updateReview } from '../api/reviews';
 
 const DEFAULT_EXPERIENCE_STATE = {
-  fit: false,
   quality: false,
   easeOfUse: false,
-  style: false,
+  condition: false,
+  functionality: false,
   worthThePrice: false,
 };
 
@@ -20,10 +20,10 @@ const SATISFACTION_OPTIONS = [
 ];
 
 const EXPERIENCE_HIGHLIGHTS = [
-  { id: 'fit', label: 'Fit and sizing were just right' },
   { id: 'quality', label: 'Quality matched the listing' },
   { id: 'easeOfUse', label: 'Easy to use and care for' },
-  { id: 'style', label: 'Felt confident wearing/using it' },
+  { id: 'condition', label: 'Item condition as described' },
+  { id: 'functionality', label: 'Worked perfectly as expected' },
   { id: 'worthThePrice', label: 'Worth the rental price' },
 ];
 
@@ -32,6 +32,7 @@ export default function Review() {
   const location = useLocation();
   const { productId: productIdFromRoute } = useParams();
 
+  const orderId = location.state?.orderId || null;
   const orderNumber = location.state?.orderNumber || null;
   const derivedProductId =
     productIdFromRoute ||
@@ -87,8 +88,8 @@ export default function Review() {
   );
 
   useEffect(() => {
-    if (!orderNumber) {
-      setLoadError('Order number is required to submit a review.');
+    if (!orderId && !orderNumber) {
+      setLoadError('Order information is required to submit a review.');
       return;
     }
 
@@ -97,7 +98,9 @@ export default function Review() {
       setIsLoadingExisting(true);
       setLoadError(null);
       try {
-        const existing = await getReviewByOrder(orderNumber);
+        // Use orderId or orderNumber, whichever is available
+        const lookupKey = orderId || orderNumber;
+        const existing = await getReviewByOrder(lookupKey);
         if (!isCancelled) {
           applyReviewToForm(existing);
         }
@@ -120,7 +123,7 @@ export default function Review() {
     return () => {
       isCancelled = true;
     };
-  }, [orderNumber, applyReviewToForm]);
+  }, [orderId, orderNumber, applyReviewToForm]);
 
   const triggerSuccessBanner = () => {
     setShowSuccess(true);
@@ -131,16 +134,51 @@ export default function Review() {
     setExperience((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
-  const handlePhotoUpload = (e) => {
+  const handlePhotoUpload = async (e) => {
     const files = Array.from(e.target.files || []);
-    const newPhotos = files
-      .filter((file) => file.type.startsWith('image/'))
-      .map((file) => ({
-        file,
-        url: URL.createObjectURL(file),
-      }));
+    const imageFiles = files.filter((file) => file.type.startsWith('image/'));
+    
+    if (imageFiles.length === 0) return;
 
-    setPhotos((prev) => [...prev, ...newPhotos]);
+    // Show preview immediately
+    const previewPhotos = imageFiles.map((file) => ({
+      file,
+      url: URL.createObjectURL(file),
+      uploading: true,
+    }));
+    setPhotos((prev) => [...prev, ...previewPhotos]);
+
+    // Upload to S3
+    try {
+      const formData = new FormData();
+      imageFiles.forEach((file) => {
+        formData.append('images', file);
+      });
+
+      const response = await fetch('/api/upload/images', {
+        method: 'POST',
+        credentials: 'include',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to upload images');
+      }
+
+      const result = await response.json();
+      const uploadedUrls = result.data.map((img) => img.url);
+
+      // Replace preview photos with uploaded URLs
+      setPhotos((prev) => {
+        const newPhotos = prev.filter((p) => !p.uploading);
+        return [...newPhotos, ...uploadedUrls.map((url) => ({ url, persisted: true }))];
+      });
+    } catch (error) {
+      console.error('Error uploading photos:', error);
+      // Remove uploading photos on error
+      setPhotos((prev) => prev.filter((p) => !p.uploading));
+      setSubmitError('Failed to upload images. Please try again.');
+    }
   };
 
   const removePhoto = (index) => {
@@ -149,6 +187,7 @@ export default function Review() {
 
   const serializePhotos = () =>
     photos
+      .filter((photo) => !photo.uploading) // Exclude photos still uploading
       .map((photo) => {
         if (typeof photo === 'string') {
           return photo;
@@ -163,7 +202,7 @@ export default function Review() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!orderNumber) {
+    if (!orderId && !orderNumber) {
       setSubmitError('Missing order information. Return to your orders and try again.');
       return;
     }
@@ -192,8 +231,8 @@ export default function Review() {
         savedReview = await createReview({
           ...payload,
           productId,
-          orderId: orderNumber,
-          orderNumber,
+          orderId: orderId || undefined,
+          orderNumber: orderNumber || undefined,
         });
       }
 
@@ -242,7 +281,7 @@ export default function Review() {
           </div>
         )}
 
-        {!orderNumber && (
+        {!orderId && !orderNumber && (
           <div className="mb-6 rounded-lg border border-yellow-200 bg-yellow-50 px-4 py-3 text-sm text-yellow-800">
             Open this page directly from one of your completed orders so we know which rental you are reviewing.
           </div>
@@ -257,12 +296,12 @@ export default function Review() {
                 <button
                   type="button"
                   onClick={() => {
-                    if (!orderNumber || !effectiveProductId) {
+                    if ((!orderId && !orderNumber) || !effectiveProductId) {
                       return;
                     }
-                    navigate(`/review/${effectiveProductId}`, { state: { orderNumber } });
+                    navigate(`/review/${effectiveProductId}`, { state: { orderId, orderNumber } });
                   }}
-                  disabled={!orderNumber || !effectiveProductId}
+                  disabled={(!orderId && !orderNumber) || !effectiveProductId}
                   className="inline-flex items-center justify-center px-4 py-2 bg-indigo-600 text-white rounded-full font-medium hover:bg-indigo-700 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                   View My Review
@@ -274,15 +313,18 @@ export default function Review() {
 
         <div className="bg-white shadow-sm rounded-lg p-8 mb-8">
           <div className="flex flex-col md:flex-row gap-5 pb-5 border-b border-gray-100 mb-5">
-            <div className="w-32 h-32 bg-gray-100 rounded-lg flex items-center justify-center text-5xl flex-shrink-0">
+            {/* <div className="w-32 h-32 bg-gray-100 rounded-lg flex items-center justify-center text-5xl flex-shrink-0">
               🧾
-            </div>
+            </div> */}
             <div className="flex-1">
               <h2 className="text-xl font-bold text-gray-800 mb-2">{productName}</h2>
               <span className="inline-block px-4 py-1.5 bg-indigo-100 text-indigo-800 rounded-full text-sm font-medium mb-3">
                 Share your honest review
               </span>
               <div className="flex flex-col md:flex-row gap-2 md:gap-8">
+                <div className="text-sm text-gray-600">
+                  <span className="font-medium text-gray-800">Order ID:</span> {orderId || 'N/A'}
+                </div>
                 <div className="text-sm text-gray-600">
                   <span className="font-medium text-gray-800">Order #:</span> {orderNumber || 'Not linked'}
                 </div>
@@ -376,7 +418,7 @@ export default function Review() {
               value={highlights}
               onChange={(e) => setHighlights(e.target.value)}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-y min-h-[100px]"
-              placeholder="Share standout moments, compliments from friends, or anything you really enjoyed."
+              placeholder="Share what you enjoyed most about this rental or any standout features."
             />
           </div>
 
@@ -393,7 +435,7 @@ export default function Review() {
             />
           </div>
 
-          <div className="mb-8">
+          {/* <div className="mb-8">
             <label className="block text-sm font-medium text-gray-800 mb-2">
               Share Photos from Your Rental (Optional)
             </label>
@@ -402,8 +444,8 @@ export default function Review() {
               className="border-2 border-dashed border-gray-300 rounded-lg p-10 text-center cursor-pointer hover:border-indigo-500 hover:bg-gray-50 transition-all"
             >
               <div className="text-5xl mb-3">📷</div>
-              <div className="text-gray-600 mb-2">Click to add photos showing how you styled or used the item.</div>
-              <div className="text-sm text-gray-400">PNG, JPG up to 5MB each</div>
+              <div className="text-gray-600 mb-2">Click to add photos showing the item or how you used it.</div>
+              <div className="text-sm text-gray-400">PNG, JPG up to 5MB each. Images will be uploaded to cloud storage.</div>
             </div>
             <input
               type="file"
@@ -419,10 +461,16 @@ export default function Review() {
                 {photos.map((photo, index) => (
                   <div key={`${photo.url}-${index}`} className="relative w-full h-32 rounded-lg overflow-hidden bg-gray-100">
                     <img src={photo.url || photo} alt={`Upload ${index + 1}`} className="w-full h-full object-cover" />
+                    {photo.uploading && (
+                      <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+                      </div>
+                    )}
                     <button
                       type="button"
                       onClick={() => removePhoto(index)}
-                      className="absolute top-1 right-1 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors"
+                      disabled={photo.uploading}
+                      className="absolute top-1 right-1 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       ✕
                     </button>
@@ -430,7 +478,7 @@ export default function Review() {
                 ))}
               </div>
             )}
-          </div>
+          </div> */}
 
           <div className="flex flex-col sm:flex-row gap-4 justify-end pt-6">
             <button
@@ -440,7 +488,7 @@ export default function Review() {
             >
               Cancel
             </button>
-            <button
+            {/* <button
               type="button"
               onClick={() => {
                 if (!orderNumber || !effectiveProductId) {
@@ -452,10 +500,10 @@ export default function Review() {
               className="px-8 py-3 bg-indigo-500 text-white rounded-lg font-medium hover:bg-indigo-600 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
             >
               View My Review
-            </button>
+            </button> */}
             <button
               type="submit"
-              disabled={!orderNumber || !productId || isSubmitting}
+              disabled={(!orderId && !orderNumber) || !productId || isSubmitting}
               className="px-8 py-3 bg-red-500 text-white rounded-lg font-medium hover:bg-red-600 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {isSubmitting ? 'Saving...' : 'Submit Feedback'}

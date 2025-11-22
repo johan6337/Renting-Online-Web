@@ -5,8 +5,8 @@ import { Bell, ImagePlus, Trash2, ChevronDown } from 'lucide-react';
 
 const AddProductPage = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  const editProduct = location.state?.product; // Get product data if editing
+  const routeLocation = useLocation();
+  const editProduct = routeLocation.state?.product; // Get product data if editing
   const isEditMode = !!editProduct;
 
   const [productName, setProductName] = useState('');
@@ -14,28 +14,60 @@ const AddProductPage = () => {
   const [fullDescription, setFullDescription] = useState('');
   const [price, setPrice] = useState('');
   const [category, setCategory] = useState('');
+  const [condition, setCondition] = useState('good');
+  const [location, setLocation] = useState('');
   const [sale, setSale] = useState('');
   const [images, setImages] = useState([]);
+  const [uploading, setUploading] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   // Populate fields if editing
   useEffect(() => {
     if (editProduct) {
       setProductName(editProduct.name || '');
-      setShortDescription(editProduct.shortDescription || '');
-      setFullDescription(editProduct.fullDescription || '');
-      setPrice(editProduct.price?.toString() || '');
+      setShortDescription(editProduct.short_description || '');
+      setFullDescription(editProduct.description || '');
+      setPrice(editProduct.price_per_day?.toString() || '');
       setCategory(editProduct.category || '');
-      setSale(editProduct.sale?.toString() || '');
-      if (editProduct.image) {
-        setImages([editProduct.image]);
+      setCondition(editProduct.condition || 'good');
+      setLocation(editProduct.location || '');
+      setSale(editProduct.sale_percentage?.toString() || '');
+      if (editProduct.images && editProduct.images.length > 0) {
+        setImages(editProduct.images);
       }
     }
   }, [editProduct]);
 
-  const handleImageUpload = (e) => {
+  const handleImageUpload = async (e) => {
     const files = Array.from(e.target.files);
-    const newImages = files.map(file => URL.createObjectURL(file));
-    setImages([...images, ...newImages]);
+    if (files.length === 0) return;
+
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      files.forEach((file) => {
+        formData.append('images', file);
+      });
+
+      const response = await fetch('/api/upload/images', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const uploadedUrls = data.data.files.map(file => file.url);
+        setImages([...images, ...uploadedUrls]);
+        console.log('Images uploaded successfully:', uploadedUrls);
+      } else {
+        alert('Failed to upload images');
+      }
+    } catch (error) {
+      console.error('Error uploading images:', error);
+      alert('An error occurred while uploading images');
+    } finally {
+      setUploading(false);
+    }
   };
 
   const handleDraft = () => {
@@ -45,42 +77,82 @@ const AddProductPage = () => {
 
   const handleContinue = async () => {
     console.log("Edit product:", editProduct);
-    if (!productName || !price) {
-      alert('Please fill in required fields');
+    
+    // Validation
+    if (!productName || !price || !category || !location) {
+      alert('Please fill in all required fields (Name, Price, Category, Location)');
       return;
     }
 
-    try {
-      const updatedProduct = {
-        name : productName || null,
-        description: shortDescription || null,
-        category: category || null,
-        pricePerDay: parseFloat(price) || 0,
-        salePercentage: sale ? parseFloat(sale) : 0,
-        images: images.length > 0 ? images : null,
-      }
+    if (images.length === 0) {
+      alert('Please upload at least one product image');
+      return;
+    }
 
-      await fetch(`/api/products/${editProduct.product_id}`, {
-        method: 'PUT',
+    setSaving(true);
+    try {
+      // Get current user/seller ID
+      const userResponse = await fetch('/api/users/me', {
+        method: 'GET',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(updatedProduct),
       });
+      
+      if (!userResponse.ok) {
+        alert('Failed to get user information. Please login again.');
+        return;
+      }
+
+      const userData = await userResponse.json();
+      const sellerId = userData.data.user_id;
+
+      const productData = {
+        name: productName,
+        description: fullDescription || shortDescription,
+        category: category,
+        pricePerDay: parseFloat(price),
+        salePercentage: sale ? parseFloat(sale) : 0,
+        images: images,
+        location: location,
+        condition: condition,
+      };
+
+      let response;
+      if (isEditMode) {
+        // Update existing product
+        response = await fetch(`/api/products/${editProduct.product_id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(productData),
+        });
+      } else {
+        // Create new product
+        productData.sellerId = sellerId;
+        response = await fetch('/api/products', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(productData),
+        });
+      }
+
+      if (response.ok) {
+        alert(isEditMode ? 'Product updated successfully!' : 'Product created successfully!');
+        navigate('/seller/products');
+      } else {
+        const errorData = await response.json();
+        alert(`Failed to ${isEditMode ? 'update' : 'create'} product: ${errorData.message}`);
+      }
     } catch (error) {
       console.error('Error saving product:', error);
       alert('An error occurred while saving the product.');
-      return;
+    } finally {
+      setSaving(false);
     }
-    if (isEditMode) {
-      console.log('Updating product...');
-      alert('Product updated successfully!');
-    } else {
-      console.log('Creating new product...');
-      alert('Product created successfully!');
-    }
-    // Navigate to next step or save product
-    navigate('/seller/products');
   };
 
   return (
@@ -133,7 +205,7 @@ const AddProductPage = () => {
             </div>
 
             {/* Product Short Description */}
-            <div className="mb-6">
+            {/* <div className="mb-6">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Product Short Description
               </label>
@@ -144,12 +216,12 @@ const AddProductPage = () => {
                 placeholder="Enter product short description"
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black/10 focus:border-black outline-none"
               />
-            </div>
+            </div> */}
 
             {/* Product Images */}
             <div className="mb-6">
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Product Images
+                Product Images *
               </label>
               <div className="border-2 border-dashed border-gray-300 rounded-lg p-12 text-center">
                 <input
@@ -159,10 +231,13 @@ const AddProductPage = () => {
                   onChange={handleImageUpload}
                   className="hidden"
                   id="image-upload"
+                  disabled={uploading}
                 />
-                <label htmlFor="image-upload" className="cursor-pointer">
+                <label htmlFor="image-upload" className={`cursor-pointer ${uploading ? 'opacity-50' : ''}`}>
                   <ImagePlus className="h-16 w-16 mx-auto text-gray-400 mb-4" />
-                  <p className="text-gray-600 font-medium">Browse or Desktop</p>
+                  <p className="text-gray-600 font-medium">
+                    {uploading ? 'Uploading...' : 'Browse or Desktop'}
+                  </p>
                 </label>
               </div>
               
@@ -205,11 +280,11 @@ const AddProductPage = () => {
               </p>
             </div>
 
-            {/* Price Section */}
-            <div className="grid grid-cols-3 gap-4">
+            {/* Category and Condition */}
+            <div className="grid grid-cols-2 gap-4 mb-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Product Category
+                  Product Category *
                 </label>
                 <div className="relative">
                   <select
@@ -218,14 +293,14 @@ const AddProductPage = () => {
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black/10 focus:border-black outline-none appearance-none bg-white"
                   >
                     <option value="">Select Category</option>
-                    <option value="Clothes">Clothes</option>
-                    <option value="Cars">Cars</option>
                     <option value="Electronics">Electronics</option>
+                    <option value="Clothes">Clothes</option>
                     <option value="Furniture">Furniture</option>
+                    <option value="Sports">Sports</option>
                     <option value="Books">Books</option>
-                    <option value="Sports">Sports & Recreation</option>
-                    <option value="Tools">Tools & Equipment</option>
-                    <option value="Appliances">Appliances</option>
+                    <option value="Tools">Tools</option>
+                    <option value="Vehicles">Vehicles</option>
+                    <option value="Other">Other</option>
                   </select>
                   <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
                 </div>
@@ -233,7 +308,44 @@ const AddProductPage = () => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Product Price (VND)
+                  Condition
+                </label>
+                <div className="relative">
+                  <select
+                    value={condition}
+                    onChange={(e) => setCondition(e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black/10 focus:border-black outline-none appearance-none bg-white"
+                  >
+                    <option value="new">New</option>
+                    <option value="like-new">Like New</option>
+                    <option value="good">Good</option>
+                    <option value="fair">Fair</option>
+                    <option value="poor">Poor</option>
+                  </select>
+                  <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
+                </div>
+              </div>
+            </div>
+
+            {/* Location */}
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Location *
+              </label>
+              <input
+                type="text"
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                placeholder="Enter product location (e.g., Ho Chi Minh City)"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black/10 focus:border-black outline-none"
+              />
+            </div>
+
+            {/* Price Section */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Product Price Per Day ($) *
                 </label>
                 <input
                   type="number"
@@ -286,10 +398,10 @@ const AddProductPage = () => {
               </button> */}
               <button
                 onClick={handleContinue}
-                className="px-6 py-3 bg-black text-white rounded-full font-semibold hover:bg-gray-800 transition-colors flex items-center gap-2"
+                disabled={saving || uploading}
+                className="px-6 py-3 bg-black text-white rounded-full font-semibold hover:bg-gray-800 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isEditMode ? 'Update Product' : 'Confirm'}
-                
+                {saving ? 'Saving...' : isEditMode ? 'Update Product' : 'Confirm'}
               </button>
             </div>
           </div>

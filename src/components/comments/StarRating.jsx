@@ -1,7 +1,7 @@
 import { FaStar } from "react-icons/fa";
 import { useState, useEffect } from "react";
 
-function StarRating({ modeRate = true, displayRate = 4, showRatingText = false }) {
+function StarRating({ modeRate = true, displayRate = 0, showRatingText = false }) {
   const [rating, setRating] = useState(null);
   const [hover, setHover] = useState(null);
 
@@ -36,8 +36,8 @@ function StarRating({ modeRate = true, displayRate = 4, showRatingText = false }
           </label>
         );
       })}
-      {showRatingText && rating && (
-        <p className="ml-2 text-sm font-medium text-gray-700">{rating}/5</p>
+      {showRatingText && (
+        <p className="ml-2 text-sm font-medium text-gray-700">{rating || 0}/5</p>
       )}
     </div>
   );

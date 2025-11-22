@@ -104,8 +104,8 @@ const normalizeOrder = (order = {}) => {
 
   return {
     id: order.id ?? order.order_id ?? null,
-    orderId: order.orderId ?? order.order_number ?? order.id ?? '',
-    orderNumber: order.orderNumber ?? order.order_number ?? order.orderId ?? '',
+    orderId: order.orderId ?? order.order_id ?? order.id ?? null,
+    orderNumber: order.orderNumber ?? order.order_number ?? '',
     placedDate:
       order.placedDate ??
       order.placed_date ??

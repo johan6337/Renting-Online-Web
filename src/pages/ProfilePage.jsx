@@ -196,18 +196,62 @@ const ProfilePage = () => {
     }));
   };
 
-  const handleAvatarChange = (e) => {
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+
+  const handleAvatarChange = async (e) => {
     const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setAvatarPreview(reader.result);
-        setUserInfo(prev => ({
-          ...prev,
-          avatar_url: reader.result
-        }));
-      };
-      reader.readAsDataURL(file);
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      setError('Please select an image file');
+      return;
+    }
+
+    // Validate file size (5MB max)
+    if (file.size > 5 * 1024 * 1024) {
+      setError('Image size must be less than 5MB');
+      return;
+    }
+
+    try {
+      setUploadingAvatar(true);
+      setError(null);
+
+      // Create FormData for file upload
+      const formData = new FormData();
+      formData.append('image', file);
+
+      // Upload to S3
+      const uploadResponse = await fetch('/api/upload/image', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!uploadResponse.ok) {
+        throw new Error('Failed to upload avatar');
+      }
+
+      const uploadData = await uploadResponse.json();
+      const avatarUrl = uploadData.data.url;
+
+      // Show preview
+      setAvatarPreview(avatarUrl);
+      
+      // Update user info with new avatar URL
+      setUserInfo(prev => ({
+        ...prev,
+        avatar_url: avatarUrl
+      }));
+
+      // Auto-save avatar
+      await updateUserData({ ...userInfo, avatar_url: avatarUrl });
+      
+    } catch (err) {
+      console.error('Error uploading avatar:', err);
+      setError(err.message || 'Failed to upload avatar');
+    } finally {
+      setUploadingAvatar(false);
     }
   };
 
@@ -269,8 +313,13 @@ const ProfilePage = () => {
                 alt="Profile Avatar"
                 className="w-32 h-32 rounded-full object-cover border-4 border-gray-200"
               />
+              {uploadingAvatar && (
+                <div className="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+                </div>
+              )}
               {isEditing && (
-                <label className="absolute bottom-0 right-0 bg-red-500 hover:bg-red-600 text-white rounded-full p-2 cursor-pointer transition-colors">
+                <label className={`absolute bottom-0 right-0 bg-red-500 hover:bg-red-600 text-white rounded-full p-2 transition-colors ${uploadingAvatar ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}>
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                     <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
                   </svg>
@@ -278,6 +327,7 @@ const ProfilePage = () => {
                     type="file"
                     accept="image/*"
                     onChange={handleAvatarChange}
+                    disabled={uploadingAvatar}
                     className="hidden"
                   />
                 </label>

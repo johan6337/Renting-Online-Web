@@ -37,7 +37,13 @@ function ProductCard({ product, modeRate=true, view }) {
                     />
                 </div>
                 <h2 className="p-2 line-clamp-2 break-words text-[1.2rem] font-bold">{product.name}</h2>
-                <div className="px-2 py-1"><StarRating modeRate={modeRate}/></div>
+                <div className="px-2 py-1">
+                    <StarRating 
+                        modeRate={false} 
+                        displayRate={product.rating || 0} 
+                        showRatingText={true}
+                    />
+                </div>
                 <div className="flex justify-start items-center p-2 pt-0 text-lg md:text-2xl font-bold flex-wrap">
                     {product.sale_percentage ? (
                         <div className="flex justify-start items-center gap-2 flex-wrap">
