@@ -22,11 +22,25 @@ const normalizeOrderIdentity = (order, fallback) => {
   const resolvedId = resolveOrderId(order, fallback);
   const productId = order.productId ?? null;
   const unitPrice = typeof order.unitPrice === 'number' ? order.unitPrice : Number(order.subtotal ?? 0);
+  const hasReview = Boolean(
+    order.hasReview ??
+    order.has_review ??
+    order.reviewId ??
+    order.review_id ??
+    order.reviewCreatedAt ??
+    order.review_created_at ??
+    order.reviewUpdatedAt ??
+    order.review_updated_at
+  );
 
   return {
     ...order,
     orderId: resolvedId,
     orderNumber: order.orderNumber || order.order_number || '',
+    hasReview,
+    reviewId: order.reviewId || order.review_id || null,
+    reviewCreatedAt: order.reviewCreatedAt || order.review_created_at || null,
+    reviewUpdatedAt: order.reviewUpdatedAt || order.review_updated_at || null,
     productId,
     productName: order.productName ?? '',
     productImage: order.productImage ?? null,
@@ -185,13 +199,6 @@ const OrderDetailPage = () => {
     navigate(`/review/${targetProductId}`, { state: navigationState });
   };
 
-  const completedStates = ['completed', 'complete'];
-  const isCompletedOrder =
-    typeof order?.canReview === 'boolean'
-      ? order.canReview
-      : completedStates.includes(order?.status?.toLowerCase?.() ?? '');
-
-
   if (isLoading) {
     return (
       <div className="bg-gray-50 min-h-screen flex flex-col">
@@ -228,6 +235,22 @@ const OrderDetailPage = () => {
   }
 
   const orderIdentity = resolveOrderId(order, orderId);
+  const completedStates = ['completed', 'complete'];
+  const isCompletedOrder =
+    typeof order?.canReview === 'boolean'
+      ? order.canReview
+      : completedStates.includes(order?.status?.toLowerCase?.() ?? '');
+  const hasBackendReview = Boolean(
+    order?.hasReview ??
+    order?.has_review ??
+    order?.reviewId ??
+    order?.review_id ??
+    order?.reviewCreatedAt ??
+    order?.review_created_at ??
+    order?.reviewUpdatedAt ??
+    order?.review_updated_at
+  );
+  const hasExistingReview = hasBackendReview || hasStoredReview(orderIdentity);
 
   return (
     <div className="bg-gray-50 min-h-screen">
@@ -252,10 +275,10 @@ const OrderDetailPage = () => {
         <div className="max-w-5xl mx-auto px-4">
           <div className="bg-white border border-indigo-100 rounded-2xl shadow-sm p-6 mb-10">
             <h2 className="text-xl font-semibold text-gray-800">
-              {hasStoredReview(orderIdentity) ? 'Your Review' : 'Share Your Review'}
+              {hasExistingReview ? 'Your Review' : 'Share Your Review'}
             </h2>
             <p className="text-gray-600 mt-2">
-              {hasStoredReview(orderIdentity)
+              {hasExistingReview
                 ? `You already shared feedback for order #${orderIdentity}. View or update it anytime.`
                 : `Share your experience for order #${orderIdentity} to help fellow renters.`}
             </p>
@@ -265,7 +288,7 @@ const OrderDetailPage = () => {
                 onClick={handleReviewNavigation}
                 className="inline-flex items-center justify-center px-6 py-3 rounded-full bg-indigo-600 text-white font-semibold hover:bg-indigo-700 transition-colors"
               >
-                {hasStoredReview(orderIdentity) ? 'View Review' : 'Write Review'}
+                {hasExistingReview ? 'View Review' : 'Write Review'}
               </button>
             </div>
           </div>

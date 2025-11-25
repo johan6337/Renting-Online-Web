@@ -1,4 +1,3 @@
-/* ReviewSummary route temporarily disabled; keeping implementation commented for reference.
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Header from '../components/header/Header';
@@ -32,7 +31,10 @@ const experienceHighlightLabels = {
 const ReviewSummary = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const orderNumber = location.state?.orderNumber || null;
+  const orderNumber =
+    location.state?.orderNumber ||
+    new URLSearchParams(location.search).get('orderNumber') ||
+    null;
 
   const [review, setReview] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -265,4 +267,3 @@ const ReviewSummary = () => {
 };
 
 export default ReviewSummary;
-*/

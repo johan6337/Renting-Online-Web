@@ -5,10 +5,10 @@ import Footer from '../components/footer/Footer';
 import { createReview, getReviewByOrder, updateReview } from '../api/reviews';
 
 const DEFAULT_EXPERIENCE_STATE = {
+  fit: false,
   quality: false,
   easeOfUse: false,
-  condition: false,
-  functionality: false,
+  style: false,
   worthThePrice: false,
 };
 
@@ -17,13 +17,14 @@ const SATISFACTION_OPTIONS = [
   { id: 'liked-it', emoji: '\u{1F642}', label: 'Liked it' },
   { id: 'it-was-okay', emoji: '\u{1F610}', label: 'It was okay' },
   { id: 'not-great', emoji: '\u{1F641}', label: 'Not great' },
+  { id: 'terrible', emoji: '\u{1F62D}', label: 'Terrible' },
 ];
 
 const EXPERIENCE_HIGHLIGHTS = [
+  { id: 'fit', label: 'Fit and sizing were just right' },
   { id: 'quality', label: 'Quality matched the listing' },
   { id: 'easeOfUse', label: 'Easy to use and care for' },
-  { id: 'condition', label: 'Item condition as described' },
-  { id: 'functionality', label: 'Worked perfectly as expected' },
+  { id: 'style', label: 'Felt confident wearing/using it' },
   { id: 'worthThePrice', label: 'Worth the rental price' },
 ];
 
@@ -137,7 +138,7 @@ export default function Review() {
   const handlePhotoUpload = async (e) => {
     const files = Array.from(e.target.files || []);
     const imageFiles = files.filter((file) => file.type.startsWith('image/'));
-    
+
     if (imageFiles.length === 0) return;
 
     // Show preview immediately
@@ -299,9 +300,9 @@ export default function Review() {
                     if ((!orderId && !orderNumber) || !effectiveProductId) {
                       return;
                     }
-                    navigate(`/review/${effectiveProductId}`, { state: { orderId, orderNumber } });
+                    navigate('/review/completed', { state: { orderNumber, orderId } });
                   }}
-                  disabled={(!orderId && !orderNumber) || !effectiveProductId}
+                  disabled={(!orderId && !orderNumber)}
                   className="inline-flex items-center justify-center px-4 py-2 bg-indigo-600 text-white rounded-full font-medium hover:bg-indigo-700 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                   View My Review
@@ -313,9 +314,6 @@ export default function Review() {
 
         <div className="bg-white shadow-sm rounded-lg p-8 mb-8">
           <div className="flex flex-col md:flex-row gap-5 pb-5 border-b border-gray-100 mb-5">
-            {/* <div className="w-32 h-32 bg-gray-100 rounded-lg flex items-center justify-center text-5xl flex-shrink-0">
-              🧾
-            </div> */}
             <div className="flex-1">
               <h2 className="text-xl font-bold text-gray-800 mb-2">{productName}</h2>
               <span className="inline-block px-4 py-1.5 bg-indigo-100 text-indigo-800 rounded-full text-sm font-medium mb-3">
@@ -358,7 +356,7 @@ export default function Review() {
             <label className="block text-sm font-medium text-gray-800 mb-3">
               Overall Satisfaction <span className="text-red-500">*</span>
             </label>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
               {SATISFACTION_OPTIONS.map((option) => (
                 <div key={option.id}>
                   <input
@@ -435,7 +433,7 @@ export default function Review() {
             />
           </div>
 
-          {/* <div className="mb-8">
+          <div className="mb-8">
             <label className="block text-sm font-medium text-gray-800 mb-2">
               Share Photos from Your Rental (Optional)
             </label>
@@ -443,7 +441,7 @@ export default function Review() {
               onClick={() => document.getElementById('photoInput')?.click()}
               className="border-2 border-dashed border-gray-300 rounded-lg p-10 text-center cursor-pointer hover:border-indigo-500 hover:bg-gray-50 transition-all"
             >
-              <div className="text-5xl mb-3">📷</div>
+              <div className="text-2xl mb-3">Camera</div>
               <div className="text-gray-600 mb-2">Click to add photos showing the item or how you used it.</div>
               <div className="text-sm text-gray-400">PNG, JPG up to 5MB each. Images will be uploaded to cloud storage.</div>
             </div>
@@ -459,7 +457,7 @@ export default function Review() {
             {photos.length > 0 && (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 mt-5">
                 {photos.map((photo, index) => (
-                  <div key={`${photo.url}-${index}`} className="relative w-full h-32 rounded-lg overflow-hidden bg-gray-100">
+                  <div key={`${photo.url || photo}-${index}`} className="relative w-full h-32 rounded-lg overflow-hidden bg-gray-100">
                     <img src={photo.url || photo} alt={`Upload ${index + 1}`} className="w-full h-full object-cover" />
                     {photo.uploading && (
                       <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
@@ -472,13 +470,13 @@ export default function Review() {
                       disabled={photo.uploading}
                       className="absolute top-1 right-1 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      ✕
+                      x
                     </button>
                   </div>
                 ))}
               </div>
             )}
-          </div> */}
+          </div>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-end pt-6">
             <button
@@ -488,19 +486,6 @@ export default function Review() {
             >
               Cancel
             </button>
-            {/* <button
-              type="button"
-              onClick={() => {
-                if (!orderNumber || !effectiveProductId) {
-                  return;
-                }
-                navigate(`/review/${effectiveProductId}`, { state: { orderNumber } });
-              }}
-              disabled={!orderNumber || !effectiveProductId}
-              className="px-8 py-3 bg-indigo-500 text-white rounded-lg font-medium hover:bg-indigo-600 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
-            >
-              View My Review
-            </button> */}
             <button
               type="submit"
               disabled={(!orderId && !orderNumber) || !productId || isSubmitting}

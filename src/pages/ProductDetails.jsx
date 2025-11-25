@@ -7,6 +7,30 @@ import MessagePopup from '../components/common/MessagePopup';
 import { useMemo, useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 
+const SATISFACTION_TO_SCORE = {
+    'loved-it': 5,
+    'liked-it': 4,
+    'it-was-okay': 3,
+    'not-great': 2,
+    'terrible': 1,
+};
+
+const normalizeReviewStats = (stats) => {
+    if (!stats) return null;
+    const distribution = Object.entries(stats.distribution || {}).reduce((acc, [key, value]) => {
+        const score = SATISFACTION_TO_SCORE[key];
+        if (!score) return acc;
+        acc[score] = value;
+        return acc;
+    }, { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 });
+
+    return {
+        averageScore: stats.averageScore ?? 0,
+        totalReviews: stats.totalReviews ?? 0,
+        distribution,
+    };
+};
+
 const GUEST_CART_KEY = "guestCart";
 const ProductDetails = () => {
     
@@ -119,7 +143,7 @@ const ProductDetails = () => {
                 console.log("Review Data:", reviewData);
 
                 setProduct(productData.data);
-                setReviewStats(reviewData.stats);      // <-- Set review stats
+                setReviewStats(normalizeReviewStats(reviewData.stats));      // <-- Set review stats
                 setReviews(reviewData.data);         // <-- Set review list
                 setPagination(reviewData.pagination); // <-- Set pagination info
                 setSelectedImageIndex(0);            // Reset image index

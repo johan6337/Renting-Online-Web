@@ -22,11 +22,28 @@ const normalizeOrderIdentity = (order, fallback) => {
   const resolvedId = resolveOrderId(order, fallback);
   const productId = order.productId ?? null;
   const unitPrice = typeof order.unitPrice === 'number' ? order.unitPrice : Number(order.subtotal ?? 0);
+  const statusLower = (order.status || '').toString().trim().toLowerCase();
+  const hasReview = Boolean(
+    order.hasReview ??
+    order.has_review ??
+    order.reviewId ??
+    order.review_id ??
+    order.reviewCreatedAt ??
+    order.review_created_at ??
+    order.reviewUpdatedAt ??
+    order.review_updated_at
+  );
+  const computedCanReview =
+    order.canReview !== undefined
+      ? order.canReview
+      : statusLower === 'completed';
 
   return {
     ...order,
     orderId: resolvedId,
     orderNumber: order.orderNumber || order.order_number || '',
+    hasReview,
+    reviewId: order.reviewId || order.review_id || null,
     productId,
     productName: order.productName ?? '',
     productImage: order.productImage ?? null,
@@ -35,6 +52,8 @@ const normalizeOrderIdentity = (order, fallback) => {
     rentalPeriod: order.rentalPeriod ?? null,
     quantity: order.quantity ?? 1,
     unitPrice,
+    status: order.status ?? statusLower,
+    canReview: computedCanReview,
   };
 };
 
@@ -128,7 +147,11 @@ const OrdersPage = () => {
       product: fallbackProduct,
     };
 
-    navigate(`/review/${targetProductId}`, { state: navigationState });
+    if (normalized.hasReview) {
+      navigate('/review/completed', { state: navigationState });
+    } else {
+      navigate(`/review/${targetProductId}`, { state: navigationState });
+    }
   };
 
   const handleReportUser = (order) => {
