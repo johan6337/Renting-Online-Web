@@ -1,12 +1,77 @@
-# React + Vite
+# BorrowIt - Online Renting Platform
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+BorrowIt is a modern web application built with React and Vite that allows users to rent products online. The platform supports multiple user roles including regular users, sellers, and administrators, providing a comprehensive renting experience with features like product listings, order management, reviews, and reporting.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **User Authentication**: Login, signup, and password recovery
+- **Product Management**: Browse, filter, and view product details
+- **Shopping Cart**: Add products to cart and proceed to checkout
+- **Order Management**: Place orders, track status, and manage schedules
+- **Reviews and Ratings**: Leave and view product reviews
+- **Seller Dashboard**: Manage products, view orders, and track sales
+- **Admin Dashboard**: Oversee users, products, orders, and handle reports/violations
+- **Responsive Design**: Optimized for desktop and mobile devices
 
-## Expanding the ESLint configuration
+## Tech Stack
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- **Frontend**: React 19, React Router DOM
+- **Build Tool**: Vite
+- **Styling**: Tailwind CSS
+- **Icons**: Lucide React, React Icons
+- **Linting**: ESLint
+- **Development**: Hot Module Replacement (HMR)
+
+## Installation
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/johan6337/Renting-Online-Web.git
+   cd Renting-Online-Web
+   ```
+
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+3. Start the development server:
+   ```bash
+   npm run dev
+   ```
+
+4. Open your browser and navigate to `http://localhost:5173`
+
+## Available Scripts
+
+- `npm run dev` - Start the development server
+- `npm run build` - Build the project for production
+- `npm run lint` - Run ESLint for code linting
+- `npm run preview` - Preview the production build locally
+
+## Project Structure
+
+```
+src/
+├── api/          # API client and service functions
+├── assets/       # Static assets
+├── components/   # Reusable UI components
+├── data/         # Mock data (for development)
+├── pages/        # Page components
+├── utils/        # Utility functions
+├── App.jsx       # Main app component
+├── main.jsx      # Entry point
+└── main.css      # Global styles
+```
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/new-feature`)
+3. Commit your changes (`git commit -am 'Add new feature'`)
+4. Push to the branch (`git push origin feature/new-feature`)
+5. Create a Pull Request
+
+## License
+
+This project is licensed under the MIT License.

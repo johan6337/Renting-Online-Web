@@ -6,29 +6,35 @@ const AdminDashboard = () => {
   const [stats, setStats] = useState([
     { label: 'Total Users', value: 'Loading...' },
     { label: 'Total Products', value: 'Loading...' },
-    { label: 'Total Orders', value: 'Loading...' },
-    { label: 'Revenue', value: 'Loading...' }
+    { label: 'Total Orders', value: 'Loading...' }
   ]);
   const [users, setUsers] = useState([]);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [statistics, setStatistics] = useState({
+    roleStats: {},
+    userStatusStats: {},
+    categoryStats: {},
+    productStatusStats: {}
+  });
 
-  // Fetch users data from API
+  // Fetch users data from API (get all users for accurate statistics)
   const fetchUsers = async () => {
     try {
-      const response = await fetch('/api/users', {
+      const response = await fetch('http://localhost:3456/api/users?limit=1000', {
         method: 'GET',
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
         },
       });
       
       if (response.ok) {
         const data = await response.json();
         if (data.success) {
-          setUsers(data.data.users);
-          return data.data.pagination.total;
+          setUsers(data.data.users || []);
+          return data.data.pagination?.total || data.data.users?.length || 0;
         }
       }
     } catch (error) {
@@ -37,22 +43,23 @@ const AdminDashboard = () => {
     return 0;
   };
 
-  // Fetch products data from API
+  // Fetch products data from API (get all products for accurate statistics)
   const fetchProducts = async () => {
     try {
-      const response = await fetch('/api/products', {
+      const response = await fetch('http://localhost:3456/api/products?limit=1000', {
         method: 'GET',
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
         },
       });
       
       if (response.ok) {
         const data = await response.json();
         if (data.success) {
-          setProducts(data.data.products);
-          return data.data.pagination.total;
+          setProducts(data.data.products || []);
+          return data.data.pagination?.total || data.data.products?.length || 0;
         }
       }
     } catch (error) {
@@ -61,20 +68,44 @@ const AdminDashboard = () => {
     return 0;
   };
 
+  // Fetch orders data from API (when available)
+  const fetchOrders = async () => {
+    try {
+      const response = await fetch('http://localhost:3456/api/orders', {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
+        },
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          return data.count || data.data?.length || 0;
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching orders:', error);
+    }
+    return 0;
+  };
+
   // Fetch all data
   const fetchAllData = async () => {
     setLoading(true);
     try {
-      const [totalUsers, totalProducts] = await Promise.all([
+      const [totalUsers, totalProducts, totalOrders] = await Promise.all([
         fetchUsers(),
-        fetchProducts()
+        fetchProducts(),
+        fetchOrders()
       ]);
 
       setStats([
         { label: 'Total Users', value: totalUsers },
-        { label: 'Total Products', value: totalProducts }
-        // { label: 'Total Orders', value: 'Hardcore' }, // Keep hardcoded for now
-        // { label: 'Revenue', value: 'Hardcore' }
+        { label: 'Total Products', value: totalProducts },
+        { label: 'Total Orders', value: totalOrders }
       ]);
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -83,22 +114,43 @@ const AdminDashboard = () => {
     }
   };
 
-  // Update revenue when products change
+  // Update statistics when users or products change
   useEffect(() => {
-    if (products.length > 0) {
-      const totalRevenue = products.reduce((sum, product) => {
-        return sum + (product.price_per_day * (product.total_rentals || 0));
-      }, 0);
+    if (users.length > 0 || products.length > 0) {
+      // Calculate role statistics
+      const roleStats = users.reduce((acc, user) => {
+        acc[user.role] = (acc[user.role] || 0) + 1;
+        return acc;
+      }, {});
+      
+      // Calculate user status statistics
+      const userStatusStats = users.reduce((acc, user) => {
+        acc[user.status] = (acc[user.status] || 0) + 1;
+        return acc;
+      }, {});
 
-      setStats(prevStats => 
-        prevStats.map(stat => 
-          stat.label === 'Revenue' 
-            ? { ...stat, value: `$${totalRevenue.toLocaleString()}` }
-            : stat
-        )
-      );
+      // Calculate category statistics
+      const categoryStats = products.reduce((acc, product) => {
+        acc[product.category] = (acc[product.category] || 0) + 1;
+        return acc;
+      }, {});
+
+      // Calculate product status statistics
+      const productStatusStats = products.reduce((acc, product) => {
+        acc[product.status] = (acc[product.status] || 0) + 1;
+        return acc;
+      }, {});
+
+      setStatistics({
+        roleStats,
+        userStatusStats,
+        categoryStats,
+        productStatusStats
+      });
+
+
     }
-  }, [products]);
+  }, [users, products]);
 
   useEffect(() => {
     fetchAllData();
@@ -196,83 +248,75 @@ const AdminDashboard = () => {
                 {loading ? (
                   <div className="text-gray-500">Loading statistics...</div>
                 ) : (
-                  (() => {
-                    const roleStats = users.reduce((acc, user) => {
-                      acc[user.role] = (acc[user.role] || 0) + 1;
-                      return acc;
-                    }, {});
+                  <>
+                    <div>
+                      <h3 className="text-sm font-medium text-gray-700 mb-2">Users by Role</h3>
+                      {Object.keys(statistics.roleStats).length > 0 ? (
+                        Object.entries(statistics.roleStats).map(([role, count]) => (
+                          <div key={role} className="flex justify-between items-center mb-1">
+                            <span className="text-gray-600 capitalize">{role}</span>
+                            <span className="font-semibold text-gray-900">{count}</span>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="text-gray-500 text-sm">No user data available</div>
+                      )}
+                    </div>
                     
-                    const userStatusStats = users.reduce((acc, user) => {
-                      acc[user.status] = (acc[user.status] || 0) + 1;
-                      return acc;
-                    }, {});
+                    <div className="pt-4 border-t border-gray-200">
+                      <h3 className="text-sm font-medium text-gray-700 mb-2">User Status</h3>
+                      {Object.keys(statistics.userStatusStats).length > 0 ? (
+                        Object.entries(statistics.userStatusStats).map(([status, count]) => (
+                          <div key={status} className="flex justify-between items-center mb-1">
+                            <span className="text-gray-600 capitalize">{status}</span>
+                            <span className={`font-semibold ${
+                              status === 'active' ? 'text-green-600' :
+                              status === 'suspended' ? 'text-red-600' :
+                              'text-gray-900'
+                            }`}>
+                              {count}
+                            </span>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="text-gray-500 text-sm">No user status data available</div>
+                      )}
+                    </div>
 
-                    const categoryStats = products.reduce((acc, product) => {
-                      acc[product.category] = (acc[product.category] || 0) + 1;
-                      return acc;
-                    }, {});
+                    <div className="pt-4 border-t border-gray-200">
+                      <h3 className="text-sm font-medium text-gray-700 mb-2">Products by Category</h3>
+                      {Object.keys(statistics.categoryStats).length > 0 ? (
+                        Object.entries(statistics.categoryStats).slice(0, 5).map(([category, count]) => (
+                          <div key={category} className="flex justify-between items-center mb-1">
+                            <span className="text-gray-600 capitalize">{category}</span>
+                            <span className="font-semibold text-gray-900">{count}</span>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="text-gray-500 text-sm">No category data available</div>
+                      )}
+                    </div>
 
-                    const productStatusStats = products.reduce((acc, product) => {
-                      acc[product.status] = (acc[product.status] || 0) + 1;
-                      return acc;
-                    }, {});
-
-                    return (
-                      <>
-                        <div>
-                          <h3 className="text-sm font-medium text-gray-700 mb-2">Users by Role</h3>
-                          {Object.entries(roleStats).map(([role, count]) => (
-                            <div key={role} className="flex justify-between items-center mb-1">
-                              <span className="text-gray-600 capitalize">{role}</span>
-                              <span className="font-semibold text-gray-900">{count}</span>
-                            </div>
-                          ))}
-                        </div>
-                        
-                        <div className="pt-4 border-t border-gray-200">
-                          <h3 className="text-sm font-medium text-gray-700 mb-2">User Status</h3>
-                          {Object.entries(userStatusStats).map(([status, count]) => (
-                            <div key={status} className="flex justify-between items-center mb-1">
-                              <span className="text-gray-600 capitalize">{status}</span>
-                              <span className={`font-semibold ${
-                                status === 'active' ? 'text-green-600' :
-                                status === 'banned' ? 'text-red-600' :
-                                'text-gray-900'
-                              }`}>
-                                {count}
-                              </span>
-                            </div>
-                          ))}
-                        </div>
-
-                        <div className="pt-4 border-t border-gray-200">
-                          <h3 className="text-sm font-medium text-gray-700 mb-2">Products by Category</h3>
-                          {Object.entries(categoryStats).slice(0, 5).map(([category, count]) => (
-                            <div key={category} className="flex justify-between items-center mb-1">
-                              <span className="text-gray-600 capitalize">{category}</span>
-                              <span className="font-semibold text-gray-900">{count}</span>
-                            </div>
-                          ))}
-                        </div>
-
-                        <div className="pt-4 border-t border-gray-200">
-                          <h3 className="text-sm font-medium text-gray-700 mb-2">Product Status</h3>
-                          {Object.entries(productStatusStats).map(([status, count]) => (
-                            <div key={status} className="flex justify-between items-center mb-1">
-                              <span className="text-gray-600 capitalize">{status}</span>
-                              <span className={`font-semibold ${
-                                status === 'available' ? 'text-green-600' :
-                                status === 'rented' ? 'text-yellow-600' :
-                                'text-red-600'
-                              }`}>
-                                {count}
-                              </span>
-                            </div>
-                          ))}
-                        </div>
-                      </>
-                    );
-                  })()
+                    <div className="pt-4 border-t border-gray-200">
+                      <h3 className="text-sm font-medium text-gray-700 mb-2">Product Status</h3>
+                      {Object.keys(statistics.productStatusStats).length > 0 ? (
+                        Object.entries(statistics.productStatusStats).map(([status, count]) => (
+                          <div key={status} className="flex justify-between items-center mb-1">
+                            <span className="text-gray-600 capitalize">{status}</span>
+                            <span className={`font-semibold ${
+                              status === 'available' ? 'text-green-600' :
+                              status === 'rented' ? 'text-yellow-600' :
+                              'text-red-600'
+                            }`}>
+                              {count}
+                            </span>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="text-gray-500 text-sm">No product status data available</div>
+                      )}
+                    </div>
+                  </>
                 )}
               </div>
             </div>
