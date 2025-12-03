@@ -202,6 +202,18 @@
 import React, { useState, useMemo } from 'react';
 import CommentCard from './CommentCard';
 
+const mapSatisfactionToScore = (satisfaction) => {
+    if (!satisfaction) return null;
+    const mapping = {
+        'loved-it': 5,
+        'liked-it': 4,
+        'it-was-okay': 3,
+        'not-great': 2,
+        terrible: 1,
+    };
+    return mapping[satisfaction] ?? null;
+};
+
 // 1. Accept 'reviews' (instead of comments) and 'stats'
 // We rename 'comments' to 'reviews' to match the state in ProductDetails
 const CommentList = ({ reviews = [], stats = null }) => {
@@ -356,16 +368,31 @@ const CommentList = ({ reviews = [], stats = null }) => {
                     {displayedComments.length > 0 ? (
                         <>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8">
-                                {displayedComments.map((comment) => (
-                                    <CommentCard
-                                        key={comment.review_id} // Use database ID for key
-                                        rating={comment.satisfaction_score} // Use DB field
-                                        name={comment.full_name} // Use DB field
-                                        verified={true} // You'll need to add this to your DB query
-                                        comment={comment.highlights} // Use DB field
-                                        date={comment.submitted_at} // Use DB field
-                                    />
-                                ))}
+                                {displayedComments.map((comment) => {
+                                    const rawScore =
+                                        typeof comment.satisfaction_score === 'number'
+                                            ? comment.satisfaction_score
+                                            : comment.satisfaction_score
+                                            ? parseFloat(comment.satisfaction_score)
+                                            : comment.satisfactionScore
+                                            ? parseFloat(comment.satisfactionScore)
+                                            : null;
+                                    const ratingValue =
+                                        Number.isFinite(rawScore)
+                                            ? rawScore
+                                            : mapSatisfactionToScore(comment.satisfaction);
+                                    return (
+                                        <CommentCard
+                                            key={comment.review_id} // Use database ID for key
+                                            rating={ratingValue}
+                                            satisfaction={comment.satisfaction}
+                                            name={comment.full_name} // Use DB field
+                                            verified={true} // You'll need to add this to your DB query
+                                            comment={comment.highlights} // Use DB field
+                                            date={comment.submitted_at} // Use DB field
+                                        />
+                                    );
+                                })}
                             </div>
 
                             {/* Load More Button */}

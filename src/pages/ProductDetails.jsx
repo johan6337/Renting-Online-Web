@@ -17,17 +17,65 @@ const SATISFACTION_TO_SCORE = {
 
 const normalizeReviewStats = (stats) => {
     if (!stats) return null;
+    const base = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
     const distribution = Object.entries(stats.distribution || {}).reduce((acc, [key, value]) => {
+        const numericKey = Number(key);
+        if (Number.isFinite(numericKey) && numericKey >= 1 && numericKey <= 5) {
+            acc[numericKey] = value;
+            return acc;
+        }
         const score = SATISFACTION_TO_SCORE[key];
         if (!score) return acc;
         acc[score] = value;
         return acc;
-    }, { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 });
+    }, { ...base });
 
     return {
-        averageScore: stats.averageScore ?? 0,
-        totalReviews: stats.totalReviews ?? 0,
+        averageScore: Number(stats.averageScore ?? 0) || 0,
+        totalReviews: Number(stats.totalReviews ?? 0) || 0,
         distribution,
+    };
+};
+
+const buildStatsFromReviews = (reviews = [], fallback = null) => {
+    const base = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+    if (!Array.isArray(reviews) || reviews.length === 0) {
+        return fallback || { averageScore: 0, totalReviews: 0, distribution: base };
+    }
+
+    let totalScore = 0;
+    reviews.forEach((review) => {
+        let score = null;
+        if (typeof review.satisfaction_score === 'number') {
+            score = review.satisfaction_score;
+        } else if (review.satisfaction_score) {
+            const parsed = parseFloat(review.satisfaction_score);
+            if (Number.isFinite(parsed)) score = parsed;
+        } else if (typeof review.satisfactionScore === 'number') {
+            score = review.satisfactionScore;
+        } else if (review.satisfactionScore) {
+            const parsed = parseFloat(review.satisfactionScore);
+            if (Number.isFinite(parsed)) score = parsed;
+        } else if (review.satisfaction) {
+            score = SATISFACTION_TO_SCORE[review.satisfaction] || null;
+        }
+
+        if (!Number.isFinite(score)) return;
+        const clamped = Math.min(5, Math.max(1, Math.round(score)));
+        base[clamped] = (base[clamped] || 0) + 1;
+        totalScore += score;
+    });
+
+    const totalReviews = Object.values(base).reduce((sum, v) => sum + (v || 0), 0);
+    if (totalReviews === 0) {
+        return fallback || { averageScore: 0, totalReviews: 0, distribution: base };
+    }
+
+    const averageScore = Math.round((totalScore / totalReviews) * 10) / 10;
+    return {
+        averageScore,
+        totalReviews,
+        distribution: base,
     };
 };
 
@@ -143,7 +191,8 @@ const ProductDetails = () => {
                 console.log("Review Data:", reviewData);
 
                 setProduct(productData.data);
-                setReviewStats(normalizeReviewStats(reviewData.stats));      // <-- Set review stats
+                const normalizedStats = normalizeReviewStats(reviewData.stats);
+                setReviewStats(buildStatsFromReviews(reviewData.data, normalizedStats));      // <-- Set review stats
                 setReviews(reviewData.data);         // <-- Set review list
                 setPagination(reviewData.pagination); // <-- Set pagination info
                 setSelectedImageIndex(0);            // Reset image index

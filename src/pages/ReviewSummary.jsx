@@ -31,9 +31,18 @@ const experienceHighlightLabels = {
 const ReviewSummary = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const orderId =
+    location.state?.orderId ||
+    queryParams.get('orderId') ||
+    null;
   const orderNumber =
     location.state?.orderNumber ||
-    new URLSearchParams(location.search).get('orderNumber') ||
+    queryParams.get('orderNumber') ||
+    null;
+  const productIdFromState =
+    location.state?.productId ||
+    location.state?.product?.productId ||
     null;
 
   const [review, setReview] = useState(null);
@@ -41,8 +50,8 @@ const ReviewSummary = () => {
   const [errorMessage, setErrorMessage] = useState(null);
 
   useEffect(() => {
-    if (!orderNumber) {
-      setErrorMessage('Order number missing. Return to your orders and open the review again.');
+    if (!orderId && !orderNumber) {
+      setErrorMessage('Order reference missing. Return to your orders and open the review again.');
       setReview(null);
       return;
     }
@@ -52,7 +61,8 @@ const ReviewSummary = () => {
       setIsLoading(true);
       setErrorMessage(null);
       try {
-        const data = await getReviewByOrder(orderNumber);
+        const lookupKey = orderId || orderNumber;
+        const data = await getReviewByOrder(lookupKey);
         if (isCancelled) {
           return;
         }
@@ -83,7 +93,7 @@ const ReviewSummary = () => {
     return () => {
       isCancelled = true;
     };
-  }, [orderNumber]);
+  }, [orderId, orderNumber]);
 
   const selectedHighlights = review
     ? Object.entries(review.experience || {})
@@ -100,6 +110,7 @@ const ReviewSummary = () => {
     typeof review?.photosCount === 'number'
       ? review.photosCount
       : review?.photos?.length || 0;
+  const productId = review?.productId || productIdFromState || null;
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -125,18 +136,19 @@ const ReviewSummary = () => {
             </div>
             <button
               type="button"
-              onClick={() =>
-                navigate('/review', {
+              onClick={() => {
+                if (!productId) return;
+                navigate(`/review/${productId}`, {
                   state: {
                     allowEdit: true,
                     orderNumber,
-                    productId: review?.productId,
+                    productId,
                     productName: review?.productName,
                   },
-                })
-              }
+                });
+              }}
               className="px-5 py-2 bg-indigo-600 text-white rounded-full font-medium hover:bg-indigo-700 transition-colors"
-              disabled={!orderNumber}
+              disabled={!(orderId || orderNumber) || !productId}
             >
               {review ? 'Edit Review' : 'Write Review'}
             </button>
@@ -164,7 +176,9 @@ const ReviewSummary = () => {
                     Post-Rental Feedback Summary
                   </h2>
                   <div className="text-sm text-gray-500 mt-1 space-y-1">
-                    {orderNumber && <p>Order #{orderNumber}</p>}
+                    {(orderId || orderNumber) && (
+                      <p>Order #{orderId || orderNumber}</p>
+                    )}
                     {review.productName && <p>Product: {review.productName}</p>}
                     {submittedDate && <p>Submitted on {submittedDate}</p>}
                   </div>
@@ -238,22 +252,25 @@ const ReviewSummary = () => {
           !isLoading && (
             <div className="bg-white shadow-sm rounded-lg p-10 text-center">
               <h2 className="text-2xl font-semibold text-gray-800 mb-3">
-                No review found{orderNumber ? ` for Order #${orderNumber}` : ''}
+                No review found{(orderId || orderNumber) ? ` for Order #${orderId || orderNumber}` : ''}
               </h2>
               <p className="text-gray-600 mb-6">
-                Once you submit feedback{orderNumber ? ` for this order` : ''}, we'll save it here so you can review or update it later.
+                Once you submit feedback{(orderId || orderNumber) ? ` for this order` : ''}, we'll save it here so you can review or update it later.
               </p>
               <button
                 type="button"
-                onClick={() =>
-                  navigate('/review', {
+                onClick={() => {
+                  if (!productId) return;
+                  navigate(`/review/${productId}`, {
                     state: {
-                      orderNumber,
+                      orderId: orderId || undefined,
+                      orderNumber: orderNumber || undefined,
+                      productId,
                     },
-                  })
-                }
+                  });
+                }}
                 className="px-6 py-2 bg-indigo-600 text-white rounded-full font-medium hover:bg-indigo-700 transition-colors"
-                disabled={!orderNumber}
+                disabled={!(orderNumber || orderId) || !productId}
               >
                 Write a Review
               </button>
