@@ -180,6 +180,10 @@ const SellerOrders = () => {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [confirmAction, setConfirmAction] = useState(null);
+  const [completionDetails, setCompletionDetails] = useState({
+    finalPrice: '',
+    condition: '',
+  });
 
   const [orders, setOrders] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -266,6 +270,11 @@ const SellerOrders = () => {
   const handleCompleteOrder = (order) => {
     setSelectedOrder(order);
     setConfirmAction('complete');
+    setCompletionDetails({
+      finalPrice:
+        typeof order?.totalAmount === 'number' ? order.totalAmount : '',
+      condition: '',
+    });
     setShowConfirmModal(true);
   };
 
@@ -319,9 +328,16 @@ const SellerOrders = () => {
       setStatusUpdateError(null);
       setIsUpdatingStatus(true);
       setStatusUpdatingOrder(resolveOrderKey(selectedOrder));
-      const updatedOrder = await updateSellerOrderStatus(targetNumber, {
-        status: nextStatus,
-      });
+      const payload = { status: nextStatus };
+      if (confirmAction === 'complete' && completionDetails) {
+        if (completionDetails.finalPrice !== '') {
+          payload.totalAmount = Number(completionDetails.finalPrice) || completionDetails.finalPrice;
+        }
+        if (completionDetails.condition) {
+          payload.productCondition = completionDetails.condition;
+        }
+      }
+      const updatedOrder = await updateSellerOrderStatus(targetNumber, payload);
       applyOrderUpdate(updatedOrder);
       setShowConfirmModal(false);
       setSelectedOrder(null);
@@ -445,6 +461,7 @@ const SellerOrders = () => {
             setShowConfirmModal(false);
             setSelectedOrder(null);
             setConfirmAction(null);
+            setCompletionDetails({ finalPrice: '', condition: '' });
           }}
           title={getConfirmMessage().title}
           message={getConfirmMessage().message}
@@ -459,9 +476,54 @@ const SellerOrders = () => {
               setShowConfirmModal(false);
               setSelectedOrder(null);
               setConfirmAction(null);
+              setCompletionDetails({ finalPrice: '', condition: '' });
             }
           }}
-        />
+        >
+          {confirmAction === 'complete' && (
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Final price (after inspection)
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={completionDetails.finalPrice}
+                  onChange={(e) =>
+                    setCompletionDetails((prev) => ({
+                      ...prev,
+                      finalPrice: e.target.value,
+                    }))
+                  }
+                  className="w-full rounded-lg border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  placeholder="Enter adjusted price"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Item condition after return
+                </label>
+                <textarea
+                  value={completionDetails.condition}
+                  onChange={(e) =>
+                    setCompletionDetails((prev) => ({
+                      ...prev,
+                      condition: e.target.value,
+                    }))
+                  }
+                  className="w-full rounded-lg border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-y"
+                  placeholder="e.g., Like new, minor wear, damaged zipper"
+                  rows={3}
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Add notes about any wear, damage, or cleaning needs before closing the order.
+                </p>
+              </div>
+            </div>
+          )}
+        </MessagePopup>
       )}
 
       {/* Report User Form */}
