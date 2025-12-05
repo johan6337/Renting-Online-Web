@@ -77,12 +77,47 @@ const resolveSeller = (order = {}) => {
   };
 };
 
+const resolveBuyer = (order = {}) => {
+  const buyerSource = order.buyer || order.buyerSummary || order.customer || {};
+  return {
+    id:
+      buyerSource.id ??
+      order.customerId ??
+      order.customer_id ??
+      order.buyerId ??
+      order.buyer_id ??
+      order.user_id ??
+      null,
+    name:
+      buyerSource.name ??
+      buyerSource.fullName ??
+      order.customerName ??
+      order.customer_name ??
+      order.buyerName ??
+      order.buyer_name ??
+      '',
+    username: 
+      buyerSource.username ?? 
+      order.customerUsername ??
+      order.customer_username ??
+      order.buyerUsername ?? 
+      order.buyerName ?? 
+      null,
+    avatar: buyerSource.avatar ?? order.buyerAvatar ?? order.customerAvatar ?? null,
+    phone: buyerSource.phone ?? order.buyerPhone ?? order.customerPhone ?? null,
+    email: buyerSource.email ?? order.buyerEmail ?? order.customerEmail ?? null,
+    address: buyerSource.address ?? order.buyerAddress ?? order.customerAddress ?? null,
+  };
+};
+
 const normalizeOrder = (order = {}) => {
   const timeline = Array.isArray(order.timeline)
     ? order.timeline.map((event, index) => normalizeTimelineEvent(event, index))
     : [];
   const product = normalizeProduct(order);
   const seller = resolveSeller(order);
+  const buyer = resolveBuyer(order);
+  
   const totalAmount =
     typeof order.totalAmount === 'number'
       ? order.totalAmount
@@ -113,7 +148,9 @@ const normalizeOrder = (order = {}) => {
       order.created_at ??
       '',
     status: statusValue,
-    buyerName: order.buyerName ?? order.buyer_name ?? '',
+    buyerName: buyer.name,
+    buyerUsername: buyer.username,
+    buyerId: buyer.id,
     sellerName: seller.name,
     sellerUsername: seller.username,
     sellerAvatar: seller.avatar,
@@ -153,6 +190,7 @@ const normalizeOrder = (order = {}) => {
     updatedAt: order.updatedAt ?? order.updated_at ?? null,
     canReview,
     seller,
+    buyer,
     product,
   };
 };
