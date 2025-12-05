@@ -81,63 +81,6 @@ const buildStatsFromReviews = (reviews = [], fallback = null) => {
 
 const GUEST_CART_KEY = "guestCart";
 const ProductDetails = () => {
-    
-    const details = {
-        description: "This graphic t-shirt is perfect for any occasion. Crafted from a soft and breathable fabric, it offers superior comfort and style.",
-        category: "Clothes",
-        location: "Ha Noi",
-        comments: [
-            {
-                rating: 4.5,
-                name: "Samantha D.",
-                verified: true,
-                comment: "I absolutely love this t-shirt! The design is unique and the fabric feels so comfortable.",
-                date: "August 14, 2023"
-            },
-            {
-                rating: 4,
-                name: "Alex M.",
-                verified: true,
-                comment: "The t-shirt exceeded my expectations! The colors are vibrant and the print quality is top-notch.",
-                date: "August 15, 2023"
-            },
-            {
-                rating: 5,
-                name: "Emma W.",
-                verified: true,
-                comment: "Perfect fit and amazing quality! Will definitely buy more from this seller.",
-                date: "August 16, 2023"
-            },
-            {
-                rating: 3,
-                name: "John D.",
-                verified: false,
-                comment: "Good product but the delivery took longer than expected.",
-                date: "August 17, 2023"
-            },
-            {
-                rating: 5,
-                name: "Sarah L.",
-                verified: true,
-                comment: "Absolutely love it! The material is soft and the design is exactly as shown.",
-                date: "August 18, 2023"
-            },
-            {
-                rating: 4,
-                name: "Michael R.",
-                verified: true,
-                comment: "Great quality shirt. Highly recommend!",
-                date: "August 19, 2023"
-            }
-        ],
-        seller: {
-            id: 101,
-            name: "Fashion Store",
-            avatar: "https://ui-avatars.com/api/?name=Fashion+Store&background=random",
-            rating: 4.8,
-            totalOrders: 1250
-        }
-    };
 
     const { productId } = useParams();
     const navigate = useNavigate();
