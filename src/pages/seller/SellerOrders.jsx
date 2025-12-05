@@ -7,172 +7,6 @@ import ReportUserForm from '../../pages/ReportUserForm';
 import MessagePopup from '../../components/common/MessagePopup';
 import { getSellerOrders, updateSellerOrderStatus } from '../../api/orders';
 
-const FALLBACK_SELLER_ORDERS = [
-  {
-    id: "ORD-2025-0324",
-    placedDate: "September 15, 2025",
-    status: "Ordered",
-    buyerName: "John Anderson",
-    sellerName: "Luxe Rentals Co.",
-    items: [
-      {
-        name: "Checkered Shirt",
-        size: "Medium",
-        color: "Red",
-        rentalPeriod: "7 days",
-        price: 180,
-        image: "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=400&h=400&fit=crop"
-      },
-      {
-        name: "Skinny Fit Jeans",
-        size: "Large",
-        color: "Blue",
-        rentalPeriod: "7 days",
-        price: 240,
-        image: "https://images.unsplash.com/photo-1542272604-787c3835535d?w=400&h=400&fit=crop"
-      }
-    ],
-    totalAmount: 467,
-    shippingAddress: {
-      name: "John Anderson",
-      address: "456 Main Street",
-      city: "Boston",
-      state: "MA",
-      zipCode: "02101",
-      phone: "+1 (555) 234-5678"
-    }
-  },
-  {
-    id: "ORD-2025-0323",
-    placedDate: "September 14, 2025",
-    status: "Shipping",
-    buyerName: "Emma Wilson",
-    sellerName: "Luxe Rentals Co.",
-    items: [
-      {
-        name: "Denim Jacket",
-        size: "Small",
-        color: "Blue",
-        rentalPeriod: "5 days",
-        price: 200,
-        image: "https://images.unsplash.com/photo-1551028719-00167b16eac5?w=400&h=400&fit=crop"
-      }
-    ],
-    totalAmount: 200,
-    shippingAddress: {
-      name: "Emma Wilson",
-      address: "789 Oak Avenue",
-      city: "Chicago",
-      state: "IL",
-      zipCode: "60601",
-      phone: "+1 (555) 345-6789"
-    }
-  },
-  {
-    id: "ORD-2025-0320",
-    placedDate: "September 12, 2025",
-    status: "Using",
-    buyerName: "David Miller",
-    sellerName: "Luxe Rentals Co.",
-    items: [
-      {
-        name: "Formal Suit",
-        size: "Large",
-        color: "Black",
-        rentalPeriod: "3 days",
-        price: 350,
-        image: "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=400&h=400&fit=crop"
-      }
-    ],
-    totalAmount: 350,
-    shippingAddress: {
-      name: "David Miller",
-      address: "321 Park Lane",
-      city: "San Francisco",
-      state: "CA",
-      zipCode: "94102",
-      phone: "+1 (555) 456-7890"
-    }
-  },
-  {
-    id: "ORD-2025-0298",
-    placedDate: "September 8, 2025",
-    status: "Return",
-    buyerName: "Sarah Mitchell",
-    sellerName: "Luxe Rentals Co.",
-    items: [
-      {
-        name: "Gradient Graphic T-shirt",
-        size: "Large",
-        color: "Multi",
-        rentalPeriod: "3 days",
-        price: 145,
-        image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop"
-      }
-    ],
-    totalAmount: 145,
-    shippingAddress: {
-      name: "Sarah Mitchell",
-      address: "234 Elm Street",
-      city: "Miami",
-      state: "FL",
-      zipCode: "33101",
-      phone: "+1 (555) 567-8901"
-    }
-  },
-  {
-    id: "ORD-2025-0267",
-    placedDate: "August 28, 2025",
-    status: "Checking",
-    buyerName: "Michael Chen",
-    sellerName: "Luxe Rentals Co.",
-    items: [
-      {
-        name: "Black Striped T-shirt",
-        size: "Medium",
-        color: "Black",
-        rentalPeriod: "5 days",
-        price: 120,
-        image: "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=400&h=400&fit=crop"
-      }
-    ],
-    totalAmount: 120,
-    shippingAddress: {
-      name: "Michael Chen",
-      address: "567 Pine Road",
-      city: "Seattle",
-      state: "WA",
-      zipCode: "98101",
-      phone: "+1 (555) 678-9012"
-    }
-  },
-  {
-    id: "ORD-2025-0266",
-    placedDate: "August 27, 2025",
-    status: "Completed",
-    buyerName: "Lisa Brown",
-    sellerName: "Luxe Rentals Co.",
-    items: [
-      {
-        name: "Summer Dress",
-        size: "Medium",
-        color: "Floral",
-        rentalPeriod: "7 days",
-        price: 180,
-        image: "https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=400&h=400&fit=crop"
-      }
-    ],
-    totalAmount: 180,
-    shippingAddress: {
-      name: "Lisa Brown",
-      address: "890 Maple Drive",
-      city: "Denver",
-      state: "CO",
-      zipCode: "80201",
-      phone: "+1 (555) 789-0123"
-    }
-  }
-];
 
 const SellerOrders = () => {
   const navigate = useNavigate();
@@ -245,7 +79,21 @@ const SellerOrders = () => {
   }, []);
 
   const handleReportUser = (order) => {
-    setSelectedOrder(order);
+    const normalized = {
+      ...order,
+      buyerId: order.buyerId || order.buyer?.id || order.customer_id || null,
+      buyerUsername: order.buyerUsername || order.buyer?.username || order.buyerName || 'Unknown Buyer'
+    };
+    console.log('Reporting user for order:', normalized);
+    if (!normalized.buyerId) {
+      console.warn('Unable to determine buyer for report.', normalized);
+      return;
+    }
+
+    setSelectedOrder({
+      userId: normalized.buyerId,
+      userName: normalized.buyerUsername
+    });
     setShowReportForm(true);
   };
 
@@ -529,7 +377,8 @@ const SellerOrders = () => {
       {/* Report User Form */}
       {showReportForm && selectedOrder && (
         <ReportUserForm 
-          userName={selectedOrder.buyerName}
+          userName={selectedOrder.userName}
+          userId={selectedOrder.userId}
           onClose={() => {
             setShowReportForm(false);
             setSelectedOrder(null);

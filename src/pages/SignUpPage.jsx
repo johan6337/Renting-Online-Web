@@ -27,12 +27,10 @@ const SignUpPage = () => {
     setLoading(true);
     console.log('SignUp submitted:', formData);
 
-    try {
-      const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:3456';
-      console.log('API Base URL:', apiBase);
-      
-      const res = await fetch(`${apiBase}/api/users/register`, {
+    try {  
+      const res = await fetch('/api/users/register', {
         method: 'POST',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json'
         },
