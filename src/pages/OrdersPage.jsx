@@ -6,6 +6,12 @@ import OrderList from '../components/orders/OrderList';
 import ordersData from '../data/ordersData';
 import ReportUserForm from './ReportUserForm';
 import { getOrders } from '../api/orders';
+import { getReviewByOrder } from '../api/reviews';
+
+const isCompletedStatus = (status) => {
+  const normalized = (status || '').toString().trim().toLowerCase();
+  return normalized === 'completed' || normalized === 'complete';
+};
 
 const resolveOrderId = (order, fallback = null) => {
   if (!order) return fallback;
@@ -17,12 +23,18 @@ const resolveOrderId = (order, fallback = null) => {
   );
 };
 
+const resolveReviewLookup = (order) => {
+  if (!order) return null;
+  return order.orderNumber || order.order_number || resolveOrderId(order);
+};
+
 const normalizeOrderIdentity = (order, fallback) => {
   if (!order) return null;
   const resolvedId = resolveOrderId(order, fallback);
   const productId = order.productId ?? null;
   const unitPrice = typeof order.unitPrice === 'number' ? order.unitPrice : Number(order.subtotal ?? 0);
   const statusLower = (order.status || '').toString().trim().toLowerCase();
+  const statusIsCompleted = isCompletedStatus(statusLower);
   const hasReview = Boolean(
     order.hasReview ??
     order.has_review ??
@@ -36,7 +48,7 @@ const normalizeOrderIdentity = (order, fallback) => {
   const computedCanReview =
     order.canReview !== undefined
       ? order.canReview
-      : statusLower === 'completed';
+      : statusIsCompleted;
 
   return {
     ...order,
@@ -55,6 +67,53 @@ const normalizeOrderIdentity = (order, fallback) => {
     status: order.status ?? statusLower,
     canReview: computedCanReview,
   };
+};
+
+const mergeOrdersWithReviews = async (orders) => {
+  if (!Array.isArray(orders) || orders.length === 0) {
+    return [];
+  }
+
+  const reviewResults = await Promise.all(
+    orders.map(async (order) => {
+      const orderKey = resolveReviewLookup(order);
+      if (!orderKey) return null;
+      try {
+        const review = await getReviewByOrder(orderKey);
+        return { orderKey, review };
+      } catch (error) {
+        if (error?.status === 404 || (error?.name === 'ApiError' && error?.status === 404)) {
+          return { orderKey, review: null };
+        }
+        console.warn(`Unable to load review for order ${orderKey}:`, error);
+        return { orderKey, review: null };
+      }
+    })
+  );
+
+  const reviewMap = reviewResults.reduce((acc, entry) => {
+    if (!entry || !entry.orderKey) return acc;
+    acc[entry.orderKey] = entry.review;
+    return acc;
+  }, {});
+
+  return orders.map((order) => {
+    const orderKey = resolveReviewLookup(order);
+    const linkedReview = orderKey ? reviewMap[orderKey] : null;
+    const statusLower = (order.status || '').toString().trim().toLowerCase();
+    const computedCanReview =
+      order.canReview !== undefined
+        ? order.canReview
+        : isCompletedStatus(statusLower);
+    const hasReview = order.hasReview || Boolean(linkedReview);
+
+    return {
+      ...order,
+      hasReview,
+      reviewId: order.reviewId || linkedReview?.id || linkedReview?.review_id || null,
+      canReview: hasReview ? true : computedCanReview,
+    };
+  });
 };
 
 const OrdersPage = () => {
@@ -81,7 +140,11 @@ const OrdersPage = () => {
               .map((order) => normalizeOrderIdentity(order))
               .filter(Boolean)
           : [];
-        setOrders(normalized);
+        const hydrated = await mergeOrdersWithReviews(normalized);
+        if (!isMounted) {
+          return;
+        }
+        setOrders(hydrated);
       } catch (error) {
         if (!isMounted) {
           return;

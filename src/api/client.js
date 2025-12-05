@@ -1,3 +1,5 @@
+const BASE_URL = 'http://localhost:3456';
+
 const ensureApiPath = (path = '/api') => {
   if (!path) {
     return '/api';
@@ -51,6 +53,100 @@ const request = async (path, { method = 'GET', body, headers, ...rest } = {}) =>
   }
 
   return data;
+};
+
+// Admin API Services
+export const adminApi = {
+  // User management
+  getUsers: async (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    return request(`/users${queryString ? `?${queryString}` : ''}`);
+  },
+
+  getUserById: async (id) => {
+    return request(`/users/${id}`);
+  },
+
+  updateUser: async (id, updates) => {
+    return request(`/users/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(updates)
+    });
+  },
+
+  deleteUser: async (id) => {
+    return request(`/users/${id}`, {
+      method: 'DELETE'
+    });
+  },
+
+  // Product management
+  getProducts: async (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    return request(`/products${queryString ? `?${queryString}` : ''}`);
+  },
+
+  getProductById: async (id) => {
+    return request(`/products/${id}`);
+  },
+
+  updateProduct: async (id, updates) => {
+    return request(`/products/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(updates)
+    });
+  },
+
+  deleteProduct: async (id) => {
+    return request(`/products/${id}`, {
+      method: 'DELETE'
+    });
+  },
+
+  // Report management
+  getReports: async (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    return request(`/reports${queryString ? `?${queryString}` : ''}`);
+  },
+
+  getReportsByStatus: async (status, params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    return request(`/reports/status/${status}${queryString ? `?${queryString}` : ''}`);
+  },
+
+  getReportById: async (id) => {
+    return request(`/reports/${id}`);
+  },
+
+  updateReport: async (id, updates) => {
+    return request(`/reports/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(updates)
+    });
+  },
+
+  deleteReport: async (id) => {
+    return request(`/reports/${id}`, {
+      method: 'DELETE'
+    });
+  },
+
+  // Order management (when available)
+  getOrders: async (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    return request(`/orders${queryString ? `?${queryString}` : ''}`);
+  },
+
+  // Reviews management
+  getReviews: async (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    return request(`/reviews${queryString ? `?${queryString}` : ''}`);
+  },
+
+  getProductReviews: async (productId, params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    return request(`/reviews/product/${productId}${queryString ? `?${queryString}` : ''}`);
+  }
 };
 
 export { ApiError, request };

@@ -67,7 +67,7 @@ const OrderCard = ({
     imageUrl: order.productImage,
   };
   const shippingAddress = order.shippingAddress;
-  const isReviewable = Boolean(order.canReview);
+  const isReviewable = Boolean(order.canReview || order.hasReview);
 
   const shippingStep = order.timeline?.find(
     (step) => step.title?.toLowerCase() === 'shipping'
@@ -160,7 +160,7 @@ const OrderCard = ({
             onClick={() => onLeaveReview?.(order)}
             className="px-5 py-2 rounded-full bg-indigo-600 text-white font-semibold hover:bg-indigo-700 transition-colors"
           >
-            Review Product
+            {order.hasReview ? 'View Review' : 'Review Product'}
           </button>
         );
       }

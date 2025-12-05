@@ -2,31 +2,25 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import Header from '../components/header/Header';
 import Footer from '../components/footer/Footer';
+import StarRating from '../components/comments/StarRating';
 import { createReview, getReviewByOrder, updateReview } from '../api/reviews';
 
-const DEFAULT_EXPERIENCE_STATE = {
-  fit: false,
-  quality: false,
-  easeOfUse: false,
-  style: false,
-  worthThePrice: false,
+const scoreToSatisfaction = (score) => {
+  if (score >= 5) return 'loved-it';
+  if (score >= 4) return 'liked-it';
+  if (score >= 3) return 'it-was-okay';
+  if (score >= 2) return 'not-great';
+  if (score >= 1) return 'terrible';
+  return '';
 };
 
-const SATISFACTION_OPTIONS = [
-  { id: 'loved-it', emoji: '\u{1F60D}', label: 'Loved it' },
-  { id: 'liked-it', emoji: '\u{1F642}', label: 'Liked it' },
-  { id: 'it-was-okay', emoji: '\u{1F610}', label: 'It was okay' },
-  { id: 'not-great', emoji: '\u{1F641}', label: 'Not great' },
-  { id: 'terrible', emoji: '\u{1F62D}', label: 'Terrible' },
-];
-
-const EXPERIENCE_HIGHLIGHTS = [
-  { id: 'fit', label: 'Fit and sizing were just right' },
-  { id: 'quality', label: 'Quality matched the listing' },
-  { id: 'easeOfUse', label: 'Easy to use and care for' },
-  { id: 'style', label: 'Felt confident wearing/using it' },
-  { id: 'worthThePrice', label: 'Worth the rental price' },
-];
+const satisfactionToScore = {
+  'loved-it': 5,
+  'liked-it': 4,
+  'it-was-okay': 3,
+  'not-great': 2,
+  terrible: 1,
+};
 
 export default function Review() {
   const navigate = useNavigate();
@@ -50,9 +44,8 @@ export default function Review() {
   const [productId, setProductId] = useState(derivedProductId);
   const [productName, setProductName] = useState(derivedProductName);
   const [satisfaction, setSatisfaction] = useState('');
-  const [experience, setExperience] = useState({ ...DEFAULT_EXPERIENCE_STATE });
-  const [highlights, setHighlights] = useState('');
-  const [improvements, setImprovements] = useState('');
+  const [ratingScore, setRatingScore] = useState(0);
+  const [comment, setComment] = useState('');
   const [photos, setPhotos] = useState([]);
   const [showSuccess, setShowSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -70,13 +63,16 @@ export default function Review() {
       setReviewId(data.id || data.reviewId || null);
       setProductId(data.productId ?? derivedProductId ?? null);
       setProductName(data.productName ?? derivedProductName);
-      setSatisfaction(data.satisfaction || '');
-      setExperience({
-        ...DEFAULT_EXPERIENCE_STATE,
-        ...(data.experience || {}),
-      });
-      setHighlights(data.highlights || '');
-      setImprovements(data.improvements || '');
+      const scoreFromSatisfaction =
+        satisfactionToScore[data.satisfaction] ||
+        data.satisfactionScore ||
+        data.satisfaction_score ||
+        0;
+      const satisfactionValue =
+        data.satisfaction || scoreToSatisfaction(scoreFromSatisfaction) || '';
+      setSatisfaction(satisfactionValue);
+      setRatingScore(scoreFromSatisfaction);
+      setComment(data.highlights || data.improvements || '');
       setPhotos(
         Array.isArray(data.photos)
           ? data.photos.map((photo) =>
@@ -129,10 +125,6 @@ export default function Review() {
   const triggerSuccessBanner = () => {
     setShowSuccess(true);
     setTimeout(() => setShowSuccess(false), 5000);
-  };
-
-  const handleExperienceToggle = (key) => {
-    setExperience((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
   const handlePhotoUpload = async (e) => {
@@ -214,13 +206,17 @@ export default function Review() {
     }
 
     setSubmitError(null);
+    const satisfactionValue = satisfaction || scoreToSatisfaction(ratingScore);
+    if (!ratingScore || !satisfactionValue) {
+      setSubmitError('Please add a star rating to share your feedback.');
+      return;
+    }
     setIsSubmitting(true);
 
     const payload = {
-      satisfaction,
-      experience,
-      highlights,
-      improvements,
+      satisfaction: satisfactionValue,
+      highlights: comment,
+      improvements: '',
       photos: serializePhotos(),
     };
 
@@ -356,80 +352,32 @@ export default function Review() {
             <label className="block text-sm font-medium text-gray-800 mb-3">
               Overall Satisfaction <span className="text-red-500">*</span>
             </label>
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-              {SATISFACTION_OPTIONS.map((option) => (
-                <div key={option.id}>
-                  <input
-                    type="radio"
-                    id={option.id}
-                    name="satisfaction"
-                    value={option.id}
-                    checked={satisfaction === option.id}
-                    onChange={(e) => setSatisfaction(e.target.value)}
-                    className="hidden"
-                    required
-                  />
-                  <label
-                    htmlFor={option.id}
-                    className={`block p-4 border-2 rounded-lg text-center cursor-pointer transition-all ${
-                      satisfaction === option.id
-                        ? 'border-indigo-500 bg-indigo-50'
-                        : 'border-gray-200 hover:border-gray-300'
-                    }`}
-                  >
-                    <span className="block text-3xl mb-2">{option.emoji}</span>
-                    <span className="block text-sm font-medium text-gray-800">{option.label}</span>
-                  </label>
-                </div>
-              ))}
+            <div className="flex items-center gap-4">
+              <StarRating
+                modeRate={true}
+                value={ratingScore}
+                onChange={(value) => {
+                  setRatingScore(value);
+                  setSatisfaction(scoreToSatisfaction(value));
+                }}
+                showRatingText
+              />
+              <p className="text-sm text-gray-600">
+                Tap a star to rate your experience.
+              </p>
             </div>
           </div>
 
           <div className="mb-8">
-            <label className="block text-sm font-medium text-gray-800 mb-3">
-              What stood out during your rental?
-            </label>
-            <div className="space-y-3">
-              {EXPERIENCE_HIGHLIGHTS.map((item) => (
-                <div key={item.id} className="flex items-center p-3 bg-gray-50 rounded-lg">
-                  <input
-                    type="checkbox"
-                    id={item.id}
-                    checked={experience[item.id]}
-                    onChange={() => handleExperienceToggle(item.id)}
-                    className="w-5 h-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 cursor-pointer"
-                  />
-                  <label htmlFor={item.id} className="ml-3 text-gray-800 cursor-pointer flex-1">
-                    {item.label}
-                  </label>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="mb-8">
-            <label htmlFor="highlights" className="block text-sm font-medium text-gray-800 mb-2">
-              What did you love most?
+            <label htmlFor="comment" className="block text-sm font-medium text-gray-800 mb-2">
+              Share your thoughts
             </label>
             <textarea
-              id="highlights"
-              value={highlights}
-              onChange={(e) => setHighlights(e.target.value)}
+              id="comment"
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-y min-h-[100px]"
-              placeholder="Share what you enjoyed most about this rental or any standout features."
-            />
-          </div>
-
-          <div className="mb-8">
-            <label htmlFor="improvements" className="block text-sm font-medium text-gray-800 mb-2">
-              Anything we could improve?
-            </label>
-            <textarea
-              id="improvements"
-              value={improvements}
-              onChange={(e) => setImprovements(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-y min-h-[100px]"
-              placeholder="Let the lender know if anything could have been better or if future renters should be aware of something."
+              placeholder="Share what stood out, what went well, or anything that could be better."
             />
           </div>
 

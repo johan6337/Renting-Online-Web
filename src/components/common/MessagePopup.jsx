@@ -7,7 +7,8 @@ const MessagePopup = ({
     message, 
     primaryButton, 
     secondaryButton,
-    icon = 'success' // 'success', 'error', 'warning', 'info'
+    icon = 'success', // 'success', 'error', 'warning', 'info'
+    children,
 }) => {
     if (!isOpen) return null;
 
@@ -71,6 +72,13 @@ const MessagePopup = ({
                     <p className="text-gray-600 text-center mb-6">
                         {message}
                     </p>
+                )}
+
+                {/* Custom content */}
+                {children && (
+                    <div className="mb-6">
+                        {children}
+                    </div>
                 )}
 
                 {/* Buttons */}

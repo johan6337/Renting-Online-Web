@@ -33,9 +33,9 @@ const AdminReportedUsers = () => {
       queryParams.append('page', page);
       queryParams.append('limit', pagination.limit);
 
-      let url = '/api/reports';
+      let url = 'http://localhost:3456/api/reports';
       if (status && status !== 'All') {
-        url = `/api/reports/status/${status.toLowerCase()}`;
+        url = `http://localhost:3456/api/reports/status/${status.toLowerCase()}`;
       }
       url += `?${queryParams.toString()}`;
 
@@ -44,6 +44,7 @@ const AdminReportedUsers = () => {
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
         }
       });
 
@@ -157,11 +158,12 @@ const AdminReportedUsers = () => {
     setIsDeleting(true);
     try {
       const deletePromises = selectedReportIds.map(id => 
-        fetch(`/api/reports/${id}`, {
+        fetch(`http://localhost:3456/api/reports/${id}`, {
           method: 'DELETE',
           credentials: 'include',
           headers: {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
           }
         })
       );
@@ -192,9 +194,12 @@ const AdminReportedUsers = () => {
 
   const handleExport = async () => {
     try {
-      const response = await fetch('/api/reports?format=csv', {
+      const response = await fetch('http://localhost:3456/api/reports?format=csv', {
         method: 'GET',
         credentials: 'include',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
+        },
       });
       
       if (response.ok) {

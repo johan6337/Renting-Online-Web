@@ -1,18 +1,39 @@
 import React from 'react';
 import StarRating from './StarRating';
 
+const satisfactionToScore = {
+  'loved-it': 5,
+  'liked-it': 4,
+  'it-was-okay': 3,
+  'not-great': 2,
+  terrible: 1,
+};
+
 const CommentCard = ({ 
-  rating, 
+  rating,
+  satisfaction,
   name, 
   verified = false,
   comment,
   date
 }) => {
+  const ratingValue =
+    typeof rating === 'number'
+      ? rating
+      : satisfactionToScore[satisfaction] || 0;
+  const formattedDate = date
+    ? new Date(date).toLocaleDateString(undefined, {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+      })
+    : '';
+
   return (
     <div className="bg-white rounded-3xl border border-gray-200 p-7 shadow-md hover:shadow-lg transition-shadow max-w-xl">
       {/* Header with stars and menu */}
       <div className="flex items-start justify-between mb-4">
-        <StarRating modeRate={false} displayRate={rating} />
+        <StarRating modeRate={false} displayRate={ratingValue} showRatingText />
         <button className="text-gray-300 hover:text-gray-600 transition-colors">
           <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
             <circle cx="10" cy="4" r="1.5"/>
@@ -41,7 +62,7 @@ const CommentCard = ({
 
       {/* Date posted */}
       <p className="text-gray-500 text-sm font-medium">
-        Posted on {date}
+        {formattedDate ? `Posted on ${formattedDate}` : 'Posted'}
       </p>
     </div>
   );

@@ -25,11 +25,12 @@ const AdminPage = () => {
   const fetchStats = async () => {
     try {
       // Fetch all users to get accurate counts
-      const response = await fetch('/api/users?page=1&limit=1000', {
+      const response = await fetch('http://localhost:3456/api/users?page=1&limit=1000', {
         method: 'GET',
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
         }
       });
       
@@ -71,11 +72,12 @@ const AdminPage = () => {
         queryParams.append('search', search.trim());
       }
 
-      const response = await fetch(`/api/users?${queryParams.toString()}`, {
+      const response = await fetch(`http://localhost:3456/api/users?${queryParams.toString()}`, {
         method: 'GET',
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
         }
       });
 
@@ -120,11 +122,12 @@ const AdminPage = () => {
       }
       
       // Check current user before making request
-      const currentUserResponse = await fetch('/api/users/me', {
+      const currentUserResponse = await fetch('http://localhost:3456/api/users/me', {
         method: 'GET',
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
         }
       });
       
@@ -140,11 +143,12 @@ const AdminPage = () => {
       console.log('Request URL:', `/api/users/${userId}`);
       console.log('Request body:', JSON.stringify(cleanUpdates));
       
-      const response = await fetch(`/api/users/${userId}`, {
+      const response = await fetch(`http://localhost:3456/api/users/${userId}`, {
         method: 'PUT',
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
         },
         body: JSON.stringify(cleanUpdates)
       });

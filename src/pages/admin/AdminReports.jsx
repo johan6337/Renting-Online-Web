@@ -1,14 +1,109 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Sidebar_Admin from '../../components/sidebar/Sidebar_Admin';
 import { Bell, Download, TrendingUp, TrendingDown } from 'lucide-react';
 
 const AdminReports = () => {
-  const reports = [
-    { title: 'Sales Report', period: 'Monthly', value: '$12,345', change: '+12%', trend: 'up' },
-    { title: 'User Growth', period: 'Weekly', value: '234', change: '+8%', trend: 'up' },
-    { title: 'Orders', period: 'Daily', value: '89', change: '-3%', trend: 'down' },
-    { title: 'Revenue', period: 'Yearly', value: '$145,678', change: '+25%', trend: 'up' },
-  ];
+  const [reports, setReports] = useState([
+    { title: 'Sales Report', period: 'Monthly', value: 'Loading...', change: 'Loading...', trend: 'up' },
+    { title: 'User Growth', period: 'Weekly', value: 'Loading...', change: 'Loading...', trend: 'up' },
+    { title: 'Orders', period: 'Daily', value: 'Loading...', change: 'Loading...', trend: 'down' },
+    { title: 'Revenue', period: 'Yearly', value: 'Loading...', change: 'Loading...', trend: 'up' },
+  ]);
+  const [recentTransactions, setRecentTransactions] = useState([]);
+  const [topProducts, setTopProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch dashboard data
+  const fetchReportsData = async () => {
+    setLoading(true);
+    try {
+      // Fetch users data for user growth stats
+      const usersResponse = await fetch('http://localhost:3456/api/users', {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
+        },
+      });
+      
+      // Fetch products data  
+      const productsResponse = await fetch('http://localhost:3456/api/products', {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
+        },
+      });
+
+      // Fetch orders data (if available in future API)
+      // const ordersResponse = await fetch('/api/orders', {...});
+
+      let totalUsers = 0;
+      let totalProducts = 0;
+      let totalRevenue = 0;
+      let products = [];
+
+      if (usersResponse.ok) {
+        const usersData = await usersResponse.json();
+        if (usersData.success) {
+          totalUsers = usersData.data.pagination?.total || usersData.data.users?.length || 0;
+        }
+      }
+
+      if (productsResponse.ok) {
+        const productsData = await productsResponse.json();
+        if (productsData.success) {
+          totalProducts = productsData.data.pagination?.total || productsData.data.products?.length || 0;
+          products = productsData.data.products || [];
+          
+          // Calculate total revenue based on products and their rentals
+          totalRevenue = products.reduce((sum, product) => {
+            const rentals = product.total_rentals || 0;
+            const pricePerDay = product.price_per_day || 0;
+            const avgRentalDays = 3; // Assume average rental period of 3 days
+            return sum + (rentals * pricePerDay * avgRentalDays);
+          }, 0);
+        }
+      }
+
+      setReports([
+        { title: 'Sales Report', period: 'Monthly', value: `$${totalRevenue.toLocaleString()}`, change: '+12%', trend: 'up' },
+        { title: 'User Growth', period: 'Weekly', value: totalUsers.toString(), change: '+8%', trend: 'up' },
+        { title: 'Products', period: 'Total', value: totalProducts.toString(), change: '+5%', trend: 'up' },
+        { title: 'Revenue', period: 'Yearly', value: `$${(totalRevenue * 12).toLocaleString()}`, change: '+25%', trend: 'up' },
+      ]);
+
+      // Set top products based on rentals
+      const sortedProducts = products
+        .sort((a, b) => (b.total_rentals || 0) - (a.total_rentals || 0))
+        .slice(0, 5);
+      
+      setTopProducts(sortedProducts);
+
+      // Generate mock recent transactions based on products data
+      const mockTransactions = Array.from({ length: 5 }, (_, index) => {
+        const randomProduct = products[Math.floor(Math.random() * products.length)];
+        return {
+          id: 1000 + index + 1,
+          time: `${2 + index} hours ago`,
+          amount: randomProduct?.price_per_day ? (randomProduct.price_per_day * 3).toFixed(2) : (Math.random() * 500 + 50).toFixed(2)
+        };
+      });
+      
+      setRecentTransactions(mockTransactions);
+
+    } catch (error) {
+      console.error('Error fetching reports data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchReportsData();
+  }, []);
 
   return (
     <div className="flex min-h-screen bg-gray-50">
@@ -68,30 +163,48 @@ const AdminReports = () => {
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
               <h2 className="text-xl font-bold text-gray-900 mb-4">Recent Transactions</h2>
               <div className="space-y-4">
-                {[1, 2, 3, 4, 5].map((item) => (
-                  <div key={item} className="flex justify-between items-center pb-4 border-b border-gray-200 last:border-0">
-                    <div>
-                      <p className="text-sm font-medium text-gray-900">Transaction #{1000 + item}</p>
-                      <p className="text-xs text-gray-400 mt-1">2 hours ago</p>
+                {loading ? (
+                  <div className="text-gray-500">Loading transactions...</div>
+                ) : recentTransactions.length > 0 ? (
+                  recentTransactions.map((transaction) => (
+                    <div key={transaction.id} className="flex justify-between items-center pb-4 border-b border-gray-200 last:border-0">
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">Transaction #{transaction.id}</p>
+                        <p className="text-xs text-gray-400 mt-1">{transaction.time}</p>
+                      </div>
+                      <span className="text-lg font-bold text-gray-900">${transaction.amount}</span>
                     </div>
-                    <span className="text-lg font-bold text-gray-900">${(Math.random() * 500 + 50).toFixed(2)}</span>
-                  </div>
-                ))}
+                  ))
+                ) : (
+                  <div className="text-gray-500">No recent transactions</div>
+                )}
               </div>
             </div>
 
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
               <h2 className="text-xl font-bold text-gray-900 mb-4">Top Products</h2>
               <div className="space-y-4">
-                {['T-shirt', 'Jeans', 'Shoes', 'Jacket', 'Bag'].map((product, idx) => (
-                  <div key={idx} className="flex justify-between items-center pb-4 border-b border-gray-200 last:border-0">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-gray-200 rounded-lg"></div>
-                      <span className="text-sm font-medium text-gray-900">{product}</span>
+                {loading ? (
+                  <div className="text-gray-500">Loading products...</div>
+                ) : topProducts.length > 0 ? (
+                  topProducts.map((product) => (
+                    <div key={product.product_id} className="flex justify-between items-center pb-4 border-b border-gray-200 last:border-0">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-gray-200 rounded-lg overflow-hidden">
+                          {product.images && product.images.length > 0 ? (
+                            <img src={product.images[0]} alt={product.name} className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full bg-gray-300"></div>
+                          )}
+                        </div>
+                        <span className="text-sm font-medium text-gray-900">{product.name}</span>
+                      </div>
+                      <span className="text-sm text-gray-600">{product.total_rentals || 0} rentals</span>
                     </div>
-                    <span className="text-sm text-gray-600">{Math.floor(Math.random() * 200 + 50)} sales</span>
-                  </div>
-                ))}
+                  ))
+                ) : (
+                  <div className="text-gray-500">No products found</div>
+                )}
               </div>
             </div>
           </div>
