@@ -194,7 +194,7 @@ const AddProductPage = () => {
                 type="text"
                 value={productName}
                 onChange={(e) => setProductName(e.target.value)}
-                placeholder="2I"
+                placeholder="Laptop Macbook ..."
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black/10 focus:border-black outline-none"
               />
               {!productName && (
