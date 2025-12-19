@@ -284,7 +284,7 @@ export default function Review() {
           </div>
         )}
 
-        {showSuccess && (
+        {/* {showSuccess && (
           <div className="fixed inset-x-0 top-6 flex justify-center px-4 z-50 pointer-events-none">
             <div className="pointer-events-auto max-w-md w-full bg-green-100 border border-green-300 text-green-800 px-6 py-4 rounded-xl shadow-lg">
               <strong className="block text-lg font-semibold">Thanks for the love!</strong>
@@ -306,7 +306,7 @@ export default function Review() {
               </div>
             </div>
           </div>
-        )}
+        )} */}
 
         <div className="bg-white shadow-sm rounded-lg p-8 mb-8">
           <div className="flex flex-col md:flex-row gap-5 pb-5 border-b border-gray-100 mb-5">
@@ -381,7 +381,7 @@ export default function Review() {
             />
           </div>
 
-          <div className="mb-8">
+          {/* <div className="mb-8">
             <label className="block text-sm font-medium text-gray-800 mb-2">
               Share Photos from Your Rental (Optional)
             </label>
@@ -424,7 +424,7 @@ export default function Review() {
                 ))}
               </div>
             )}
-          </div>
+          </div> */}
 
           <div className="flex flex-col sm:flex-row gap-4 justify-end pt-6">
             <button

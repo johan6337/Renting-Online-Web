@@ -172,7 +172,7 @@ const OrderDetail = ({
               <div className="flex-1">
                 <h3 className="text-xl font-bold text-gray-900">{item.name}</h3>
                 <div className="text-sm text-gray-600 mt-2 space-y-1">
-                  <p>Size: {item.size}</p>
+                  {/* <p>Size: {item.size}</p> */}
                   {item.color && <p>Color: {item.color}</p>}
                   <p>Rental Period: {item.rentalPeriod}</p>
                 </div>
@@ -189,11 +189,11 @@ const OrderDetail = ({
       <div className="bg-white rounded-2xl border border-gray-200 p-8 shadow-sm">
         <h2 className="text-2xl font-bold text-gray-900 mb-6">Order Summary</h2>
         <div className="space-y-4">
-          <div className="flex justify-between text-gray-700">
+          {/* <div className="flex justify-between text-gray-700">
             <span>Subtotal</span>
             <span className="font-semibold">${order.subtotal || order.totalAmount}</span>
-          </div>
-          {order.discount && (
+          </div> */}
+          {/* {order.discount && (
             <div className="flex justify-between text-green-600">
               <span>Discount</span>
               <span className="font-semibold">-${order.discount}</span>
@@ -204,7 +204,7 @@ const OrderDetail = ({
               <span>Tax</span>
               <span className="font-semibold">${order.tax}</span>
             </div>
-          )}
+          )} */}
           <div className="border-t border-gray-200 pt-4">
             <div className="flex justify-between text-xl">
               <span className="font-bold text-gray-900">Total</span>
@@ -226,7 +226,7 @@ const OrderDetail = ({
           </div>
         )} */}
       </div>
-      {!isSellerView ? (
+      {/* {!isSellerView ? (
         <div className="grid gap-6 mt-6 md:grid-cols-2">
           <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
             <div className="flex items-start justify-between">
@@ -334,7 +334,7 @@ const OrderDetail = ({
             </div>
           </div>
         </div>
-      )}
+      )} */}
     </div>
   );
 };

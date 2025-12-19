@@ -4,6 +4,7 @@ import {
   LayoutDashboard, 
   Package, 
   ShoppingCart,
+  User,
   LogOut
 } from 'lucide-react'
 
@@ -33,6 +34,7 @@ const Sidebar_Seller = ({ active }) => {
     { name: 'Dashboard', icon: LayoutDashboard, path: '/seller/dashboard' },
     { name: 'Products', icon: Package, path: '/seller/products' },
     { name: 'Orders', icon: ShoppingCart, path: '/seller/orders' },
+    { name: 'Profile', icon: User, path: '/seller/profile' },
     { name: 'Log Out', icon: LogOut, action: 'logout' }
   ];
 

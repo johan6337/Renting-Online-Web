@@ -118,10 +118,12 @@ const SellerOrders = () => {
   const handleCompleteOrder = (order) => {
     setSelectedOrder(order);
     setConfirmAction('complete');
+    // Use product's price_per_day, not order totalAmount
+    const productPricePerDay = order?.product?.pricePerDay ?? order?.unitPrice ?? '';
+    const productCondition = order?.product?.condition ?? '';
     setCompletionDetails({
-      finalPrice:
-        typeof order?.totalAmount === 'number' ? order.totalAmount : '',
-      condition: '',
+      finalPrice: typeof productPricePerDay === 'number' ? productPricePerDay : '',
+      condition: productCondition,
     });
     setShowConfirmModal(true);
   };
@@ -177,19 +179,25 @@ const SellerOrders = () => {
       setIsUpdatingStatus(true);
       setStatusUpdatingOrder(resolveOrderKey(selectedOrder));
       const payload = { status: nextStatus };
-      if (confirmAction === 'complete' && completionDetails) {
-        if (completionDetails.finalPrice !== '') {
-          payload.totalAmount = Number(completionDetails.finalPrice) || completionDetails.finalPrice;
+      
+      // Add price and condition when completing from checking status
+      if (confirmAction === 'complete' && currentStatus === 'checking' && completionDetails) {
+        console.log('Completion details:', completionDetails); // Debug
+        if (completionDetails.finalPrice !== '' && completionDetails.finalPrice !== null && completionDetails.finalPrice !== undefined) {
+          payload.pricePerDay = Number(completionDetails.finalPrice);
         }
-        if (completionDetails.condition) {
+        if (completionDetails.condition && completionDetails.condition.trim() !== '') {
           payload.productCondition = completionDetails.condition;
         }
       }
+      
+      console.log('Sending payload to backend:', payload, 'for order:', targetNumber); // Debug log
       const updatedOrder = await updateSellerOrderStatus(targetNumber, payload);
       applyOrderUpdate(updatedOrder);
       setShowConfirmModal(false);
       setSelectedOrder(null);
       setConfirmAction(null);
+      setCompletionDetails({ finalPrice: '', condition: '' });
     } catch (error) {
       console.error('Unable to update order status:', error);
       setStatusUpdateError(error?.message || 'Unable to update order status.');
@@ -328,11 +336,11 @@ const SellerOrders = () => {
             }
           }}
         >
-          {confirmAction === 'complete' && (
+          {confirmAction === 'complete' && (selectedOrder?.status || '').toLowerCase() === 'checking' && (
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Final price (after inspection)
+                  Price per day (after inspection)
                 </label>
                 <input
                   type="number"

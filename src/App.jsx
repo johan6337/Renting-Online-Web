@@ -23,6 +23,7 @@ import SellerProducts from './pages/seller/SellerProducts';
 import SellerOrders from './pages/seller/SellerOrders';
 import SellerOrderDetail from './pages/seller/SellerOrderDetail';
 import AddProductPage from './pages/seller/AddProductPage';
+import SellerProfile from './pages/seller/SellerProfile';
 
 // Admin Pages
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -92,6 +93,11 @@ const App = () => {
       <Route path="/seller/edit-product" element={
         <ProtectedRoute>
           <AddProductPage />
+        </ProtectedRoute>
+      } />
+      <Route path="/seller/profile" element={
+        <ProtectedRoute>
+          <SellerProfile />
         </ProtectedRoute>
       } />
       

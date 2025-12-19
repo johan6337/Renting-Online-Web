@@ -19,14 +19,25 @@ const buildOrderPayloadFromCartItem = (item) => {
     const quantity = Number(item.quantity) || 1;
     const rentalPeriod = Number(item.rent_time ?? item.rentalDays ?? item.rental_period ?? 1);
     const baseUnitPrice = Number(item.unit_price ?? item.price_per_day ?? item.price ?? 0);
+    
+    // Always calculate total: base price per day * quantity * rental period (in days)
+    const calculatedTotal = baseUnitPrice * quantity * rentalPeriod;
+    
+    console.log('Building order payload:', {
+        productId,
+        quantity,
+        rentalPeriod,
+        baseUnitPrice,
+        calculatedTotal
+    });
 
     const payload = {
         productId,
         quantity,
         rentalPeriod,
         unitPrice: baseUnitPrice,
-        subtotal: Number(item.total_price ?? baseUnitPrice * quantity),
-        totalAmount: Number(item.total_price ?? baseUnitPrice * quantity),
+        subtotal: calculatedTotal,
+        totalAmount: calculatedTotal,
     };
 
     const size = item.properties?.size ?? item.size ?? item.product_size;

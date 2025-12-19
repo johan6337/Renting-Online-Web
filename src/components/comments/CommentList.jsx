@@ -386,7 +386,7 @@ const CommentList = ({ reviews = [], stats = null }) => {
                                             key={comment.review_id} // Use database ID for key
                                             rating={ratingValue}
                                             satisfaction={comment.satisfaction}
-                                            name={comment.full_name} // Use DB field
+                                            name={comment.username} // Use DB field
                                             verified={true} // You'll need to add this to your DB query
                                             comment={comment.highlights} // Use DB field
                                             date={comment.submitted_at} // Use DB field

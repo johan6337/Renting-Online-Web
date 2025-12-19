@@ -226,9 +226,9 @@ const OrderCard = ({
               Rental period:{' '}
               <span className="font-medium">{primaryItem.rentalPeriod || 'Not set'}</span>
             </p>
-            <p className="text-sm text-gray-600">
+            {/* <p className="text-sm text-gray-600">
               Quantity: <span className="font-medium">{primaryItem.quantity || 1}</span>
-            </p>
+            </p> */}
             {(primaryItem.size || primaryItem.color) && (
               <p className="text-sm text-gray-500">
                 {primaryItem.size && (
@@ -247,7 +247,7 @@ const OrderCard = ({
           </div>
         </div>
 
-        <div className="md:w-60 border-t md:border-t-0 md:border-l border-gray-100 pt-4 md:pt-0 md:pl-6">
+        {/* <div className="md:w-60 border-t md:border-t-0 md:border-l border-gray-100 pt-4 md:pt-0 md:pl-6">
           <p className="text-xs uppercase tracking-wide text-gray-500 mb-1">Shipping</p>
           <p className="text-sm font-medium text-gray-800">{shippingStatus}</p>
           {shippingAddress ? (
@@ -267,19 +267,19 @@ const OrderCard = ({
               Receiving on <span className="font-medium">{order.receivingInfo.date}</span>
             </p>
           )}
-        </div>
+        </div> */}
       </div>
 
       <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-100 flex-wrap gap-3">
         <div className="text-xs text-gray-500 leading-5">
-          <p>
+          {/* <p>
             Seller:{' '}
             <span className="text-gray-800 font-medium">{sellerLabel}</span>
           </p>
           <p>
             Customer:{' '}
             <span className="text-gray-800 font-medium">{buyerLabel}</span>
-          </p>
+          </p> */}
         </div>
         <div className="flex gap-3 flex-wrap justify-end">
           {renderActionButtons()}

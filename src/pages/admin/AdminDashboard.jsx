@@ -6,7 +6,6 @@ const AdminDashboard = () => {
   const [stats, setStats] = useState([
     { label: 'Total Users', value: 'Loading...' },
     { label: 'Total Products', value: 'Loading...' },
-    { label: 'Total Orders', value: 'Loading...' }
   ]);
   const [users, setUsers] = useState([]);
   const [products, setProducts] = useState([]);
@@ -104,8 +103,7 @@ const AdminDashboard = () => {
 
       setStats([
         { label: 'Total Users', value: totalUsers },
-        { label: 'Total Products', value: totalProducts },
-        { label: 'Total Orders', value: totalOrders }
+        { label: 'Total Products', value: totalProducts }
       ]);
     } catch (error) {
       console.error('Error fetching data:', error);

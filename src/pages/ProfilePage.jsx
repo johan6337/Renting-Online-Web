@@ -124,19 +124,19 @@ const ProfilePage = () => {
       setSaving(true);
       setError(null);
       
-      // Map our state structure to API format (matching database schema)
-      const apiData = {
-        username: updatedData.username,
-        email: updatedData.email,
-        full_name: updatedData.full_name,
-        phone: updatedData.phone,
-        avatar_url: updatedData.avatar_url,
-        address: updatedData.address
-      };
+      // Only include fields that are provided in updatedData
+      const apiData = {};
+      
+      if (updatedData.hasOwnProperty('username')) apiData.username = updatedData.username;
+      if (updatedData.hasOwnProperty('email')) apiData.email = updatedData.email;
+      if (updatedData.hasOwnProperty('full_name')) apiData.full_name = updatedData.full_name;
+      if (updatedData.hasOwnProperty('phone')) apiData.phone = updatedData.phone;
+      if (updatedData.hasOwnProperty('avatar_url')) apiData.avatar_url = updatedData.avatar_url;
+      if (updatedData.hasOwnProperty('address')) apiData.address = updatedData.address;
 
-      // Remove empty fields
+      // Remove empty string fields (but keep null/undefined if explicitly set)
       Object.keys(apiData).forEach(key => {
-        if (apiData[key] === '' || apiData[key] === null || apiData[key] === undefined) {
+        if (apiData[key] === '') {
           delete apiData[key];
         }
       });
@@ -238,14 +238,14 @@ const ProfilePage = () => {
       // Show preview
       setAvatarPreview(avatarUrl);
       
-      // Update user info with new avatar URL
+      // Update local state
       setUserInfo(prev => ({
         ...prev,
         avatar_url: avatarUrl
       }));
 
-      // Auto-save avatar
-      await updateUserData({ ...userInfo, avatar_url: avatarUrl });
+      // Auto-save avatar - only send the avatar_url field
+      await updateUserData({ avatar_url: avatarUrl });
       
     } catch (err) {
       console.error('Error uploading avatar:', err);
@@ -402,7 +402,7 @@ const ProfilePage = () => {
                   </div>
                 )}
               </div>
-              <div>
+              {/* <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Rating</label>
                 <div className="flex items-center gap-2">
                   <p className="text-gray-900">{userInfo.rating ? parseFloat(userInfo.rating).toFixed(1) : '0.0'}</p>
@@ -415,7 +415,7 @@ const ProfilePage = () => {
                     ))}
                   </div>
                 </div>
-              </div>
+              </div> */}
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
                 {isEditing ? (
@@ -450,10 +450,10 @@ const ProfilePage = () => {
                   {userInfo.status ? userInfo.status.charAt(0).toUpperCase() + userInfo.status.slice(1) : 'Unknown'}
                 </span>
               </div>
-              <div>
+              {/* <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Total Orders</label>
                 <p className="text-gray-900">{userInfo.total_orders}</p>
-              </div>
+              </div> */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Last Login</label>
                 <p className="text-gray-900">
@@ -465,7 +465,7 @@ const ProfilePage = () => {
         </div>
 
         {/* Account Statistics */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+        {/* <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">Account Statistics</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {statsWithIcons.map((stat, index) => (
@@ -476,10 +476,10 @@ const ProfilePage = () => {
               </div>
             ))}
           </div>
-        </div>
+        </div> */}
 
         {/* Recent Activity */}
-        <div className="bg-white rounded-lg shadow-sm p-6">
+        {/* <div className="bg-white rounded-lg shadow-sm p-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h2>
           <div className="space-y-4">
             {activities.map((activity, index) => (
@@ -503,7 +503,7 @@ const ProfilePage = () => {
               </div>
             ))}
           </div>
-        </div>
+        </div> */}
           </>
         )}
       </div>
