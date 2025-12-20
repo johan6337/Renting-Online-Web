@@ -233,4 +233,34 @@ export const updateSellerOrderStatus = async (orderNumber, payload = {}) => {
   return normalizeOrder(body);
 };
 
+const API_BASE_URL = 'http://localhost:3456';
+
+export const updateOrderScheduleInfo = async (orderNumber, payload = {}) => {
+  if (!orderNumber) {
+    throw new Error('orderNumber is required');
+  }
+  
+  const response = await fetch(
+    `${API_BASE_URL}/api/orders/${encodeURIComponent(orderNumber)}/schedule`,
+    {
+      method: 'PATCH',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    }
+  );
+  
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || `Request failed with status ${response.status}`);
+  }
+  
+  const data = await response.json();
+  const body = data?.data ?? data?.order ?? data;
+  return normalizeOrder(body);
+};
+
 export { normalizeOrder };

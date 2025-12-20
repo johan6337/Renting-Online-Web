@@ -5,7 +5,7 @@ import Footer from '../components/footer/Footer';
 import OrderDetail from '../components/orders/OrderDetail';
 import OrderScheduleModal from '../components/orders/OrderScheduleModal';
 import ordersData from '../data/ordersData';
-import { getOrderByNumber } from '../api/orders';
+import { getOrderByNumber, updateOrderScheduleInfo } from '../api/orders';
 
 const resolveOrderId = (order, fallback = null) => {
   if (!order) return fallback;
@@ -60,6 +60,16 @@ const OrderDetailPage = () => {
     receive: locationSchedules?.receive || null,
     return: locationSchedules?.return || null,
   });
+
+  // Update schedules when order loads with receivingInfo/returnInfo
+  useEffect(() => {
+    if (order) {
+      setSchedules((prev) => ({
+        receive: prev.receive || order.receivingInfo || null,
+        return: prev.return || order.returnInfo || null,
+      }));
+    }
+  }, [order]);
 
   useEffect(() => {
     let isMounted = true;
@@ -121,15 +131,53 @@ const OrderDetailPage = () => {
     setScheduleModalType(null);
   };
 
-  const handleSaveSchedule = (scheduleData) => {
+  const handleSaveSchedule = async (scheduleData) => {
     if (!scheduleModalType) {
       return;
     }
-    setSchedules((prev) => ({
-      ...prev,
-      [scheduleModalType]: scheduleData,
-    }));
-    handleCloseScheduleModal();
+    
+    // Determine which field to update based on modal type
+    const updateData = {};
+    if (scheduleModalType === 'receive') {
+      updateData.receivingInfo = {
+        date: scheduleData.date || null,
+        time: scheduleData.time || null,
+        location: scheduleData.location || null,
+        notes: scheduleData.notes || null,
+      };
+    } else if (scheduleModalType === 'return') {
+      updateData.returnInfo = {
+        date: scheduleData.date || null,
+        time: scheduleData.time || null,
+        location: scheduleData.location || null,
+        notes: scheduleData.notes || null,
+      };
+    }
+
+    try {
+      const orderNumber = order?.orderNumber || order?.order_number || orderId;
+      const result = await updateOrderScheduleInfo(orderNumber, updateData);
+      
+      // Update local state with the response
+      setSchedules((prev) => ({
+        ...prev,
+        [scheduleModalType]: scheduleData,
+      }));
+      
+      // Update order state if response contains updated order
+      if (result) {
+        setOrder((prev) => ({
+          ...prev,
+          receivingInfo: result.receivingInfo ?? prev.receivingInfo,
+          returnInfo: result.returnInfo ?? prev.returnInfo,
+        }));
+      }
+      
+      handleCloseScheduleModal();
+    } catch (error) {
+      console.error('Failed to save schedule:', error);
+      alert('Failed to save schedule. Please try again.');
+    }
   };
 
   const hasStoredReview = (targetOrderId) => {

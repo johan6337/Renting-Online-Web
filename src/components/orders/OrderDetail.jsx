@@ -226,7 +226,7 @@ const OrderDetail = ({
           </div>
         )} */}
       </div>
-      {/* {!isSellerView ? (
+      {!isSellerView ? (
         <div className="grid gap-6 mt-6 md:grid-cols-2">
           <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
             <div className="flex items-start justify-between">
@@ -297,44 +297,62 @@ const OrderDetail = ({
       ) : (
         <div className="grid gap-6 mt-6 md:grid-cols-2">
           <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
-            <div>
-              <h3 className="text-xl font-bold text-gray-900">Receiving Information</h3>
-              <p className="mt-1 text-sm text-gray-600">
-                Customer's receiving schedule (View only)
-              </p>
+            <div className="flex items-start justify-between">
+              <div>
+                <h3 className="text-xl font-bold text-gray-900">Receiving Information</h3>
+                <p className="mt-1 text-sm text-gray-600">
+                  Set when and where to meet customer for receiving.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={onOpenReceiveSchedule}
+                className="rounded-full border border-indigo-200 px-4 py-1.5 text-sm font-semibold text-indigo-600 transition-colors hover:bg-indigo-50 hover:border-indigo-300"
+              >
+                {receiveDetails ? 'Edit' : 'Add'}
+              </button>
             </div>
             <div className="mt-4 rounded-xl bg-gray-50 p-4 text-sm text-gray-700">
               <p>
                 <span className="font-semibold text-gray-900">Date:</span>{' '}
-                {receiveDetails?.date || 'Not set by customer'}
+                {receiveDetails?.date || 'Not set'}
               </p>
               <p className="mt-2">
                 <span className="font-semibold text-gray-900">Location:</span>{' '}
-                {receiveDetails?.location || 'Not set by customer'}
+                {receiveDetails?.location || 'Not set'}
               </p>
             </div>
           </div>
 
           <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
-            <div>
-              <h3 className="text-xl font-bold text-gray-900">Return Information</h3>
-              <p className="mt-1 text-sm text-gray-600">
-                Customer's return schedule (View only)
-              </p>
+            <div className="flex items-start justify-between">
+              <div>
+                <h3 className="text-xl font-bold text-gray-900">Return Information</h3>
+                <p className="mt-1 text-sm text-gray-600">
+                  Set when and where to meet customer for return.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={onOpenReturnSchedule}
+                className="rounded-full border border-indigo-200 px-4 py-1.5 text-sm font-semibold text-indigo-600 transition-colors hover:bg-indigo-50 hover:border-indigo-300"
+              >
+                {returnDetails ? 'Edit' : 'Add'}
+              </button>
             </div>
             <div className="mt-4 rounded-xl bg-gray-50 p-4 text-sm text-gray-700">
               <p>
                 <span className="font-semibold text-gray-900">Date:</span>{' '}
-                {returnDetails?.date || 'Not set by customer'}
+                {returnDetails?.date || 'Not set'}
               </p>
               <p className="mt-2">
                 <span className="font-semibold text-gray-900">Location:</span>{' '}
-                {returnDetails?.location || 'Not set by customer'}
+                {returnDetails?.location || 'Not set'}
               </p>
             </div>
           </div>
         </div>
-      )} */}
+      )}
     </div>
   );
 };

@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import Sidebar_Seller from '../../components/sidebar/Sidebar_Seller';
 import OrderDetail from '../../components/orders/OrderDetail';
-import { getSellerOrderByNumber } from '../../api/orders';
+import OrderScheduleModal from '../../components/orders/OrderScheduleModal';
+import { getSellerOrderByNumber, updateOrderScheduleInfo } from '../../api/orders';
 
 const SellerOrderDetail = () => {
   const { orderNumber } = useParams();
@@ -13,6 +14,24 @@ const SellerOrderDetail = () => {
   const [order, setOrder] = useState(initialOrder);
   const [isLoading, setIsLoading] = useState(!initialOrder);
   const [loadError, setLoadError] = useState(null);
+
+  // Schedule modal state
+  const [scheduleModalOpen, setScheduleModalOpen] = useState(false);
+  const [scheduleModalType, setScheduleModalType] = useState(null);
+  const [schedules, setSchedules] = useState({
+    receive: null,
+    return: null,
+  });
+
+  // Update schedules when order loads
+  useEffect(() => {
+    if (order) {
+      setSchedules({
+        receive: order.receivingInfo || null,
+        return: order.returnInfo || null,
+      });
+    }
+  }, [order]);
 
   useEffect(() => {
     if (!orderNumber || initialOrder) {
@@ -51,6 +70,64 @@ const SellerOrderDetail = () => {
 
   const handleBack = () => {
     navigate('/seller/orders');
+  };
+
+  const handleOpenScheduleModal = (type) => {
+    setScheduleModalType(type);
+    setScheduleModalOpen(true);
+  };
+
+  const handleCloseScheduleModal = () => {
+    setScheduleModalOpen(false);
+    setScheduleModalType(null);
+  };
+
+  const handleSaveSchedule = async (scheduleData) => {
+    if (!scheduleModalType) {
+      return;
+    }
+    
+    // Determine which field to update based on modal type
+    const updateData = {};
+    if (scheduleModalType === 'receive') {
+      updateData.receivingInfo = {
+        date: scheduleData.date || null,
+        time: scheduleData.time || null,
+        location: scheduleData.location || null,
+        notes: scheduleData.notes || null,
+      };
+    } else if (scheduleModalType === 'return') {
+      updateData.returnInfo = {
+        date: scheduleData.date || null,
+        time: scheduleData.time || null,
+        location: scheduleData.location || null,
+        notes: scheduleData.notes || null,
+      };
+    }
+
+    try {
+      const result = await updateOrderScheduleInfo(orderNumber, updateData);
+      
+      // Update local state with the response
+      setSchedules((prev) => ({
+        ...prev,
+        [scheduleModalType]: scheduleData,
+      }));
+      
+      // Update order state if response contains updated order
+      if (result) {
+        setOrder((prev) => ({
+          ...prev,
+          receivingInfo: result.receivingInfo ?? prev.receivingInfo,
+          returnInfo: result.returnInfo ?? prev.returnInfo,
+        }));
+      }
+      
+      handleCloseScheduleModal();
+    } catch (error) {
+      console.error('Failed to save schedule:', error);
+      alert('Failed to save schedule. Please try again.');
+    }
   };
 
   const renderContent = () => {
@@ -96,11 +173,11 @@ const SellerOrderDetail = () => {
         <OrderDetail
           order={order}
           onBack={handleBack}
-          onOpenReceiveSchedule={() => {}}
-          onOpenReturnSchedule={() => {}}
-          receiveDetails={order.receivingInfo || null}
-          returnDetails={order.returnInfo || null}
-          canEditReturn={false}
+          onOpenReceiveSchedule={() => handleOpenScheduleModal('receive')}
+          onOpenReturnSchedule={() => handleOpenScheduleModal('return')}
+          receiveDetails={schedules.receive}
+          returnDetails={schedules.return}
+          canEditReturn={true}
           isSellerView={true}
         />
       </div>
@@ -120,6 +197,13 @@ const SellerOrderDetail = () => {
         )}
         {renderContent()}
       </div>
+      <OrderScheduleModal
+        open={scheduleModalOpen}
+        onClose={handleCloseScheduleModal}
+        onSave={handleSaveSchedule}
+        initialSchedule={scheduleModalType ? schedules[scheduleModalType] : null}
+        type={scheduleModalType}
+      />
     </div>
   );
 };
