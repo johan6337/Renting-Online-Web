@@ -29,6 +29,7 @@ import SellerProfile from './pages/seller/SellerProfile';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminReports from './pages/admin/AdminReports';
 import AdminViolations from './pages/admin/AdminViolations';
+import AdminProducts from './pages/admin/AdminProducts';
 import AdminPage from './pages/AdminPage';
 const App = () => {
   return (
@@ -110,6 +111,11 @@ const App = () => {
       <Route path="/admin/users" element={
         <ProtectedRoute>
           <AdminPage />
+        </ProtectedRoute>
+      } />
+      <Route path="/admin/products" element={
+        <ProtectedRoute>
+          <AdminProducts />
         </ProtectedRoute>
       } />
       <Route path="/admin/reports" element={

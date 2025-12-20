@@ -5,7 +5,8 @@ import {
   Users, 
   FileText,
   Gavel,
-  LogOut
+  LogOut,
+  Package
 } from 'lucide-react'
 
 const Sidebar_Admin = ({ active }) => {
@@ -31,6 +32,7 @@ const Sidebar_Admin = ({ active }) => {
   const items = [
     { name: 'Dashboard', icon: LayoutDashboard, path: '/admin/dashboard' },
     { name: 'User Management', icon: Users, path: '/admin/users' },
+    { name: 'Product Management', icon: Package, path: '/admin/products' },
     { name: 'Resolve Violations', icon: Gavel, path: '/admin/resolve-violations' },
     { name: 'Log Out', icon: LogOut, action: 'logout' }
   ];
